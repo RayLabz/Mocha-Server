@@ -3,7 +3,7 @@ import com.raylabz.mocha.UDPPortListener;
 
 import java.net.DatagramPacket;
 
-public class Test {
+public class TestServer {
 
     public static void main(String[] args) {
         Server server = new Server.Builder("My Server")
