@@ -36,6 +36,9 @@ public class MixedClients {
 
     public static class MyTCPClient extends TCPClient {
 
+        private long timeSent;
+        private long timeReceived;
+
         public MyTCPClient(String ipAddress, int port) throws IOException {
             super(ipAddress, port);
         }
@@ -44,6 +47,7 @@ public class MixedClients {
         public void run() {
             while (true) {
                 send("TCP All the way!");
+                timeSent = System.currentTimeMillis();
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
@@ -55,6 +59,8 @@ public class MixedClients {
         @Override
         public void onReceive(String data) {
             System.out.println("Received: " + data);
+            timeReceived = System.currentTimeMillis();
+            System.out.println("LATENCY ==> " + (timeReceived - timeSent) + "ms");
         }
     }
 
