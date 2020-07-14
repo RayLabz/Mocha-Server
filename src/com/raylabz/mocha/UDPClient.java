@@ -8,8 +8,8 @@ public abstract class UDPClient extends Client {
     private final DatagramSocket socket;
     byte[] buffer = new byte[65535];
 
-    public UDPClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
-        super(name, ipAddress, port);
+    public UDPClient(String ipAddress, int port) throws UnknownHostException, SocketException {
+        super(ipAddress, port);
         this.socket = new DatagramSocket();
     }
 

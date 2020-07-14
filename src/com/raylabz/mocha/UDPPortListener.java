@@ -2,9 +2,11 @@ package com.raylabz.mocha;
 
 import com.raylabz.mocha.logger.Logger;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public abstract class UDPPortListener implements Runnable {
 
@@ -16,20 +18,34 @@ public abstract class UDPPortListener implements Runnable {
         this.port = port;
     }
 
-    public DatagramSocket getSocket() {
+    public final DatagramSocket getSocket() {
         return socket;
     }
 
-    public boolean isEnabled() {
+    public final boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
+    public final void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public int getPort() {
+    public final int getPort() {
         return port;
+    }
+
+    public final InetAddress getInetAddress() {
+        return socket.getInetAddress();
+    }
+
+    public final void send(final String message) {
+        try {
+            final byte[] bytes = message.getBytes();
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, socket.getInetAddress(), socket.getPort());
+            socket.send(packet);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public abstract void onReceive(DatagramPacket packet);

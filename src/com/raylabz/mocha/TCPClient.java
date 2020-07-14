@@ -11,28 +11,32 @@ public abstract class TCPClient extends Client {
     private final Socket socket;
     private final PrintWriter writer;
     private final BufferedReader reader;
-//    private final Thread receptionThread;
+    private boolean listening = true;
 
-    public TCPClient(String name, String ipAddress, int port) throws IOException {
-        super(name, ipAddress, port);
+    public TCPClient(String ipAddress, int port) throws IOException {
+        super(ipAddress, port);
         this.socket = new Socket(getAddress(), getPort());
         writer = new PrintWriter(socket.getOutputStream(), true);
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//        receptionThread = new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        String input;
-//                        try {
-//                            while ((input = reader.readLine()) != null) {
-//                                onReceive(input);
-//                            }
-//                        }
-//                        catch (IOException e) {
-//                            System.err.println("Error receiving: " + e.getMessage());
-//                        }
-//                    }
-//                }, getName());
-//        receptionThread.start();
+        Thread receptionThread = new Thread(() -> {
+            String input;
+            try {
+                while ((input = reader.readLine()) != null && listening) {
+                    onReceive(input);
+                }
+            } catch (IOException e) {
+                System.err.println("Error receiving: " + e.getMessage());
+            }
+        });
+        receptionThread.start();
+    }
+
+    public boolean isListening() {
+        return listening;
+    }
+
+    public void setListening(boolean listening) {
+        this.listening = listening;
     }
 
     public Socket getSocket() {

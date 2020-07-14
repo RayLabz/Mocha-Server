@@ -1,11 +1,11 @@
 package com.raylabz.mocha;
 
+import java.net.InetAddress;
 import java.util.Vector;
 
-public class Server extends Thread {
+public class Server implements Runnable {
 
-    public static String SERVER_NAME;
-
+    private final String name;
     private boolean running = false;
     private final Vector<UDPPortListener> udpListeners;
     private final Vector<Thread> udpListenerThreads = new Vector<>();
@@ -13,8 +13,7 @@ public class Server extends Thread {
     private final Vector<Thread> tcpHandlerThreads = new Vector<>();
 
     private Server(String name, Vector<UDPPortListener> udpListeners, Vector<TCPHandler> tcpHandlers) {
-        setName(name);
-        SERVER_NAME = name;
+        this.name = name;
         this.udpListeners = udpListeners;
         this.tcpHandlers = tcpHandlers;
     }
@@ -39,13 +38,59 @@ public class Server extends Thread {
         return tcpHandlers;
     }
 
+    public Vector<Thread> getTcpHandlerThreads() {
+        return tcpHandlerThreads;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public void initialize() {
 
     }
 
+    public void process() {
+
+    }
+
+    public void sendTCP(TCPConnection tcpConnection, final String message) {
+         tcpConnection.send(message);
+    }
+
+    public void sendTCP(final String ipAddress, final int port, final String message) {
+        try {
+            InetAddress inetAddress = InetAddress.getByName(ipAddress);
+            if (port >= 0 && port <= 65535) {
+                for (TCPHandler h : tcpHandlers) {
+                    if (h.getPort() == port) {
+                        for (TCPConnection tcpConnection : h.getTcpConnections()) {
+                            if (tcpConnection.getInetAddress().equals(inetAddress)) {
+                                tcpConnection.send(message);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) { }
+    }
+
+    public void sendUDP(final String ipAddress, final int port) {
+        try {
+            InetAddress inetAddress = InetAddress.getByName(ipAddress);
+            if (port >= 0 && port <= 65535) {
+                for (UDPPortListener udpPortListener : udpListeners) {
+                    if (udpPortListener.getPort() == port && udpPortListener.getInetAddress().equals(inetAddress)) {
+                        udpPortListener.
+                    }
+                }
+            }
+        } catch (Exception ignored) { }
+    }
+
     @Override
-    public void run() {
-        System.out.println("Server '" + getName() + "' started.");
+    public final void run() {
+        System.out.println("Server '" + name + "' started.");
         initialize();
         for (UDPPortListener udpPortListener : udpListeners) {
             Thread t = new Thread(udpPortListener);
@@ -57,6 +102,7 @@ public class Server extends Thread {
             tcpHandlerThreads.add(t);
             t.start();
         }
+        process();
     }
 
     public static class Builder {

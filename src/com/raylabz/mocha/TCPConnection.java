@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 
 public class TCPConnection implements Runnable {
@@ -22,24 +23,24 @@ public class TCPConnection implements Runnable {
         this.receivable = receivable;
     }
 
-    public Socket getSocket() {
+    public final void send(final String message) {
+        writer.println(message);
+    }
+
+    public final int getPort() {
+        return socket.getPort();
+    }
+
+    public final InetAddress getInetAddress() {
+        return socket.getInetAddress();
+    }
+
+    public final Socket getSocket() {
         return socket;
     }
 
-    public PrintWriter getWriter() {
-        return writer;
-    }
-
-    public BufferedReader getReader() {
-        return reader;
-    }
-
-    public TCPReceivable getReceivable() {
-        return receivable;
-    }
-
     @Override
-    public void run() {
+    public final void run() {
         String input;
         try {
             while ((input = reader.readLine()) != null) {

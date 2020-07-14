@@ -1,4 +1,4 @@
-package com.raylabz.mocha;
+package test;
 
 import java.io.BufferedReader;
 import java.io.IOException;

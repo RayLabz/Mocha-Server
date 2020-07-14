@@ -1,8 +1,5 @@
 package com.raylabz.mocha.logger;
 
-
-import com.raylabz.mocha.Server;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,7 +11,7 @@ public class Logger {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(" yyyy-MM-dd HH:mm ");
 
     private static File obtainLogFile() {
-        File file = new File(Server.SERVER_NAME + ".log");
+        File file = new File("server.log");
         if (file.exists() && file.canWrite()) {
             return file;
         }
