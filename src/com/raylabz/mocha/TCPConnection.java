@@ -18,7 +18,7 @@ public class TCPConnection implements Runnable {
 
     public TCPConnection(Socket socket, TCPReceivable receivable) throws IOException {
         this.socket = socket;
-        this.writer = new PrintWriter(socket.getOutputStream());
+        this.writer = new PrintWriter(socket.getOutputStream(), true);
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.receivable = receivable;
     }

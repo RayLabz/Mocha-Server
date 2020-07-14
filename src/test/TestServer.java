@@ -13,7 +13,7 @@ public class TestServer {
         server.addTCPHandler(new TCPHandler(1234, new TCPReceivable() {
             @Override
             public void onReceive(TCPConnection tcpConnection, String data) {
-                System.out.println("Received from TCP[1234]: "  + data);
+                System.out.println("Received from TCP[2222]: "  + data);
                 tcpConnection.send("Server response!");
             }
         }));
