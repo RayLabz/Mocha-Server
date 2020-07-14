@@ -45,6 +45,7 @@ public class Server extends Thread {
 
     @Override
     public void run() {
+        System.out.println("Server '" + getName() + "' started.");
         initialize();
         for (UDPPortListener udpPortListener : udpListeners) {
             Thread t = new Thread(udpPortListener);

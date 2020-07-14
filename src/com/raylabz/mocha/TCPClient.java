@@ -11,28 +11,28 @@ public abstract class TCPClient extends Client {
     private final Socket socket;
     private final PrintWriter writer;
     private final BufferedReader reader;
-    private final Thread receptionThread;
+//    private final Thread receptionThread;
 
     public TCPClient(String name, String ipAddress, int port) throws IOException {
         super(name, ipAddress, port);
         this.socket = new Socket(getAddress(), getPort());
         writer = new PrintWriter(socket.getOutputStream());
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        receptionThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String input;
-                        try {
-                            while ((input = reader.readLine()) != null) {
-                                onReceive(input);
-                            }
-                        }
-                        catch (IOException e) {
-                            System.err.println("Error receiving: " + e.getMessage());
-                        }
-                    }
-                }, getName());
-        receptionThread.start();
+//        receptionThread = new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        String input;
+//                        try {
+//                            while ((input = reader.readLine()) != null) {
+//                                onReceive(input);
+//                            }
+//                        }
+//                        catch (IOException e) {
+//                            System.err.println("Error receiving: " + e.getMessage());
+//                        }
+//                    }
+//                }, getName());
+//        receptionThread.start();
     }
 
     public Socket getSocket() {
@@ -47,6 +47,7 @@ public abstract class TCPClient extends Client {
         return reader;
     }
 
+    @Override
     public void send(String data) {
         writer.println(data);
     }

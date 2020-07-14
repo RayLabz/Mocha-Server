@@ -43,7 +43,6 @@ public class TCPConnection implements Runnable {
         String input;
         try {
             while ((input = reader.readLine()) != null) {
-                System.out.println("DEBUG -> " + input);
                 receivable.onReceive(socket.getInetAddress(), input);
             }
         }
