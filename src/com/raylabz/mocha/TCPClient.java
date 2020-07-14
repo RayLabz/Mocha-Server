@@ -11,7 +11,6 @@ public abstract class TCPClient extends Client {
     private final Socket socket;
     private final PrintWriter writer;
     private final BufferedReader reader;
-    private boolean listening = true;
 
     public TCPClient(String ipAddress, int port) throws IOException {
         super(ipAddress, port);
@@ -21,7 +20,7 @@ public abstract class TCPClient extends Client {
         Thread receptionThread = new Thread(() -> {
             String input;
             try {
-                while ((input = reader.readLine()) != null && listening) {
+                while ((input = reader.readLine()) != null && isListening()) {
                     onReceive(input);
                 }
             } catch (IOException e) {
@@ -29,14 +28,6 @@ public abstract class TCPClient extends Client {
             }
         });
         receptionThread.start();
-    }
-
-    public boolean isListening() {
-        return listening;
-    }
-
-    public void setListening(boolean listening) {
-        this.listening = listening;
     }
 
     public Socket getSocket() {

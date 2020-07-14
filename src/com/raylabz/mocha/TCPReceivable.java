@@ -4,6 +4,6 @@ import java.net.InetAddress;
 
 public interface TCPReceivable {
 
-    void onReceive(InetAddress inetAddress, String data);
+    void onReceive(TCPConnection tcpConnection, String data);
 
 }

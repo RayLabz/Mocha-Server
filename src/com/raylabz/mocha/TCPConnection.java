@@ -44,7 +44,7 @@ public class TCPConnection implements Runnable {
         String input;
         try {
             while ((input = reader.readLine()) != null) {
-                receivable.onReceive(socket.getInetAddress(), input);
+                receivable.onReceive(this, input);
             }
         }
         catch (IOException e) {

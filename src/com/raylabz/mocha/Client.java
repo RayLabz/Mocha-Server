@@ -8,6 +8,7 @@ public abstract class Client implements Runnable {
 
     private final InetAddress address;
     private final int port;
+    private boolean listening = true;
 
     public Client(String ipAddress, int port) throws UnknownHostException, PortUnreachableException {
         this.address = InetAddress.getByName(ipAddress);
@@ -17,6 +18,14 @@ public abstract class Client implements Runnable {
         else {
             this.port = port;
         }
+    }
+
+    public final boolean isListening() {
+        return listening;
+    }
+
+    public final void setListening(boolean listening) {
+        this.listening = listening;
     }
 
     public final InetAddress getAddress() {

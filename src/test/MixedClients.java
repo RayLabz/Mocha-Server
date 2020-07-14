@@ -11,14 +11,19 @@ public class MixedClients {
 
     public static class MyUDPClient extends UDPClient {
 
-        public MyUDPClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
-            super(name, ipAddress, port);
+        public MyUDPClient(String ipAddress, int port) throws UnknownHostException, SocketException {
+            super(ipAddress, port);
+        }
+
+        @Override
+        public void onReceive(String data) {
+            System.out.println("Received: " + data);
         }
 
         @Override
         public void run() {
             while (true) {
-                send("UDP!");
+                send("UDP FTW!");
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
@@ -31,14 +36,14 @@ public class MixedClients {
 
     public static class MyTCPClient extends TCPClient {
 
-        public MyTCPClient(String name, String ipAddress, int port) throws IOException {
-            super(name, ipAddress, port);
+        public MyTCPClient(String ipAddress, int port) throws IOException {
+            super(ipAddress, port);
         }
 
         @Override
         public void run() {
             while (true) {
-                send("TCP!");
+                send("TCP All the way!");
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
@@ -49,19 +54,17 @@ public class MixedClients {
 
         @Override
         public void onReceive(String data) {
-            System.out.println(data);
+            System.out.println("Received: " + data);
         }
     }
 
     public static void main(String[] args) throws IOException {
-        MyTCPClient tcpClient = new MyTCPClient("tcpClient", "localhost", 1234);
-        MyTCPClient tcpClient2 = new MyTCPClient("tcpClient2", "localhost", 4321);
-        MyUDPClient udpClient = new MyUDPClient("udpClient", "localhost", 1234);
-        MyUDPClient udpClient2 = new MyUDPClient("udpClient2", "localhost", 4321);
-        tcpClient.start();
-        tcpClient2.start();
-        udpClient.start();
-        udpClient2.start();
+        MyTCPClient tcpClient = new MyTCPClient("localhost", 1234);
+//        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 4321);
+        MyUDPClient udpClient = new MyUDPClient("localhost", 1234);
+//        MyUDPClient udpClient2 = new MyUDPClient("localhost", 4321);
+        new Thread(tcpClient).start();
+        new Thread(udpClient).start();
     }
 
 }
