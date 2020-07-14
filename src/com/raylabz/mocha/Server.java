@@ -8,19 +8,35 @@ public class Server extends Thread {
 
     private boolean running = false;
     private final Vector<UDPPortListener> udpListeners;
+    private final Vector<Thread> udpListenerThreads = new Vector<>();
+    private final Vector<TCPHandler> tcpHandlers;
+    private final Vector<Thread> tcpHandlerThreads = new Vector<>();
 
-    private Server(String name, Vector<UDPPortListener> udpListeners) {
+    private Server(String name, Vector<UDPPortListener> udpListeners, Vector<TCPHandler> tcpHandlers) {
         setName(name);
         SERVER_NAME = name;
         this.udpListeners = udpListeners;
+        this.tcpHandlers = tcpHandlers;
     }
 
-    public boolean isRunning() {
+    public final boolean isRunning() {
         return running;
     }
 
-    public void setRunning(boolean running) {
+    public final void setRunning(boolean running) {
         this.running = running;
+    }
+
+    public final Vector<UDPPortListener> getUdpListeners() {
+        return udpListeners;
+    }
+
+    public final Vector<Thread> getUdpListenerThreads() {
+        return udpListenerThreads;
+    }
+
+    public Vector<TCPHandler> getTcpHandlers() {
+        return tcpHandlers;
     }
 
     public void initialize() {
@@ -32,6 +48,12 @@ public class Server extends Thread {
         initialize();
         for (UDPPortListener udpPortListener : udpListeners) {
             Thread t = new Thread(udpPortListener);
+            udpListenerThreads.add(t);
+            t.start();
+        }
+        for (TCPHandler tcpHandler : tcpHandlers) {
+            Thread t = new Thread(tcpHandler);
+            tcpHandlerThreads.add(t);
             t.start();
         }
     }
@@ -40,6 +62,7 @@ public class Server extends Thread {
 
         private final String name;
         private final Vector<UDPPortListener> udpListeners = new Vector<>();
+        private final Vector<TCPHandler> tcpHandlers = new Vector<>();
 
         public Builder(String name) {
             this.name = name;
@@ -55,8 +78,18 @@ public class Server extends Thread {
             return this;
         }
 
+        public Builder addTCPHandler(TCPHandler tcpHandler) {
+            for (TCPHandler h : tcpHandlers) {
+                if (h.getPort() == tcpHandler.getPort()) {
+                    return this;
+                }
+            }
+            tcpHandlers.add(tcpHandler);
+            return this;
+        }
+
         public Server build() {
-            return new Server(name, udpListeners);
+            return new Server(name, udpListeners, tcpHandlers);
         }
 
     }

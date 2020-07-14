@@ -36,8 +36,6 @@ public abstract class Client implements Runnable {
 
     public abstract void send(final String data);
 
-    public abstract String receive() throws IOException;
-
     public final void start() {
         Thread thread = new Thread(this, getName());
         thread.start();

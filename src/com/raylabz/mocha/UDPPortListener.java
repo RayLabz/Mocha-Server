@@ -38,7 +38,7 @@ public abstract class UDPPortListener implements Runnable {
     public void run() {
         try {
             socket = new DatagramSocket(port);
-            System.out.println("Listing to UDP port " + port);
+            System.out.println("Listing to UDP port " + port + ".");
             while (enabled) {
                 byte[] buffer = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
