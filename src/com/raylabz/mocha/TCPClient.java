@@ -16,7 +16,7 @@ public abstract class TCPClient extends Client {
     public TCPClient(String name, String ipAddress, int port) throws IOException {
         super(name, ipAddress, port);
         this.socket = new Socket(getAddress(), getPort());
-        writer = new PrintWriter(socket.getOutputStream());
+        writer = new PrintWriter(socket.getOutputStream(), true);
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 //        receptionThread = new Thread(new Runnable() {
 //                    @Override
@@ -37,14 +37,6 @@ public abstract class TCPClient extends Client {
 
     public Socket getSocket() {
         return socket;
-    }
-
-    public PrintWriter getWriter() {
-        return writer;
-    }
-
-    public BufferedReader getReader() {
-        return reader;
     }
 
     @Override
