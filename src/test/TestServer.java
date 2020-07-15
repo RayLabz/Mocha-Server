@@ -1,9 +1,9 @@
 package test;
 
-import com.raylabz.mocha.*;
-
-import java.net.DatagramPacket;
-import java.net.InetAddress;
+import com.raylabz.mocha.server.Server;
+import com.raylabz.mocha.server.TCPConnection;
+import com.raylabz.mocha.server.TCPHandler;
+import com.raylabz.mocha.server.TCPReceivable;
 
 public class TestServer {
 

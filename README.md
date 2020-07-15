@@ -1,2 +1,2 @@
-# Mocha-com.raylabz.mocha.Server
+# Mocha-com.raylabz.mocha.server.Server
 A Java server library.

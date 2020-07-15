@@ -1,13 +1,13 @@
-package com.raylabz.mocha;
+package com.raylabz.mocha.client;
 
 import java.net.InetAddress;
 import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
 
 /**
+ * Provides common functionality for a client.
  * @author Nicos Kasenides
  * @version 1.0.0
- * Provides common functionality for a client.
  */
 public abstract class Client implements Runnable {
 

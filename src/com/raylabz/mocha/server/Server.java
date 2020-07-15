@@ -1,4 +1,4 @@
-package com.raylabz.mocha;
+package com.raylabz.mocha.server;
 
 import com.raylabz.mocha.logger.Logger;
 
@@ -6,9 +6,9 @@ import java.net.InetAddress;
 import java.util.Vector;
 
 /**
+ * Provides functionality for a server.
  * @author Nicos Kasenides
  * @version 1.0.0
- * Provides functionality for a server.
  */
 public class Server implements Runnable {
 

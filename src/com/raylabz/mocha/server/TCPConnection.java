@@ -1,4 +1,4 @@
-package com.raylabz.mocha;
+package com.raylabz.mocha.server;
 
 import com.raylabz.mocha.logger.Logger;
 
@@ -10,9 +10,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 /**
+ * Manages a TCP connection to a client.
  * @author Nicos Kasenides
  * @version 1.0.0
- * Manages a TCP connection to a client.
  */
 public class TCPConnection implements Runnable {
 

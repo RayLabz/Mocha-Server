@@ -1,12 +1,12 @@
-package com.raylabz.mocha;
+package com.raylabz.mocha.client;
 
 import java.io.IOException;
 import java.net.*;
 
 /**
+ * Defines functionality for a UDP Client.
  * @author Nicos Kasenides
  * @version 1.0.0
- * Defines functionality for a UDP Client.
  */
 public abstract class UDPClient extends Client {
 

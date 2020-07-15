@@ -4,9 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * Models an entry written into the server log files.
  * @author Nicos Kasenides
  * @version 1.0.0
- * Models an entry written into the server log files.
  */
 public class LogEntry {
 

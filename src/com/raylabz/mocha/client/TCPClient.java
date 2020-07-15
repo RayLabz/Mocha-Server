@@ -1,4 +1,4 @@
-package com.raylabz.mocha;
+package com.raylabz.mocha.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,9 +7,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
+ * Defines functionality for a TCP Client.
  * @author Nicos Kasenides
  * @version 1.0.0
- * Defines functionality for a TCP Client.
  */
 public abstract class TCPClient extends Client {
 

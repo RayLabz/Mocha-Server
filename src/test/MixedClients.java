@@ -1,7 +1,7 @@
 package test;
 
-import com.raylabz.mocha.TCPClient;
-import com.raylabz.mocha.UDPClient;
+import com.raylabz.mocha.client.TCPClient;
+import com.raylabz.mocha.client.UDPClient;
 
 import java.io.IOException;
 import java.net.SocketException;

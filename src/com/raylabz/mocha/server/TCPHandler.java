@@ -1,4 +1,4 @@
-package com.raylabz.mocha;
+package com.raylabz.mocha.server;
 
 import com.raylabz.mocha.logger.Logger;
 
@@ -8,9 +8,9 @@ import java.net.Socket;
 import java.util.Vector;
 
 /**
+ * Manages TCP connections for the server for a specified port.
  * @author Nicos Kasenides
  * @version 1.0.0
- * Manages TCP connections for the server for a specified port.
  */
 public class TCPHandler implements Runnable {
 

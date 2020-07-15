@@ -1,9 +1,9 @@
-package com.raylabz.mocha;
+package com.raylabz.mocha.server;
 
 /**
+ * Models a TCPReceivable, used to determine what is executed when a TCPConnection receives data.
  * @author Nicos Kasenides
  * @version 1.0.0
- * Models a TCPReceivable, used to determine what is executed when a TCPConnection receives data.
  */
 public interface TCPReceivable {
 
