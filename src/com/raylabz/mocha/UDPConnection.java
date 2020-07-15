@@ -107,9 +107,9 @@ public abstract class UDPConnection implements Runnable {
             System.out.println("Listing to UDP port " + port + ".");
             while (enabled) {
                 byte[] buffer = new byte[65535];
-                DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length);
-                final String data = new String(buffer, 0, buffer.length);
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
+                final String data = new String(packet.getData(), 0, packet.getLength());
                 onReceive(this, data);
             }
         } catch (IOException e) {
