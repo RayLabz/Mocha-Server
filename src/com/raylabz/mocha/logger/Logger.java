@@ -3,13 +3,16 @@ package com.raylabz.mocha.logger;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
-public class Logger {
+/**
+ * Records data about server operations (such as errors etc.) into a log file.
+ */
+public final class Logger {
 
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(" yyyy-MM-dd HH:mm ");
-
+    /**
+     * Obtains an instance of the log file to write the log into.
+     * @return Returns a File.
+     */
     private static File obtainLogFile() {
         File file = new File("server.log");
         if (file.exists() && file.canWrite()) {
@@ -20,13 +23,18 @@ public class Logger {
         }
     }
 
+    /**
+     * Writes a log entry into the log file.
+     * @param logType The type of the log entry. Either ERROR, WARNING or INFO.
+     * @param text The log information.
+     */
     public static void log(final LogType logType, final String text) {
         File file = obtainLogFile();
         if (file != null) {
             try {
                 FileWriter fileWriter = new FileWriter(file);
-                Date date = new Date(System.currentTimeMillis());
-                fileWriter.append(logType.toString()).append(DATE_FORMAT.format(date)).append(text).append(System.lineSeparator());
+                LogEntry logEntry = new LogEntry(logType, text);
+                fileWriter.append(logEntry.toString());
                 fileWriter.close();
             }
             catch (IOException e) {
@@ -35,13 +43,17 @@ public class Logger {
         }
     }
 
+    /**
+     * Writes an info log entry to the log file.
+     * @param text The log information.
+     */
     public static void logInfo(final String text) {
         File file = obtainLogFile();
         if (file != null) {
             try {
                 FileWriter fileWriter = new FileWriter(file);
-                Date date = new Date(System.currentTimeMillis());
-                fileWriter.append(LogType.INFO.toString()).append(DATE_FORMAT.format(date)).append(text).append(System.lineSeparator());
+                LogEntry logEntry = new LogEntry(LogType.INFO, text);
+                fileWriter.append(logEntry.toString());
                 fileWriter.close();
             }
             catch (IOException e) {
@@ -50,13 +62,17 @@ public class Logger {
         }
     }
 
+    /**
+     * Writes a warning log entry to the log file.
+     * @param text The log information.
+     */
     public static void logWarning(final String text) {
         File file = obtainLogFile();
         if (file != null) {
             try {
                 FileWriter fileWriter = new FileWriter(file);
-                Date date = new Date(System.currentTimeMillis());
-                fileWriter.append(LogType.WARNING.toString()).append(DATE_FORMAT.format(date)).append(text).append(System.lineSeparator());
+                LogEntry logEntry = new LogEntry(LogType.WARNING, text);
+                fileWriter.append(logEntry.toString());
                 fileWriter.close();
             }
             catch (IOException e) {
@@ -65,13 +81,17 @@ public class Logger {
         }
     }
 
+    /**
+     * Writes an errorW log entry to the log file.
+     * @param text The log information.
+     */
     public static void logError(final String text) {
         File file = obtainLogFile();
         if (file != null) {
             try {
                 FileWriter fileWriter = new FileWriter(file);
-                Date date = new Date(System.currentTimeMillis());
-                fileWriter.append(LogType.ERROR.toString()).append(DATE_FORMAT.format(date)).append(text).append(System.lineSeparator());
+                LogEntry logEntry = new LogEntry(LogType.ERROR, text);
+                fileWriter.append(logEntry.toString());
                 fileWriter.close();
             }
             catch (IOException e) {
