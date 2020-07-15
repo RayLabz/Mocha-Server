@@ -10,6 +10,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 /**
+ * @author Nicos Kasenides
+ * @version 1.0.0
  * Manages a TCP connection to a client.
  */
 public class TCPConnection implements Runnable {

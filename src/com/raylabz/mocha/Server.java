@@ -6,6 +6,8 @@ import java.net.InetAddress;
 import java.util.Vector;
 
 /**
+ * @author Nicos Kasenides
+ * @version 1.0.0
  * Provides functionality for a server.
  */
 public class Server implements Runnable {

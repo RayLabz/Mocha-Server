@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
+ * @author Nicos Kasenides
+ * @version 1.0.0
  * Records data about server operations (such as errors etc.) into a log file.
  */
 public final class Logger {

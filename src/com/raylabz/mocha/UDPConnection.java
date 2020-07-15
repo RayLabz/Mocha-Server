@@ -8,6 +8,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 /**
+ * @author Nicos Kasenides
+ * @version 1.0.0
  * Manages a UDP connection to a client.
  */
 public abstract class UDPConnection implements Runnable {

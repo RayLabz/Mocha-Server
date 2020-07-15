@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.*;
 
 /**
+ * @author Nicos Kasenides
+ * @version 1.0.0
  * Defines functionality for a UDP Client.
  */
 public abstract class UDPClient extends Client {

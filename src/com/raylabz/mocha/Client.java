@@ -5,6 +5,8 @@ import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
 
 /**
+ * @author Nicos Kasenides
+ * @version 1.0.0
  * Provides common functionality for a client.
  */
 public abstract class Client implements Runnable {

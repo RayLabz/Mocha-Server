@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 /**
+ * @author Nicos Kasenides
+ * @version 1.0.0
  * Defines functionality for a TCP Client.
  */
 public abstract class TCPClient extends Client {
