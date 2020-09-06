@@ -305,6 +305,21 @@ public class Server implements Runnable {
     }
 
     /**
+     * Broadcasts a given message to all of the peer of a particular TCP connection.
+     * @param port The connection to broadcast the data to.
+     * @param data The data to broadcast.
+     */
+    public final void broadcastTCP(final int port, final String data) {
+        final Vector<TCPHandler> tcpHandlers = getTcpHandlers();
+        for (TCPHandler handler : tcpHandlers) {
+            if (handler.getPort() == port) {
+                handler.broadcast(data);
+                break;
+            }
+        }
+    }
+
+    /**
      * Defines the runtime functionality of this server.
      * This method:
      * 1) Initializes the server using initialize().

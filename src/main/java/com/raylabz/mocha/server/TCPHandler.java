@@ -1,5 +1,6 @@
 package com.raylabz.mocha.server;
 
+import com.raylabz.mocha.client.TCPClient;
 import com.raylabz.mocha.logger.Logger;
 
 import java.io.IOException;
@@ -108,6 +109,16 @@ public class TCPHandler implements Runnable {
      */
     public Vector<Thread> getTcpConnectionThreads() {
         return tcpConnectionThreads;
+    }
+
+    /**
+     * Broadcasts a message to all connected clients.
+     * @param data The data to broadcast.
+     */
+    public void broadcast(String data) {
+        for (TCPConnection connection : tcpConnections) {
+            connection.send(data);
+        }
     }
 
     /**
