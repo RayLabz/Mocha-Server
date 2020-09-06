@@ -6,7 +6,7 @@ package com.raylabz.mocha.server;
 public class ServerInstance {
 
     /**
-     * The server
+     * The server.
      */
     private final Server server;
 

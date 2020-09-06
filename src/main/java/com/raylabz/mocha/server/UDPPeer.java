@@ -3,20 +3,43 @@ package com.raylabz.mocha.server;
 import java.net.InetAddress;
 import java.util.Objects;
 
+/**
+ * Models a UDP peer.
+ */
 public class UDPPeer {
 
+    /**
+     * The peer's IP address.
+     */
     private final InetAddress address;
+
+    /**
+     * The peer's port.
+     */
     private final int port;
 
+    /**
+     * Constructs a new UDPPeer.
+     * @param address The IP address of the peer.
+     * @param port The port of the peer.
+     */
     public UDPPeer(InetAddress address, int port) {
         this.address = address;
         this.port = port;
     }
 
+    /**
+     * Retrieves the IP address of the peer.
+     * @return Returns an InetAddress.
+     */
     public InetAddress getAddress() {
         return address;
     }
 
+    /**
+     * Retrieves the port of the peer.
+     * @return Returns an integer (port).
+     */
     public int getPort() {
         return port;
     }

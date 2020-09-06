@@ -10,6 +10,9 @@ import java.util.Date;
  */
 public class LogEntry {
 
+    /**
+     * The date-time format of the logger.
+     */
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(" yyyy-MM-dd HH:mm ");
 
     /**
