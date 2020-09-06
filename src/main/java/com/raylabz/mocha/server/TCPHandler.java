@@ -123,6 +123,7 @@ public class TCPHandler implements Runnable {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Waiting for connections on TCP port " + port + ".");
+            Logger.logInfo("Waiting for connections on TCP port " + port + ".");
             while (enabled) {
                 Socket socket = serverSocket.accept();
                 System.out.println("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());

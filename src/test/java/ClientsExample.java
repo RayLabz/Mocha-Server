@@ -65,9 +65,9 @@ public class ClientsExample {
     }
 
     public static void main(String[] args) throws IOException {
-//        MyTCPClient tcpClient = new MyTCPClient("localhost", 1234);
+        MyTCPClient tcpClient = new MyTCPClient("localhost", 7080);
 //        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 4321);
-        MyUDPClient udpClient = new MyUDPClient("localhost", 9999);
+        MyUDPClient udpClient = new MyUDPClient("localhost", 7080);
 //        MyUDPClient udpClient2 = new MyUDPClient("localhost", 4321);
 //        new Thread(tcpClient).start();
         new Thread(udpClient).start();

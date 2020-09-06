@@ -299,6 +299,7 @@ public class Server implements Runnable {
     @Override
     public final void run() {
         System.out.println("Server '" + name + "' started.");
+        Logger.logInfo("Server '" + name + "' started.");
         setRunning(true);
         initialize();
 
@@ -325,6 +326,8 @@ public class Server implements Runnable {
                 }
             }
         }
+        System.out.println("Server '" + name + "' stopped.");
+        Logger.logInfo("Server '" + name + "' stopped.");
     }
 
 }

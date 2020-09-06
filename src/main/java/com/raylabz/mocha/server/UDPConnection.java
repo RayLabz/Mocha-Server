@@ -110,6 +110,7 @@ public abstract class UDPConnection implements Runnable {
         try {
             socket = new DatagramSocket(port);
             System.out.println("Listening to UDP port " + port + ".");
+            Logger.logInfo("Listening to UDP port " + port + ".");
             while (enabled) {
                 byte[] buffer = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
