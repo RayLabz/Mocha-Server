@@ -31,14 +31,16 @@ public abstract class UDPClient extends Client {
         super(ipAddress, port);
         this.socket = new DatagramSocket();
         Thread listeningThread = new Thread(() -> {
-            try {
-                final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.receive(packet);
-                final String data = new String(packet.getData(), 0, packet.getLength());
-                onReceive(data);
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e);
+            while (true) {
+                try {
+                    final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                    socket.receive(packet);
+                    final String data = new String(packet.getData(), 0, packet.getLength());
+                    onReceive(data);
+                } catch (IOException e) {
+                    System.err.println("Error receiving: " + e.getMessage());
+                    throw new RuntimeException(e);
+                }
             }
         });
         listeningThread.start();

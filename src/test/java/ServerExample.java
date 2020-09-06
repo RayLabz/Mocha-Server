@@ -19,7 +19,8 @@ public class ServerExample {
             @Override
             public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
                 System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);
-                udpConnection.send(address, outPort, "Server UDP response");
+                String counterData = data.substring(data.length() - 1);
+                udpConnection.send(address, outPort, "UDP response " + counterData);
                 System.out.println("Sent to " + address.toString() + ":" + outPort);
             }
         });

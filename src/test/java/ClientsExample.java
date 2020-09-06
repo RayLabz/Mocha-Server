@@ -20,9 +20,10 @@ public class ClientsExample {
 
         @Override
         public void run() {
-            final String data = "UDP FTW!";
+            int counter = 0;
             while (true) {
-                send("UDP FTW!");
+                send("UDP Message " + counter);
+                counter++;
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {

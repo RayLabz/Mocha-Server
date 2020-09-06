@@ -30,7 +30,7 @@ public abstract class UDPConnection implements Runnable {
      */
     private boolean enabled = true;
 
-    private HashSet<InetAddress> connectedAddresses = new HashSet<>();
+    private final HashSet<InetAddress> connectedAddresses = new HashSet<>();
 
     /**
      * Constructs a new UDPConnection.
