@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.HashSet;
 
 /**
  * Manages a UDP connection to a client.
@@ -28,6 +29,8 @@ public abstract class UDPConnection implements Runnable {
      * Determines whether the client is enabled or not.
      */
     private boolean enabled = true;
+
+    private HashSet<InetAddress> connectedAddresses = new HashSet<>();
 
     /**
      * Constructs a new UDPConnection.
@@ -81,13 +84,10 @@ public abstract class UDPConnection implements Runnable {
      * Sends data to the server.
      * @param data The data to send.
      */
-    public final void send(final String data) {
+    public final void send(InetAddress address, int outPort, final String data) {
         try {
-            System.out.println("Socket connection status: " + socket.isConnected());
-            System.out.println("Socket INet: " + socket.getInetAddress());
-            System.out.println("Socket Port: " + socket.getPort());
             final byte[] bytes = data.getBytes();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, socket.getInetAddress(), socket.getPort());
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
             socket.send(packet);
         } catch (IOException e) {
             Logger.logError(e.getMessage());
@@ -97,10 +97,9 @@ public abstract class UDPConnection implements Runnable {
 
     /**
      * Defines what will be executed when data is received.
-     * @param udpConnection The UDPConnection receiving the data.
      * @param data The data received.
      */
-    public abstract void onReceive(UDPConnection udpConnection, String data);
+    public abstract void onReceive(UDPConnection udpConnection, InetAddress address, int port, String data);
 
     /**
      * Defines what happens when the UDP connection starts.
@@ -110,14 +109,14 @@ public abstract class UDPConnection implements Runnable {
     public void run() {
         try {
             socket = new DatagramSocket(port);
-            System.out.println("Socket connection status: " + socket.isConnected());
             System.out.println("Listening to UDP port " + port + ".");
             while (enabled) {
                 byte[] buffer = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
+                connectedAddresses.add(packet.getAddress());
                 final String data = new String(packet.getData(), 0, packet.getLength());
-                onReceive(this, data);
+                onReceive(this, packet.getAddress(), packet.getPort(), data);
             }
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());

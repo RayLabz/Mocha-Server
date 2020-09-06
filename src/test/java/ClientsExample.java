@@ -20,6 +20,7 @@ public class ClientsExample {
 
         @Override
         public void run() {
+            final String data = "UDP FTW!";
             while (true) {
                 send("UDP FTW!");
                 try {

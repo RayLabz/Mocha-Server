@@ -260,9 +260,9 @@ public class Server implements Runnable {
      * @param udpConnection The UDPConnection to send the data to.
      * @param data The data.
      */
-    public final void sendUDP(final UDPConnection udpConnection, final String data) {
+    public final void sendUDP(final UDPConnection udpConnection, InetAddress address, int outPort, final String data) {
         if (validateRunningBeforeSend()) {
-            udpConnection.send(data);
+            udpConnection.send(address, outPort, data);
         }
     }
 
@@ -279,7 +279,7 @@ public class Server implements Runnable {
                 if (port >= 0 && port <= 65535) {
                     for (UDPConnection udpConnection : udpListeners) {
                         if (udpConnection.getPort() == port && udpConnection.getInetAddress().equals(inetAddress)) {
-                            udpConnection.send(data);
+                            udpConnection.send(inetAddress, port, data);
                         }
                     }
                 }

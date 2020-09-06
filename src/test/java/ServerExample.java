@@ -1,5 +1,7 @@
 import com.raylabz.mocha.server.*;
 
+import java.net.InetAddress;
+
 public class ServerExample {
 
     public static void main(String[] args) {
@@ -15,9 +17,10 @@ public class ServerExample {
 
         server.addUDPListener(new UDPConnection(9999) {
             @Override
-            public void onReceive(UDPConnection udpConnection, String data) {
-                System.out.println("Received from UDP[" + udpConnection.getPort() + "]: " + data);
-                udpConnection.send("Server UDP response");
+            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+                System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);
+                udpConnection.send(address, outPort, "Server UDP response");
+                System.out.println("Sent to " + address.toString() + ":" + outPort);
             }
         });
 
