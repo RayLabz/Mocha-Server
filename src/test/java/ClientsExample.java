@@ -1,5 +1,3 @@
-package test;
-
 import com.raylabz.mocha.client.TCPClient;
 import com.raylabz.mocha.client.UDPClient;
 
@@ -7,7 +5,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class MixedClients {
+public class ClientsExample {
 
     public static class MyUDPClient extends UDPClient {
 
@@ -65,11 +63,11 @@ public class MixedClients {
     }
 
     public static void main(String[] args) throws IOException {
-        MyTCPClient tcpClient = new MyTCPClient("localhost", 1234);
+//        MyTCPClient tcpClient = new MyTCPClient("localhost", 1234);
 //        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 4321);
-        MyUDPClient udpClient = new MyUDPClient("localhost", 1234);
+        MyUDPClient udpClient = new MyUDPClient("localhost", 9999);
 //        MyUDPClient udpClient2 = new MyUDPClient("localhost", 4321);
-        new Thread(tcpClient).start();
+//        new Thread(tcpClient).start();
         new Thread(udpClient).start();
     }
 

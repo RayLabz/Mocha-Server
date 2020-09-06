@@ -1,2 +1,2 @@
 # Mocha-com.raylabz.mocha.server.Server
-A Java server library.
+A minimalistic Java TCP/UDP client-server library.

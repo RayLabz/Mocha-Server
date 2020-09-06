@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class Client implements Runnable {
+public abstract class Client implements Runnable, MessageBroker {
 
     /**
      * The internet address that this client will connect to.
@@ -34,7 +34,13 @@ public abstract class Client implements Runnable {
      * @throws PortUnreachableException Thrown when an invalid port was provided.
      */
     public Client(String ipAddress, int port) throws UnknownHostException, PortUnreachableException {
-        this(InetAddress.getByName(ipAddress), port);
+        this.address = InetAddress.getByName(ipAddress);
+        if (port > 65535 || port < 0) {
+            throw new PortUnreachableException("Invalid port number (" + port + "). The port must be in the range 0-65535.");
+        }
+        else {
+            this.port = port;
+        }
     }
 
     /**
@@ -84,17 +90,5 @@ public abstract class Client implements Runnable {
     public final int getPort() {
         return port;
     }
-
-    /**
-     * Sends data to the server.
-     * @param data The data to send to the server.
-     */
-    public abstract void send(final String data);
-
-    /**
-     * Defines what will be executed once data is received by the client.
-     * @param data The data received by the client.
-     */
-    public abstract void onReceive(String data);
 
 }

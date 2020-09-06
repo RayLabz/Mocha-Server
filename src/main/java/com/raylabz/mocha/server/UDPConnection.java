@@ -83,10 +83,14 @@ public abstract class UDPConnection implements Runnable {
      */
     public final void send(final String data) {
         try {
+            System.out.println("Socket connection status: " + socket.isConnected());
+            System.out.println("Socket INet: " + socket.getInetAddress());
+            System.out.println("Socket Port: " + socket.getPort());
             final byte[] bytes = data.getBytes();
             DatagramPacket packet = new DatagramPacket(bytes, bytes.length, socket.getInetAddress(), socket.getPort());
             socket.send(packet);
         } catch (IOException e) {
+            Logger.logError(e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -106,7 +110,8 @@ public abstract class UDPConnection implements Runnable {
     public void run() {
         try {
             socket = new DatagramSocket(port);
-            System.out.println("Listing to UDP port " + port + ".");
+            System.out.println("Socket connection status: " + socket.isConnected());
+            System.out.println("Listening to UDP port " + port + ".");
             while (enabled) {
                 byte[] buffer = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

@@ -303,24 +303,26 @@ public class Server implements Runnable {
         initialize();
 
         for (UDPConnection udpConnection : udpListeners) {
-            Thread t = new Thread(udpConnection);
+            Thread t = new Thread(udpConnection, "UDP-Connection-Thread-Port-" + udpConnection.getPort());
             udpListenerThreads.add(t);
             t.start();
         }
         for (TCPHandler tcpHandler : tcpHandlers) {
-            Thread t = new Thread(tcpHandler);
+            Thread t = new Thread(tcpHandler, "TCP-Handler-Thread-Port-" + tcpHandler.getPort());
             tcpHandlerThreads.add(t);
             t.start();
         }
 
         while (isRunning()) {
             process();
-            try {
-                Thread.sleep(executionDelay);
-            } catch (InterruptedException e) {
-                System.err.println("Error: " + e.getMessage());
-                e.printStackTrace();
-                Logger.logError(e.getMessage());
+            if (executionDelay > 0) {
+                try {
+                    Thread.sleep(executionDelay);
+                } catch (InterruptedException e) {
+                    System.err.println("Error: " + e.getMessage());
+                    e.printStackTrace();
+                    Logger.logError(e.getMessage());
+                }
             }
         }
     }
