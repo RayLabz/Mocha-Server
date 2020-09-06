@@ -259,6 +259,8 @@ public class Server implements Runnable {
     /**
      * Sends data through UDP.
      * @param udpConnection The UDPConnection to send the data to.
+     * @param address The address of the client.
+     * @param outPort The port of the client.
      * @param data The data.
      */
     public final void sendUDP(final UDPConnection udpConnection, InetAddress address, int outPort, final String data) {

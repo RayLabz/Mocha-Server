@@ -90,6 +90,8 @@ public abstract class UDPConnection implements Runnable {
 
     /**
      * Sends data to the server.
+     * @param address The address to send the data to.
+     * @param outPort The port of the client.
      * @param data The data to send.
      */
     public final void send(InetAddress address, int outPort, final String data) {
@@ -105,6 +107,7 @@ public abstract class UDPConnection implements Runnable {
 
     /**
      * Broadcasts a message to all connected peers.
+     * @param data The data to broadcast.
      */
     public final void broadcast(final String data) {
         for (final UDPPeer peer : connectedPeers) {
@@ -114,6 +117,9 @@ public abstract class UDPConnection implements Runnable {
 
     /**
      * Defines what will be executed when data is received.
+     * @param udpConnection The UDPConnection.
+     * @param address The address of the client to send the data to.
+     * @param port The port of the client.
      * @param data The data received.
      */
     public abstract void onReceive(UDPConnection udpConnection, InetAddress address, int port, String data);
