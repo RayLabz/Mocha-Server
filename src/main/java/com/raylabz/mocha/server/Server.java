@@ -3,6 +3,7 @@ package com.raylabz.mocha.server;
 import com.raylabz.mocha.logger.Logger;
 
 import java.net.InetAddress;
+import java.util.HashSet;
 import java.util.Vector;
 
 /**
@@ -284,6 +285,21 @@ public class Server implements Runnable {
                     }
                 }
             } catch (Exception ignored) {
+            }
+        }
+    }
+
+    /**
+     * Broadcasts a given message to all of the peers of a particular UDP connection.
+     * @param port The connection to broadcast the data to.
+     * @param data The data to broadcast.
+     */
+    public final void broadcastUDP(final int port, final String data) {
+        Vector<UDPConnection> udpListeners = getUdpListeners();
+        for (UDPConnection connection : udpListeners) {
+            if (connection.getPort() == port) {
+                connection.broadcast(data);
+                break;
             }
         }
     }

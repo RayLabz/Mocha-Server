@@ -30,7 +30,7 @@ public abstract class UDPConnection implements Runnable {
      */
     private boolean enabled = true;
 
-    private final HashSet<InetAddress> connectedAddresses = new HashSet<>();
+    private final HashSet<UDPPeer> connectedPeers = new HashSet<>();
 
     /**
      * Constructs a new UDPConnection.
@@ -46,6 +46,14 @@ public abstract class UDPConnection implements Runnable {
      */
     public final DatagramSocket getSocket() {
         return socket;
+    }
+
+    /**
+     * Retrieves all the connected peers of this connection.
+     * @return Returns a set of UDPPeer.
+     */
+    public HashSet<UDPPeer> getConnectedPeers() {
+        return connectedPeers;
     }
 
     /**
@@ -96,6 +104,15 @@ public abstract class UDPConnection implements Runnable {
     }
 
     /**
+     * Broadcasts a message to all connected peers.
+     */
+    public final void broadcast(final String data) {
+        for (final UDPPeer peer : connectedPeers) {
+            send(peer.getAddress(), peer.getPort(), data);
+        }
+    }
+
+    /**
      * Defines what will be executed when data is received.
      * @param data The data received.
      */
@@ -115,7 +132,7 @@ public abstract class UDPConnection implements Runnable {
                 byte[] buffer = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
-                connectedAddresses.add(packet.getAddress());
+                connectedPeers.add(new UDPPeer(packet.getAddress(), packet.getPort()));
                 final String data = new String(packet.getData(), 0, packet.getLength());
                 onReceive(this, packet.getAddress(), packet.getPort(), data);
             }

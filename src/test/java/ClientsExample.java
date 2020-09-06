@@ -69,7 +69,7 @@ public class ClientsExample {
 //        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 4321);
         MyUDPClient udpClient = new MyUDPClient("localhost", 7080);
 //        MyUDPClient udpClient2 = new MyUDPClient("localhost", 4321);
-//        new Thread(tcpClient).start();
+        new Thread(tcpClient).start();
         new Thread(udpClient).start();
     }
 
