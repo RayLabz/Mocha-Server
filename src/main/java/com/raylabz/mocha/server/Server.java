@@ -322,6 +322,13 @@ public class Server implements Runnable {
     }
 
     /**
+     * Stops the server.
+     */
+    public final void stop() {
+        setRunning(false);
+    }
+
+    /**
      * Defines the runtime functionality of this server.
      * This method:
      * 1) Initializes the server using initialize().
@@ -337,7 +344,7 @@ public class Server implements Runnable {
         initialize();
 
         for (UDPConnection udpConnection : udpListeners) {
-            Thread t = new Thread(udpConnection, "UDP-Connection-Thread-Port-" + udpConnection.getPort());
+            Thread t = new Thread(udpConnection, "UDP-Handler-Thread-Port-" + udpConnection.getPort());
             udpListenerThreads.add(t);
             t.start();
         }

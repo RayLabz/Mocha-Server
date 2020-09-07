@@ -39,7 +39,11 @@
 
             <div class="row center">
                 <p class="justify col s12 m6 offset-m3">
-                    What is mocha???
+                    Mocha is a lightweight, multi-threaded server library written in Java. It enables the quick creation
+                    of multi-client, multi-port TCP and UDP servers with minimal overhead. Mocha allows developers to quickly
+                    set up and run basic servers or extend its functionality by defining their own custom servers. By using
+                    Mocha, you can avoid having to deal with low-level networking technologies like sockets and concentrate
+                    on the logic/protocols that make your server unique.
                 </p>
             </div>
 
@@ -93,9 +97,129 @@
 
             <h4 id="creatingAServer">Creating a server</h4>
 
+            <p>You can create a server using the Server class constructor:</p>
+
+            <pre class="prettyprint">
+Server server = new Server("My server");</pre>
+
             <h4 id="runningAServer">Running a server</h4>
 
-            <h4 id=""></h4>
+            <p>
+                <u>Each Server object is in itself a thread, which you must run independently of any other code.</u>
+                To do this, you can simply create a new thread and pass the server object in its constructor:
+            </p>
+
+            <pre class="prettyprint">
+Thread thread = new Thread(server);</pre>
+
+            <p>To run the server, you need to start the thread using the <span class="code">start()</span> method:</p>
+
+            <pre class="prettyprint">
+thread.start();</pre>
+
+            <p><u>Complete example:</u></p>
+
+            <pre class="prettyprint">
+Server server = new Server("My server");
+Thread thread = new Thread(server);
+thread.start();</pre>
+
+            <p>Output:</p>
+
+            <pre class="code">
+Server 'My server' started.</pre>
+
+            <h4 id="handlers">Connection handlers</h4>
+
+            <h5 id="tcpHandlers">Adding a TCP handler</h5>
+
+            <p>
+                A handler is an independent thread that runs in parallel with your server thread.
+                Handlers listen for incoming messages and do something when a message is received.
+                Each handler is assigned to a particular port and you must define what will happen
+                once a message/request is received.
+            </p>
+
+            <p>
+                You can create a TCP port handler using the class <span class="code">TCPHandler</span>
+                and then supplying the port of this handler as well as a <span class="code">TCPReceivable</span> instance,
+                which determines what will happen when a message is received.
+            </p>
+
+            <p>
+                In the example below, a TCP handler is created on TCP port 1234. The <span class="code">TCPReceivable</span>
+                class contains a single method called <span class="code">onReceive()</span>, which determines what the
+                handler will do when each message is received.
+            </p>
+
+            <pre class="prettyprint">
+TCPHandler tcpHandler = new TCPHandler(1234, new TCPReceivable() {
+    @Override
+    public void onReceive(TCPConnection tcpConnection, String data) {
+        System.out.println("Received message: " + data + " from " + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort());
+    }
+});</pre>
+
+            <p>
+                The second parameter of the receivable called <span class="code">data</span>, holds the message sent by the client.
+                You can utilize this object as you like depending on your server's intended logic.
+                In the example above the server simply prints the message on the console.
+            </p>
+
+            <p>
+                Pay particular attention to the first parameter of the <span class="code">onReceive()</span> method.
+                A <span class="code">TCPConnection</span> object describes a connection
+                made to the server from a particular client.
+            </p>
+
+            <p>You can get the particular client's IP address from a TCPConnection using <span class="code">getInetAddress()</span>:</p>
+
+            <pre class="prettyprint">
+tcpConnection.getInetAddress()</pre>
+
+            <p>You can get the receiving port number from a TCPConnection using <span class="code">getPort()</span>:</p>
+
+            <pre class="prettyprint">
+tcpConnection.getPort()</pre>
+
+            <p>You can also get the connected socket between this client and the server using <span class="code">getSocket()</span>:</p>
+
+            <pre class="prettyprint">
+tcpConnection.getSocket()</pre>
+
+            <p>Finally, you can add the TCP handler to the server using the <span class="code">addTCPHandler()</span> method:</p>
+
+            <pre class="prettyprint">
+server.addTCPHandler(tcpHandler);</pre>
+
+            <div class="info-panel light-blue lighten-2 white-text">
+                You may add handlers before the server is started, or even while it is running.
+                However, attempting to add a handler that has the same port with an existing handler
+                will not affect execution and the operation will be ignored.
+            </div>
+
+
+
+            <h5 id="udpHandlers">UDP handlers</h5>
+
+
+            <h4 id="removeHandlers">Removing handlers</h4>
+
+            <!-- TODO - IMPORTANT, REMOVING HANDLERS FUNCTIONALITY!!!-->
+
+<!--            <h4 id="stoppingTheServer">Stopping the server</h4>-->
+
+<!--            <p>A server will run indefinitely until you stop it, using the <span class="code">stop()</span> method:</p>-->
+
+
+            <!-- TODO - IMPORTANT, MULTICASTING FUNCTIONALITY!!!-->
+
+
+            <!--TODO: Add this in broadcasting section-->
+<!--            <div class="info-panel light-blue lighten-2 white-text">-->
+<!--                Broadcasting to a specific port requires that the server has a handler associated-->
+<!--                with that port and that clients have already made connections to the server.-->
+<!--            </div>-->
 
             <!--------------------------------------------------------------------------------------------------------->
 
