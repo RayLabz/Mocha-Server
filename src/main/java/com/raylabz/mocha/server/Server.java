@@ -57,11 +57,11 @@ public class Server implements Runnable {
     }
 
     /**
-     * Adds a UDP listener to the server.
-     * @param udpConnection The UDP listener to add.
-     * @return Returns true if the UDP listener was added, false otherwise.
+     * Adds a UDP handler to the server.
+     * @param udpConnection The UDP handler to add.
+     * @return Returns true if the UDP handler was added, false otherwise.
      */
-    public final boolean addUDPListener(UDPConnection udpConnection) {
+    public final boolean addUDPHandler(UDPConnection udpConnection) {
         for (UDPConnection p : udpListeners) {
             if (p.getPort() == udpConnection.getPort()) {
                 return false;

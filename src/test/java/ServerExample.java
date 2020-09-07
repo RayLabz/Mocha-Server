@@ -15,7 +15,7 @@ public class ServerExample {
             }
         }));
 
-        server.addUDPListener(new UDPConnection(7080) {
+        server.addUDPHandler(new UDPConnection(7080) {
             @Override
             public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
                 System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);

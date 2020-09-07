@@ -25,7 +25,7 @@ public class CustomUDPServer extends Server {
 
     public static void main(String[] args) {
         CustomUDPServer customUDPServer = new CustomUDPServer("Custom server");
-        customUDPServer.addUDPListener(new UDPConnection(7080) {
+        customUDPServer.addUDPHandler(new UDPConnection(7080) {
             @Override
             public void onReceive(UDPConnection udpConnection, InetAddress address, int port, String data) {
                 System.out.println("Received: " + data);
