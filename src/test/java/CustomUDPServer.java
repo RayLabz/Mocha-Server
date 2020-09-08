@@ -14,6 +14,11 @@ public class CustomUDPServer extends Server {
     }
 
     @Override
+    public void initialize() {
+
+    }
+
+    @Override
     public void process() {
         try {
             broadcastUDP(7080, "This is a broadcast message");

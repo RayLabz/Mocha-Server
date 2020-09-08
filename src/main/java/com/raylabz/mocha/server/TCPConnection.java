@@ -32,6 +32,11 @@ public class TCPConnection implements Runnable {
     private final BufferedReader reader;
 
     /**
+     * Determines if this TCP connection is enabled.
+     */
+    private boolean enabled = true;
+
+    /**
      * The TCPReceivable of this connection, which defines what happens once data is received.
      * Important note: TCPReceivables are the same object for all TCPConnections of the same TCPHandler.
      */
@@ -48,6 +53,22 @@ public class TCPConnection implements Runnable {
         this.writer = new PrintWriter(socket.getOutputStream(), true);
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.receivable = receivable;
+    }
+
+    /**
+     * Retrieves if this TCP connection is running or not.
+     * @return Returns true if the connection is running, false otherwise.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * Starts or stops the connection.
+     * @param enabled Provide true to start the connection, false to stop.
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     /**
@@ -90,7 +111,7 @@ public class TCPConnection implements Runnable {
     public final void run() {
         String input;
         try {
-            while ((input = reader.readLine()) != null) {
+            while ((input = reader.readLine()) != null && isEnabled()) {
                 receivable.onReceive(this, input);
             }
         }

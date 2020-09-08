@@ -134,10 +134,14 @@ Server 'My server' started.</pre>
             <h5 id="tcpHandlers">Adding a TCP handler</h5>
 
             <p>
+                Handlers are server components that listen for incoming messages and do
+                something when a message is received.
                 A handler is an independent thread that runs in parallel with your server thread.
-                Handlers listen for incoming messages and do something when a message is received.
+                Handlers can thus run in parallel with each other so that a server can process
+                requests coming from many ports at the same time while also being under the
+                supervision of the main server thread.
                 Each handler is assigned to a particular port and you must define what will happen
-                once a message/request is received.
+                once a message/request is received through that port.
             </p>
 
             <p>
@@ -193,15 +197,48 @@ tcpConnection.getSocket()</pre>
 server.addTCPHandler(tcpHandler);</pre>
 
             <div class="info-panel light-blue lighten-2 white-text">
-                You may add handlers before the server is started, or even while it is running.
+                <p>You may add handlers before the server is started, or even while it is running.
                 However, attempting to add a handler that has the same port with an existing handler
                 will not affect execution and the operation will be ignored.
+                </p>
             </div>
 
+            <p>
+                To quickly add a nameless handler, use:
+            </p>
 
+            <pre class="prettyprint">
+server.addTCPHandler(new TCPHandler(1234, new TCPReceivable() {
+    @Override
+    public void onReceive(TCPConnection tcpConnection, String data) {
+        System.out.println("Received message: " + data + " from " + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort());
+    }
+}));</pre>
 
             <h5 id="udpHandlers">UDP handlers</h5>
 
+            <p>
+                Adding a UDP handler is as easy as adding a TCP handler, but a bit different.
+                Due to differences between the two protocols (TCP vs UDP), UDP handlers are 
+                added directly using <span class="code">UDPConnection</span> objects.
+                Each <span class="code">UDPConnection</span> object can be instantiated
+                by providing a port number and calling its constructor. It is best to
+                add a nameless UDP handler directly:
+            </p>
+
+            <pre class="prettyprint">
+server.addUDPHandler(new UDPConnection(1234) {
+    @Override
+    public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+        System.out.println("Received message: " + data + " from " + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort());
+    }
+});</pre>
+
+            <div class="info-panel light-blue lighten-2 white-text">
+                <p>
+
+                </p>
+            </div>
 
             <h4 id="removeHandlers">Removing handlers</h4>
 

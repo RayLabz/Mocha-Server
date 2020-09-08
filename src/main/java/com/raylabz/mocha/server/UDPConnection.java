@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Manages a UDP connection to a client.
@@ -28,7 +29,7 @@ public abstract class UDPConnection implements Runnable {
     /**
      * Determines whether the client is enabled or not.
      */
-    private boolean enabled = true;
+    private AtomicBoolean enabled = new AtomicBoolean(true);
 
     private final HashSet<UDPPeer> connectedPeers = new HashSet<>();
 
@@ -61,7 +62,7 @@ public abstract class UDPConnection implements Runnable {
      * @return Returns true if the connection is enabled, false otherwise.
      */
     public final boolean isEnabled() {
-        return enabled;
+        return enabled.get();
     }
 
     /**
@@ -69,7 +70,7 @@ public abstract class UDPConnection implements Runnable {
      * @param enabled Set to true to enable the connection, false to disable.
      */
     public final void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+        this.enabled.set(enabled);
     }
 
     /**
@@ -134,7 +135,7 @@ public abstract class UDPConnection implements Runnable {
             socket = new DatagramSocket(port);
             System.out.println("Listening to UDP port " + port + ".");
             Logger.logInfo("Listening to UDP port " + port + ".");
-            while (enabled) {
+            while (enabled.get()) {
                 byte[] buffer = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
@@ -142,6 +143,8 @@ public abstract class UDPConnection implements Runnable {
                 final String data = new String(packet.getData(), 0, packet.getLength());
                 onReceive(this, packet.getAddress(), packet.getPort(), data);
             }
+            System.out.println("Stopped listening to UDP port " + port + ".");
+            Logger.logInfo("Stopped listening to UDP port " + port + ".");
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
             e.printStackTrace();

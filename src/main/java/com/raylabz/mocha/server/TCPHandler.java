@@ -112,6 +112,34 @@ public class TCPHandler implements Runnable {
     }
 
     /**
+     * Removes a TCP connection.
+     * @param tcpConnection The TCP connection to remove.
+     */
+    void removeTCPConnection(TCPConnection tcpConnection) {
+        tcpConnection.setEnabled(false);
+        tcpConnections.remove(tcpConnection);
+    }
+
+    /**
+     * Removes a TCP connection thread.
+     * @param tcpThread The TCP connection thread to remove.
+     */
+    void removeTCPConnectionThread(Thread tcpThread) {
+        tcpConnectionThreads.remove(tcpThread);
+    }
+
+    /**
+     * Removes all TCP connections and connection threads.
+     */
+    void removeTCPConnectionsAndThreads() {
+        for (TCPConnection connection : tcpConnections) {
+            connection.setEnabled(false);
+        }
+        tcpConnectionThreads.clear();
+        tcpConnections.clear();
+    }
+
+    /**
      * Broadcasts a message to all connected clients.
      * @param data The data to broadcast.
      */

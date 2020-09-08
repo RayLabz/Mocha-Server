@@ -13,6 +13,11 @@ public class CustomTCPServer extends Server {
     }
 
     @Override
+    public void initialize() {
+
+    }
+
+    @Override
     public void process() {
         try {
             System.out.println("Broadcasting...");

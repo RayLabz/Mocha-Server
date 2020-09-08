@@ -3,7 +3,6 @@ package com.raylabz.mocha.server;
 import com.raylabz.mocha.logger.Logger;
 
 import java.net.InetAddress;
-import java.util.HashSet;
 import java.util.Vector;
 
 /**
@@ -11,7 +10,7 @@ import java.util.Vector;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public class Server implements Runnable {
+public abstract class Server implements Runnable {
 
     /**
      * The name of the server.
@@ -21,7 +20,7 @@ public class Server implements Runnable {
     /**
      * Whether the server is running or not.
      */
-    private boolean running = false;
+    private boolean running = true;
 
     /**
      * Execution delay between calls to the process() method - In <b>MILLISECONDS</b>.
@@ -31,12 +30,12 @@ public class Server implements Runnable {
     /**
      * A list of UDP listeners for this server.
      */
-    private final Vector<UDPConnection> udpListeners = new Vector<>();
+    private final Vector<UDPConnection> udpHandlers = new Vector<>();
 
     /**
      * A list of threads running the UDP listeners of this server.
      */
-    private final Vector<Thread> udpListenerThreads = new Vector<>();
+    private final Vector<Thread> udpHandlerThreads = new Vector<>();
 
     /**
      * A list of TCP handlers for this server.
@@ -62,12 +61,12 @@ public class Server implements Runnable {
      * @return Returns true if the UDP handler was added, false otherwise.
      */
     public final boolean addUDPHandler(UDPConnection udpConnection) {
-        for (UDPConnection p : udpListeners) {
+        for (UDPConnection p : udpHandlers) {
             if (p.getPort() == udpConnection.getPort()) {
                 return false;
             }
         }
-        udpListeners.add(udpConnection);
+        udpHandlers.add(udpConnection);
         return true;
     }
 
@@ -84,6 +83,81 @@ public class Server implements Runnable {
         }
         tcpHandlers.add(tcpHandler);
         return true;
+    }
+
+    /**
+     * Removes a TCP handler.
+     * @param tcpHandler The TCP handler to remove.
+     * @return Returns true if the handler was successfully removed, false otherwise.
+     */
+    public final boolean removeTCPHandler(TCPHandler tcpHandler) {
+        tcpHandler.setEnabled(false);
+        tcpHandler.removeTCPConnectionsAndThreads();
+        return tcpHandlers.remove(tcpHandler);
+    }
+
+    /**
+     * Removes a TCP handler.
+     * @param port The handler's port.
+     * @return Returns true if the handler was successfully removed, false otherwise.
+     */
+    public final boolean removeTCPHandler(int port) {
+        TCPHandler handlerToRemove = null;
+        for (TCPHandler tcpHandler : tcpHandlers) {
+            if (tcpHandler.getPort() == port) {
+                handlerToRemove = tcpHandler;
+            }
+            tcpHandler.setEnabled(false);
+            tcpHandler.removeTCPConnectionsAndThreads();
+        }
+        return tcpHandlers.remove(handlerToRemove);
+    }
+
+    /**
+     * Removes all TCP handlers.
+     */
+    final void removeAllTCPHandlers() {
+        for (TCPHandler tcpHandler : tcpHandlers) {
+            tcpHandler.setEnabled(false);
+            tcpHandler.removeTCPConnectionsAndThreads();
+        }
+        tcpHandlers.clear();
+    }
+
+    /**
+     * Removes a UDP handler.
+     * @param udpConnection The UDP handler to remove.
+     * @return Returns true if the handler was successfully removed, false otherwise.
+     */
+    public final boolean removeUDPHandler(UDPConnection udpConnection) {
+        udpConnection.setEnabled(false);
+        return udpHandlers.remove(udpConnection);
+    }
+
+    /**
+     * Removes a UDP handler.
+     * @param port The handler's port.
+     * @return Returns true if the handler was successfully removed, false otherwise.
+     */
+    public final boolean removeUDPHandler(int port) {
+        UDPConnection handlerToRemove = null;
+        for (UDPConnection h : udpHandlers) {
+            if (h.getPort() == port) {
+                handlerToRemove = h;
+            }
+            h.setEnabled(false);
+        }
+        return udpHandlers.remove(handlerToRemove);
+    }
+
+    /**
+     * Removes all UDP handlers.
+     */
+    final void removeAllUDPHandlers() {
+        for (UDPConnection udpConnection : udpHandlers) {
+            udpConnection.setEnabled(false);
+        }
+        udpHandlers.clear();
     }
 
     /**
@@ -117,30 +191,22 @@ public class Server implements Runnable {
      */
     public final void setRunning(boolean running) {
         this.running = running;
-        if (!running) {
-            for (UDPConnection udpConnection : udpListeners) {
-                udpConnection.setEnabled(false);
-            }
-            for (TCPHandler handler : tcpHandlers) {
-                handler.setEnabled(false);
-            }
-        }
     }
 
     /**
      * Retrieves the list of UDP listeners for this server.
      * @return Returns a Vector of UDPConnection.
      */
-    public final Vector<UDPConnection> getUdpListeners() {
-        return udpListeners;
+    public final Vector<UDPConnection> getUdpHandlers() {
+        return udpHandlers;
     }
 
     /**
      * Retrieves the list of threads running the server's UDP listeners.
      * @return Returns a Vector of Thread.
      */
-    public final Vector<Thread> getUdpListenerThreads() {
-        return udpListenerThreads;
+    public final Vector<Thread> getUdpHandlerThreads() {
+        return udpHandlerThreads;
     }
 
     /**
@@ -170,18 +236,14 @@ public class Server implements Runnable {
     /**
      * Initializes the server.
      */
-    public void initialize() {
-
-    }
+    public abstract void initialize();
 
     /**
      * Defines functionality that is executed by the server during its runtime.
      * Important note: This method is executed CONTINUOUSLY during the server's runtime. Make sure that this method
      * only contains necessary code that should continuously be executed.
      */
-    public void process() {
-
-    }
+    public abstract void process();
 
     /**
      * Utility method which checks if the server is running before attempting to send data.
@@ -280,7 +342,7 @@ public class Server implements Runnable {
             try {
                 InetAddress inetAddress = InetAddress.getByName(ipAddress);
                 if (port >= 0 && port <= 65535) {
-                    for (UDPConnection udpConnection : udpListeners) {
+                    for (UDPConnection udpConnection : udpHandlers) {
                         if (udpConnection.getPort() == port && udpConnection.getInetAddress().equals(inetAddress)) {
                             udpConnection.send(inetAddress, port, data);
                         }
@@ -297,7 +359,7 @@ public class Server implements Runnable {
      * @param data The data to broadcast.
      */
     public final void broadcastUDP(final int port, final String data) {
-        Vector<UDPConnection> udpListeners = getUdpListeners();
+        Vector<UDPConnection> udpListeners = getUdpHandlers();
         for (UDPConnection connection : udpListeners) {
             if (connection.getPort() == port) {
                 connection.broadcast(data);
@@ -325,6 +387,8 @@ public class Server implements Runnable {
      * Stops the server.
      */
     public final void stop() {
+        removeAllTCPHandlers();
+        removeAllUDPHandlers();
         setRunning(false);
     }
 
@@ -340,19 +404,19 @@ public class Server implements Runnable {
     public final void run() {
         System.out.println("Server '" + name + "' started.");
         Logger.logInfo("Server '" + name + "' started.");
-        setRunning(true);
         initialize();
 
-        for (UDPConnection udpConnection : udpListeners) {
-            Thread t = new Thread(udpConnection, "UDP-Handler-Thread-Port-" + udpConnection.getPort());
-            udpListenerThreads.add(t);
-            t.start();
-        }
-        for (TCPHandler tcpHandler : tcpHandlers) {
-            Thread t = new Thread(tcpHandler, "TCP-Handler-Thread-Port-" + tcpHandler.getPort());
-            tcpHandlerThreads.add(t);
-            t.start();
-        }
+        //TODO - Enable
+//        for (UDPConnection udpConnection : udpHandlers) {
+//            Thread t = new Thread(udpConnection, "UDP-Handler-Thread-Port-" + udpConnection.getPort());
+//            udpHandlerThreads.add(t);
+//            t.start();
+//        }
+//        for (TCPHandler tcpHandler : tcpHandlers) {
+//            Thread t = new Thread(tcpHandler, "TCP-Handler-Thread-Port-" + tcpHandler.getPort());
+//            tcpHandlerThreads.add(t);
+//            t.start();
+//        }
 
         while (isRunning()) {
             process();
