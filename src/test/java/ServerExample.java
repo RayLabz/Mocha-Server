@@ -57,7 +57,7 @@ public class ServerExample {
             e.printStackTrace();
         }
 
-        server.stop();
+        Mocha.stop(server);
     }
 
 }

@@ -384,15 +384,6 @@ public abstract class Server implements Runnable {
     }
 
     /**
-     * Stops the server.
-     */
-    public final void stop() {
-        removeAllTCPHandlers();
-        removeAllUDPHandlers();
-        setRunning(false);
-    }
-
-    /**
      * Defines the runtime functionality of this server.
      * This method:
      * 1) Initializes the server using initialize().
