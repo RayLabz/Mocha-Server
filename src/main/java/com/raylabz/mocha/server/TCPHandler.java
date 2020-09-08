@@ -1,12 +1,12 @@
 package com.raylabz.mocha.server;
 
-import com.raylabz.mocha.client.TCPClient;
 import com.raylabz.mocha.logger.Logger;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Manages TCP connections for the server for a specified port.
@@ -28,7 +28,7 @@ public class TCPHandler implements Runnable {
     /**
      * Determines if the handler is enabled or not.
      */
-    private boolean enabled = true;
+    private final AtomicBoolean enabled = new AtomicBoolean(true);
 
     /**
      * A list of TCPConnections handled by this handler.
@@ -84,7 +84,7 @@ public class TCPHandler implements Runnable {
      * @return Returns true if the handler is enabled, false otherwise.
      */
     public boolean isEnabled() {
-        return enabled;
+        return enabled.get();
     }
 
     /**
@@ -92,7 +92,7 @@ public class TCPHandler implements Runnable {
      * @param enabled Set to true to enable the handler, false to disable.
      */
     public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+        this.enabled.set(enabled);
     }
 
     /**
@@ -163,7 +163,7 @@ public class TCPHandler implements Runnable {
             serverSocket = new ServerSocket(port);
             System.out.println("Waiting for connections on TCP port " + port + ".");
             Logger.logInfo("Waiting for connections on TCP port " + port + ".");
-            while (enabled) {
+            while (isEnabled()) {
                 Socket socket = serverSocket.accept();
                 System.out.println("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
                 Logger.logInfo("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());

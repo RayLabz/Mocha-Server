@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Manages a TCP connection to a client.
@@ -34,7 +35,7 @@ public class TCPConnection implements Runnable {
     /**
      * Determines if this TCP connection is enabled.
      */
-    private boolean enabled = true;
+    private AtomicBoolean enabled = new AtomicBoolean(true);
 
     /**
      * The TCPReceivable of this connection, which defines what happens once data is received.
@@ -60,7 +61,7 @@ public class TCPConnection implements Runnable {
      * @return Returns true if the connection is running, false otherwise.
      */
     public boolean isEnabled() {
-        return enabled;
+        return enabled.get();
     }
 
     /**
@@ -68,7 +69,7 @@ public class TCPConnection implements Runnable {
      * @param enabled Provide true to start the connection, false to stop.
      */
     public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+        this.enabled.set(enabled);
     }
 
     /**

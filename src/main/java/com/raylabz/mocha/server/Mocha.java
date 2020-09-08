@@ -4,14 +4,15 @@ public final class Mocha {
 
     private static boolean serverStarted = false;
 
-    public static void start(Server server) {
+    public static Thread start(Server server) {
         if (!serverStarted) {
             Thread serverThread = new Thread(server, server.getName() + "-ServerThread");
             serverThread.start();
             serverStarted = true;
+            return serverThread;
         }
         else {
-            System.err.println("A server has already been started (" + server.getName() + ").");
+            throw new RuntimeException("A server has already been started (" + server.getName() + ").");
         }
     }
 
@@ -23,7 +24,7 @@ public final class Mocha {
             serverStarted = false;
         }
         else {
-            System.err.println("No servers are currently running.");
+            throw new RuntimeException("No servers are currently running.");
         }
     }
 

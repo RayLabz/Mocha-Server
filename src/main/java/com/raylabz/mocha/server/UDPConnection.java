@@ -29,8 +29,11 @@ public abstract class UDPConnection implements Runnable {
     /**
      * Determines whether the client is enabled or not.
      */
-    private AtomicBoolean enabled = new AtomicBoolean(true);
+    private final AtomicBoolean enabled = new AtomicBoolean(true);
 
+    /**
+     * Tracks the connected peers of this UDP connection.
+     */
     private final HashSet<UDPPeer> connectedPeers = new HashSet<>();
 
     /**
@@ -133,9 +136,9 @@ public abstract class UDPConnection implements Runnable {
     public void run() {
         try {
             socket = new DatagramSocket(port);
-            System.out.println("Listening to UDP port " + port + ".");
-            Logger.logInfo("Listening to UDP port " + port + ".");
-            while (enabled.get()) {
+            System.out.println("Waiting for connections on UDP port " + port + ".");
+            Logger.logInfo("Waiting for connections on UDP port " + port + ".");
+            while (isEnabled()) {
                 byte[] buffer = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);

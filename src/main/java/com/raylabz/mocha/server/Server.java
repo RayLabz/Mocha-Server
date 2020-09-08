@@ -4,6 +4,7 @@ import com.raylabz.mocha.logger.Logger;
 
 import java.net.InetAddress;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Provides functionality for a server.
@@ -20,7 +21,7 @@ public abstract class Server implements Runnable {
     /**
      * Whether the server is running or not.
      */
-    private boolean running = true;
+    private final AtomicBoolean running = new AtomicBoolean(true);
 
     /**
      * Execution delay between calls to the process() method - In <b>MILLISECONDS</b>.
@@ -106,9 +107,12 @@ public abstract class Server implements Runnable {
         for (TCPHandler tcpHandler : tcpHandlers) {
             if (tcpHandler.getPort() == port) {
                 handlerToRemove = tcpHandler;
+                break;
             }
-            tcpHandler.setEnabled(false);
-            tcpHandler.removeTCPConnectionsAndThreads();
+        }
+        if (handlerToRemove != null) {
+            handlerToRemove.setEnabled(false);
+            handlerToRemove.removeTCPConnectionsAndThreads();
         }
         return tcpHandlers.remove(handlerToRemove);
     }
@@ -144,8 +148,13 @@ public abstract class Server implements Runnable {
         for (UDPConnection h : udpHandlers) {
             if (h.getPort() == port) {
                 handlerToRemove = h;
+                break;
             }
-            h.setEnabled(false);
+        }
+        if (handlerToRemove != null) {
+            handlerToRemove.setEnabled(false);
+            //TODO REMOVE DEBUG MESSAGE
+            System.out.println("UDP Handler " + handlerToRemove.getPort() + " enabled: " + handlerToRemove.isEnabled());
         }
         return udpHandlers.remove(handlerToRemove);
     }
@@ -165,7 +174,7 @@ public abstract class Server implements Runnable {
      * @return Returns true if the server is running, false otherwise.
      */
     public final boolean isRunning() {
-        return running;
+        return running.get();
     }
 
     /**
@@ -190,7 +199,7 @@ public abstract class Server implements Runnable {
      * @param running Set to true for running, false for not running.
      */
     public final void setRunning(boolean running) {
-        this.running = running;
+        this.running.set(running);
     }
 
     /**
@@ -397,17 +406,16 @@ public abstract class Server implements Runnable {
         Logger.logInfo("Server '" + name + "' started.");
         initialize();
 
-        //TODO - Enable
-//        for (UDPConnection udpConnection : udpHandlers) {
-//            Thread t = new Thread(udpConnection, "UDP-Handler-Thread-Port-" + udpConnection.getPort());
-//            udpHandlerThreads.add(t);
-//            t.start();
-//        }
-//        for (TCPHandler tcpHandler : tcpHandlers) {
-//            Thread t = new Thread(tcpHandler, "TCP-Handler-Thread-Port-" + tcpHandler.getPort());
-//            tcpHandlerThreads.add(t);
-//            t.start();
-//        }
+        for (UDPConnection udpConnection : udpHandlers) {
+            Thread t = new Thread(udpConnection, "UDP-Handler-Thread-Port-" + udpConnection.getPort());
+            udpHandlerThreads.add(t);
+            t.start();
+        }
+        for (TCPHandler tcpHandler : tcpHandlers) {
+            Thread t = new Thread(tcpHandler, "TCP-Handler-Thread-Port-" + tcpHandler.getPort());
+            tcpHandlerThreads.add(t);
+            t.start();
+        }
 
         while (isRunning()) {
             process();
@@ -423,6 +431,15 @@ public abstract class Server implements Runnable {
         }
         System.out.println("Server '" + name + "' stopped.");
         Logger.logInfo("Server '" + name + "' stopped.");
+    }
+
+    /**
+     * Stops the server.
+     */
+    public final void stop() {
+        removeAllTCPHandlers();
+        removeAllUDPHandlers();
+        setRunning(false);
     }
 
 }
