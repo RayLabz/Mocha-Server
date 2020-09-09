@@ -76,10 +76,12 @@ public class ClientsExample {
 
     public static void main(String[] args) throws IOException {
         MyTCPClient tcpClient = new MyTCPClient("localhost", 7081);
+        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 7082);
 //        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 4321);
 //        MyUDPClient udpClient = new MyUDPClient("localhost", 7080);
 //        MyUDPClient udpClient2 = new MyUDPClient("localhost", 4321);
         Mocha.start(tcpClient);
+        Mocha.start(tcpClient2);
 //        new Thread(udpClient).start();
     }
 

@@ -39,11 +39,11 @@
 
             <div class="row center">
                 <p class="justify col s12 m6 offset-m3">
-                    Mocha is a lightweight, multi-threaded server library written in Java. It enables the quick creation
-                    of multi-client, multi-port TCP and UDP servers with minimal overhead. Mocha allows developers to quickly
-                    set up and run basic servers or extend its functionality by defining their own custom servers. By using
+                    Mocha is a lightweight, multi-threaded client-server library written in Java. It enables the quick creation
+                    of multi-client, multi-port TCP and UDP clients and servers with minimal overhead. Mocha allows you to quickly
+                    set up and run basic servers or define their own custom servers. By using
                     Mocha, you can avoid having to deal with low-level networking technologies like sockets and concentrate
-                    on the logic/protocols that make your server unique.
+                    on the logic/protocols that are important for your server.
                 </p>
             </div>
 
@@ -56,8 +56,8 @@
                 <li><a href="#guide">Guide</a>
                     <ul class="browser-default">
                         <!--TODO Contents-->
-                        <li><a href="#initialization">Initialization</a></li>
-                        <li><a href="#customClasses">Custom classes</a></li>
+<!--                        <li><a href="#initialization">Initialization</a></li>-->
+<!--                        <li><a href="#customClasses">Custom classes</a></li>-->
                     </ul>
                 </li>
                 <li><a href="#documentation">Documentation</a></li>
@@ -95,9 +95,9 @@
 
             <h3 id="guide">Guide</h3>
 
-            <h4 id="creatingAServer">Creating a server</h4>
+            <h4 id="creatingABasicServer">Creating a basic server</h4>
 
-            <p>You can create a server using the Server class constructor:</p>
+            <p>You can create basic server using the Server class constructor and giving it a name:</p>
 
             <pre class="prettyprint">
 Server server = new Server("My server");</pre>

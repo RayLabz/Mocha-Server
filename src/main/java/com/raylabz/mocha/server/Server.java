@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class Server implements Runnable {
+public class Server implements Runnable {
 
     /**
      * The name of the server.
@@ -180,7 +180,7 @@ public abstract class Server implements Runnable {
      * Retrieves the execution delay in milliseconds.
      * @return Returns an integer.
      */
-    public int getExecutionDelay() {
+    public final int getExecutionDelay() {
         return executionDelay;
     }
 
@@ -188,7 +188,7 @@ public abstract class Server implements Runnable {
      * Sets the execution delay.
      * @param executionDelay The delay in milliseconds.
      */
-    public void setExecutionDelay(int executionDelay) {
+    public final void setExecutionDelay(int executionDelay) {
         this.executionDelay = executionDelay;
     }
 
@@ -244,14 +244,14 @@ public abstract class Server implements Runnable {
     /**
      * Initializes the server.
      */
-    public abstract void initialize();
+    public void initialize() { }
 
     /**
      * Defines functionality that is executed by the server during its runtime.
      * Important note: This method is executed CONTINUOUSLY during the server's runtime. Make sure that this method
      * only contains necessary code that should continuously be executed.
      */
-    public abstract void process();
+    public void process() { }
 
     /**
      * Utility method which checks if the server is running before attempting to send data.
