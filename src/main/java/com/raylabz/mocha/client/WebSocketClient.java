@@ -4,6 +4,7 @@ import com.neovisionaries.ws.client.*;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Manages a WebSocket client.
@@ -23,12 +24,12 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
     /**
      * Indicates if the client is running or not.
      */
-    private boolean running = true;
+    private final AtomicBoolean enabled = new AtomicBoolean(true);
 
     /**
      * Indicates if the client is listening for incoming messages.
      */
-    private boolean listening = true;
+    private final AtomicBoolean listening =  new AtomicBoolean(true);
 
     /**
      * Creates a new WebSocketClient
@@ -46,14 +47,14 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
             socket.addListener(new WebSocketAdapter() {
                 @Override
                 public void onTextMessage(WebSocket websocket, String text) throws Exception {
-                    if (listening) {
+                    if (isListening()) {
                         onReceive(text);
                     }
                 }
             });
             socket.connect();
             Thread receptionThread = new Thread(() -> {
-                while (running) { }
+                while (isEnabled()) { }
             });
             receptionThread.start();
         }
@@ -71,16 +72,16 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
      * Retrieves the status of this client.
      * @return Returns true if the client is running, false otherwise.
      */
-    public boolean isRunning() {
-        return running;
+    public boolean isEnabled() {
+        return enabled.get();
     }
 
     /**
      * Sets the status of this client.
-     * @param running Set to true for running, false for not running.
+     * @param enabled Set to true for running, false for not running.
      */
-    public void setRunning(boolean running) {
-        this.running = running;
+    public void setEnabled(boolean enabled) {
+        this.enabled.set(enabled);
     }
 
     /**
@@ -96,7 +97,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
      * @return Returns true if the client is listening, false otherwise.
      */
     public boolean isListening() {
-        return listening;
+        return listening.get();
     }
 
     /**
@@ -104,7 +105,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
      * @param listening Set to true for listening, false for not listening.
      */
     public void setListening(boolean listening) {
-        this.listening = listening;
+        this.listening.set(listening);
     }
 
     /**
@@ -113,7 +114,9 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
      */
     @Override
     public void send(String data) {
-        socket.sendText(data);
+        if (isEnabled()) {
+            socket.sendText(data);
+        }
     }
 
 }

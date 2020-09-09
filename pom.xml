@@ -82,7 +82,7 @@
 
     <name>Mocha</name>
     <description>
-        A lightweight multi-threaded TCP/UDP server library.
+        A lightweight multi-threaded TCP/UDP client-server library.
     </description>
     <url>http://maven.apache.org</url>
 
