@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public class Server implements Runnable {
+public abstract class Server implements Runnable {
 
     /**
      * The name of the server.
@@ -244,14 +244,14 @@ public class Server implements Runnable {
     /**
      * Initializes the server.
      */
-    public void initialize() { }
+    public abstract void initialize();
 
     /**
      * Defines functionality that is executed by the server during its runtime.
      * Important note: This method is executed CONTINUOUSLY during the server's runtime. Make sure that this method
      * only contains necessary code that should continuously be executed.
      */
-    public void process() { }
+    public abstract void process();
 
     /**
      * Utility method which checks if the server is running before attempting to send data.
@@ -433,9 +433,17 @@ public class Server implements Runnable {
     }
 
     /**
+     * Executes code before shutting down the server.
+     */
+    public void onStop() {
+
+    }
+
+    /**
      * Stops the server.
      */
     public final void stop() {
+        onStop();
         removeAllTCPHandlers();
         removeAllUDPHandlers();
         setRunning(false);
