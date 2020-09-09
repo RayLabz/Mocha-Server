@@ -13,7 +13,7 @@ public abstract class UDPClient extends Client {
     /**
      * The client's socket.
      */
-    private final DatagramSocket socket;
+    private DatagramSocket socket;
 
     /**
      * The client's buffer.
@@ -27,22 +27,38 @@ public abstract class UDPClient extends Client {
      * @throws UnknownHostException Thrown when the IP address is invalid.
      * @throws SocketException Thrown when the client's socket cannot be instantiated.
      */
-    public UDPClient(String ipAddress, int port) throws UnknownHostException, SocketException {
-        super(ipAddress, port);
-        this.socket = new DatagramSocket();
+    public UDPClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
+        super(name, ipAddress, port);
+        try {
+            this.socket = new DatagramSocket();
+            setConnected(true);
+        } catch (ConnectException ce) {
+            setListening(false);
+            setConnected(false);
+            onConnectionRefused();
+        }
         Thread listeningThread = new Thread(() -> {
-            while (true) {
-                try {
-                    final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    socket.receive(packet);
-                    final String data = new String(packet.getData(), 0, packet.getLength());
-                    onReceive(data);
-                } catch (IOException e) {
-                    System.err.println("Error receiving: " + e.getMessage());
-                    throw new RuntimeException(e);
+            if (isConnected()) {
+                while (isConnected() && isListening()) {
+                    try {
+                        final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                        socket.receive(packet);
+                        final String data = new String(packet.getData(), 0, packet.getLength());
+                        onReceive(data);
+                    } catch (ConnectException ce) {
+                        setListening(false);
+                        setConnected(false);
+                        onConnectionRefused();
+                    } catch (IOException e) {
+                        System.err.println("Error receiving: " + e.getMessage());
+                        e.printStackTrace();
+                    }
                 }
             }
-        });
+            else {
+                onConnectionRefused();
+            }
+        }, name + "-Listener");
         listeningThread.start();
     }
 
@@ -60,14 +76,15 @@ public abstract class UDPClient extends Client {
      */
     @Override
     public final void send(final String data) {
-        try {
-            final byte[] bytes = data.getBytes();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, getAddress(), getPort());
-            socket.send(packet);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (isConnected()) {
+            try {
+                final byte[] bytes = data.getBytes();
+                DatagramPacket packet = new DatagramPacket(bytes, bytes.length, getAddress(), getPort());
+                socket.send(packet);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
-    
 
 }

@@ -2,6 +2,7 @@ package com.raylabz.mocha.server;
 
 import com.raylabz.mocha.logger.Logger;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -91,7 +92,7 @@ public abstract class Server implements Runnable {
      * @param tcpHandler The TCP handler to remove.
      * @return Returns true if the handler was successfully removed, false otherwise.
      */
-    public final boolean removeTCPHandler(TCPHandler tcpHandler) {
+    public final boolean removeTCPHandler(TCPHandler tcpHandler) throws IOException {
         tcpHandler.setEnabled(false);
         tcpHandler.removeTCPConnectionsAndThreads();
         return tcpHandlers.remove(tcpHandler);

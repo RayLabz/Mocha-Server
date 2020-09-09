@@ -1,5 +1,7 @@
 import com.raylabz.mocha.client.TCPClient;
 import com.raylabz.mocha.client.UDPClient;
+import com.raylabz.mocha.server.Mocha;
+import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimePartDataSource;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -10,18 +12,18 @@ public class ClientsExample {
     public static class MyUDPClient extends UDPClient {
 
         public MyUDPClient(String ipAddress, int port) throws UnknownHostException, SocketException {
-            super(ipAddress, port);
+            super("My UDP Client", ipAddress, port);
         }
 
         @Override
-        public void onReceive(String data) {
-            System.out.println("Received: " + data);
+        public void onConnectionRefused() {
+
         }
 
         @Override
-        public void run() {
+        public void process() {
             int counter = 0;
-            while (true) {
+            while (isConnected()) {
                 send("UDP Message " + counter);
                 counter++;
                 try {
@@ -32,6 +34,11 @@ public class ClientsExample {
             }
         }
 
+        @Override
+        public void onReceive(String data) {
+            System.out.println("Received: " + data);
+        }
+
     }
 
     public static class MyTCPClient extends TCPClient {
@@ -40,19 +47,22 @@ public class ClientsExample {
         private long timeReceived;
 
         public MyTCPClient(String ipAddress, int port) throws IOException {
-            super(ipAddress, port);
+            super("TCPClient", ipAddress, port);
         }
 
         @Override
-        public void run() {
-            while (true) {
-                send("TCP All the way!");
-                timeSent = System.currentTimeMillis();
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        public void onConnectionRefused() {
+            System.err.println("Error - Cannot connect client to " + getAddress());
+        }
+
+        @Override
+        public void process() {
+            send("TCP All the way!");
+            timeSent = System.currentTimeMillis();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
 
@@ -65,12 +75,12 @@ public class ClientsExample {
     }
 
     public static void main(String[] args) throws IOException {
-        MyTCPClient tcpClient = new MyTCPClient("localhost", 7080);
+        MyTCPClient tcpClient = new MyTCPClient("localhost", 7081);
 //        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 4321);
-        MyUDPClient udpClient = new MyUDPClient("localhost", 7080);
+//        MyUDPClient udpClient = new MyUDPClient("localhost", 7080);
 //        MyUDPClient udpClient2 = new MyUDPClient("localhost", 4321);
-        new Thread(tcpClient).start();
-        new Thread(udpClient).start();
+        Mocha.start(tcpClient);
+//        new Thread(udpClient).start();
     }
 
 }

@@ -1,31 +1,32 @@
 package com.raylabz.mocha.server;
 
+import com.raylabz.mocha.client.Client;
+
+/**
+ * Main library class - starts up servers and clients.
+ */
 public final class Mocha {
 
-    private static boolean serverStarted = false;
-
+    /**
+     * Starts a server.
+     * @param server The server to start.
+     * @return Returns the thread the server is running on.
+     */
     public static Thread start(Server server) {
-        if (!serverStarted) {
-            Thread serverThread = new Thread(server, server.getName() + "-ServerThread");
-            serverThread.start();
-            serverStarted = true;
-            return serverThread;
-        }
-        else {
-            throw new RuntimeException("A server has already been started (" + server.getName() + ").");
-        }
+        Thread serverThread = new Thread(server, server.getName() + "-ServerThread");
+        serverThread.start();
+        return serverThread;
     }
 
-    public static void stop(Server server) {
-        if (serverStarted) {
-            server.removeAllTCPHandlers();
-            server.removeAllUDPHandlers();
-            server.setRunning(false);
-            serverStarted = false;
-        }
-        else {
-            throw new RuntimeException("No servers are currently running.");
-        }
+    /**
+     * Starts a client.
+     * @param client The client to start.
+     * @return Returns the thread the client is running on.
+     */
+    public static Thread start(Client client) {
+        Thread clientThread = new Thread(client, client.getName() + "-ClientThread");
+        clientThread.start();
+        return clientThread;
     }
 
 }

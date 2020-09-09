@@ -1,13 +1,18 @@
 package com.raylabz.mocha.client;
 
+import com.raylabz.mocha.server.Mocha;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * Defines functionality for a TCP Client.
+ *
  * @author Nicos Kasenides
  * @version 1.0.0
  */
@@ -16,46 +21,61 @@ public abstract class TCPClient extends Client {
     /**
      * The client's socket.
      */
-    private final Socket socket;
+    private Socket socket;
 
     /**
      * The client's output writer.
      */
-    private final PrintWriter writer;
+    private PrintWriter writer;
 
     /**
      * The client's input reader.
      */
-    private final BufferedReader reader;
+    private BufferedReader reader;
 
     /**
      * Constructs a TCP Client.
+     *
      * @param ipAddress The IP address of that this TCP client will connect to.
-     * @param port The port that this TCP client will connect to.
+     * @param port      The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.
      */
-    public TCPClient(String ipAddress, int port) throws IOException {
-        super(ipAddress, port);
-        this.socket = new Socket(getAddress(), getPort());
-        writer = new PrintWriter(socket.getOutputStream(), true);
-        reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    public TCPClient(String name, String ipAddress, int port) throws IOException {
+        super(name, ipAddress, port);
+        try {
+            this.socket = new Socket(getAddress(), getPort());
+            writer = new PrintWriter(socket.getOutputStream(), true);
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            setConnected(true);
+        } catch (ConnectException ce) {
+            setListening(false);
+            setConnected(false);
+            onConnectionRefused();
+        }
 
         Thread receptionThread = new Thread(() -> {
-            String input;
-            try {
-                while ((input = reader.readLine()) != null && isListening()) {
-                    onReceive(input);
+            if (isConnected()) {
+                String input;
+                try {
+                    while ((input = reader.readLine()) != null && isListening() && isConnected()) {
+                        onReceive(input);
+                    }
+                } catch (SocketException se) {
+                    setListening(false);
+                    setConnected(false);
+                    onConnectionRefused();
+                } catch (IOException e) {
+                    System.err.println("Error receiving: " + e.getMessage());
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                System.err.println("Error receiving: " + e.getMessage());
-                e.printStackTrace();
             }
-        });
+        }, name + "-Listener");
         receptionThread.start();
     }
 
     /**
      * Retrieves the client's socket.
+     *
      * @return Returns a Socket.
      */
     public Socket getSocket() {
@@ -64,11 +84,14 @@ public abstract class TCPClient extends Client {
 
     /**
      * Defines functionality which sends data to a server.
+     *
      * @param data The data to send to the server.
      */
     @Override
     public void send(String data) {
-        writer.println(data);
+        if (isConnected()) {
+            writer.println(data);
+        }
     }
 
 }

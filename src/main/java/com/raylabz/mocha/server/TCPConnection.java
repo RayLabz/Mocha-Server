@@ -35,7 +35,7 @@ public class TCPConnection implements Runnable {
     /**
      * Determines if this TCP connection is enabled.
      */
-    private AtomicBoolean enabled = new AtomicBoolean(true);
+    private final AtomicBoolean enabled = new AtomicBoolean(true);
 
     /**
      * The TCPReceivable of this connection, which defines what happens once data is received.

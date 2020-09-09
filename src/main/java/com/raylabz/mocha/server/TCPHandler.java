@@ -5,6 +5,7 @@ import com.raylabz.mocha.logger.Logger;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -93,6 +94,13 @@ public class TCPHandler implements Runnable {
      */
     public void setEnabled(boolean enabled) {
         this.enabled.set(enabled);
+        if (!enabled) {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace(); //TODO
+            }
+        }
     }
 
     /**
@@ -132,11 +140,25 @@ public class TCPHandler implements Runnable {
      * Removes all TCP connections and connection threads.
      */
     void removeTCPConnectionsAndThreads() {
-        for (TCPConnection connection : tcpConnections) {
-            connection.setEnabled(false);
+        try {
+            for (TCPConnection connection : tcpConnections) {
+                connection.setEnabled(false);
+                connection.getSocket().close();
+            }
+            tcpConnectionThreads.clear();
+            tcpConnections.clear();
         }
-        tcpConnectionThreads.clear();
-        tcpConnections.clear();
+        catch (SocketException se) {
+            if (!isEnabled()) {
+                System.out.println("Stopped listening to TCP port " + port + ".");
+                Logger.logInfo("Stopped listening to TCP port " + port + ".");
+            }
+        }
+        catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            Logger.logError(e.getMessage());
+        }
     }
 
     /**
@@ -172,6 +194,12 @@ public class TCPHandler implements Runnable {
                 Thread t = new Thread(tcpConnection, "TCP-Thread-" + socket.getInetAddress().toString());
                 tcpConnectionThreads.add(t);
                 t.start();
+            }
+            removeTCPConnectionsAndThreads();
+        } catch (SocketException se) {
+            if (!isEnabled()) {
+                System.out.println("Stopped listening to UDP port " + port + ".");
+                Logger.logInfo("Stopped listening to UDP port " + port + ".");
             }
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
