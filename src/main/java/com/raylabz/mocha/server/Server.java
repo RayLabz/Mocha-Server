@@ -153,8 +153,6 @@ public abstract class Server implements Runnable {
         }
         if (handlerToRemove != null) {
             handlerToRemove.setEnabled(false);
-            //TODO REMOVE DEBUG MESSAGE
-            System.out.println("UDP Handler " + handlerToRemove.getPort() + " enabled: " + handlerToRemove.isEnabled());
         }
         return udpHandlers.remove(handlerToRemove);
     }

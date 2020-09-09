@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,6 +75,9 @@ public abstract class UDPConnection implements Runnable {
      */
     public final void setEnabled(boolean enabled) {
         this.enabled.set(enabled);
+        if (!enabled) {
+            socket.close();
+        }
     }
 
     /**
@@ -146,8 +150,11 @@ public abstract class UDPConnection implements Runnable {
                 final String data = new String(packet.getData(), 0, packet.getLength());
                 onReceive(this, packet.getAddress(), packet.getPort(), data);
             }
-            System.out.println("Stopped listening to UDP port " + port + ".");
-            Logger.logInfo("Stopped listening to UDP port " + port + ".");
+        } catch (SocketException se) {
+            if (!isEnabled()) {
+                System.out.println("Stopped listening to UDP port " + port + ".");
+                Logger.logInfo("Stopped listening to UDP port " + port + ".");
+            }
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
             e.printStackTrace();

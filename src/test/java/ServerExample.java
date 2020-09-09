@@ -31,59 +31,59 @@ public class ServerExample {
 
         TestServer server = new TestServer("My server");
 
-//        server.addTCPHandler(new TCPHandler(7080, new TCPReceivable() {
+        server.addTCPHandler(new TCPHandler(7080, new TCPReceivable() {
+            @Override
+            public void onReceive(TCPConnection tcpConnection, String data) {
+                System.out.println("Received from TCP[" + tcpConnection.getSocket().getPort() + "]: "  + data);
+                tcpConnection.send("Server TCP response");
+            }
+        }));
+
+        server.addTCPHandler(new TCPHandler(7081, new TCPReceivable() {
+            @Override
+            public void onReceive(TCPConnection tcpConnection, String data) {
+                System.out.println("Received from TCP[" + tcpConnection.getSocket().getPort() + "]: "  + data);
+                tcpConnection.send("Server TCP response");
+            }
+        }));
+
+        server.addTCPHandler(new TCPHandler(7082, new TCPReceivable() {
+            @Override
+            public void onReceive(TCPConnection tcpConnection, String data) {
+                System.out.println("Received from TCP[" + tcpConnection.getSocket().getPort() + "]: "  + data);
+                tcpConnection.send("Server TCP response");
+            }
+        }));
+
+//        server.addUDPHandler(new UDPConnection(7080) {
 //            @Override
-//            public void onReceive(TCPConnection tcpConnection, String data) {
-//                System.out.println("Received from TCP[" + tcpConnection.getSocket().getPort() + "]: "  + data);
-//                tcpConnection.send("Server TCP response");
+//            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+//                System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);
+//                String counterData = data.substring(data.length() - 1);
+//                udpConnection.send(address, outPort, "UDP response " + counterData);
+//                System.out.println("Sent to " + address.toString() + ":" + outPort);
 //            }
-//        }));
+//        });
 //
-//        server.addTCPHandler(new TCPHandler(7081, new TCPReceivable() {
+//        server.addUDPHandler(new UDPConnection(7180) {
 //            @Override
-//            public void onReceive(TCPConnection tcpConnection, String data) {
-//                System.out.println("Received from TCP[" + tcpConnection.getSocket().getPort() + "]: "  + data);
-//                tcpConnection.send("Server TCP response");
+//            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+//                System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);
+//                String counterData = data.substring(data.length() - 1);
+//                udpConnection.send(address, outPort, "UDP response " + counterData);
+//                System.out.println("Sent to " + address.toString() + ":" + outPort);
 //            }
-//        }));
+//        });
 //
-//        server.addTCPHandler(new TCPHandler(7082, new TCPReceivable() {
+//        server.addUDPHandler(new UDPConnection(8280) {
 //            @Override
-//            public void onReceive(TCPConnection tcpConnection, String data) {
-//                System.out.println("Received from TCP[" + tcpConnection.getSocket().getPort() + "]: "  + data);
-//                tcpConnection.send("Server TCP response");
+//            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+//                System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);
+//                String counterData = data.substring(data.length() - 1);
+//                udpConnection.send(address, outPort, "UDP response " + counterData);
+//                System.out.println("Sent to " + address.toString() + ":" + outPort);
 //            }
-//        }));
-
-        server.addUDPHandler(new UDPConnection(7080) {
-            @Override
-            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
-                System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);
-                String counterData = data.substring(data.length() - 1);
-                udpConnection.send(address, outPort, "UDP response " + counterData);
-                System.out.println("Sent to " + address.toString() + ":" + outPort);
-            }
-        });
-
-        server.addUDPHandler(new UDPConnection(7180) {
-            @Override
-            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
-                System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);
-                String counterData = data.substring(data.length() - 1);
-                udpConnection.send(address, outPort, "UDP response " + counterData);
-                System.out.println("Sent to " + address.toString() + ":" + outPort);
-            }
-        });
-
-        server.addUDPHandler(new UDPConnection(8280) {
-            @Override
-            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
-                System.out.println("Received from UDP [" + address.toString() + ":" + outPort + "]: " + data);
-                String counterData = data.substring(data.length() - 1);
-                udpConnection.send(address, outPort, "UDP response " + counterData);
-                System.out.println("Sent to " + address.toString() + ":" + outPort);
-            }
-        });
+//        });
 
         Mocha.start(server);
 
@@ -93,7 +93,8 @@ public class ServerExample {
             e.printStackTrace();
         }
 
-        server.removeUDPHandler(8280);
+        server.removeTCPHandler(7080);
+
 
 //        try {
 //            Thread.sleep(3000);
