@@ -118,8 +118,14 @@ public abstract class UDPConnection implements Runnable {
      * @param data The data to broadcast.
      */
     public final void broadcast(final String data) {
-        for (final UDPPeer peer : connectedPeers) {
-            send(peer.getAddress(), peer.getPort(), data);
+        if (isEnabled()) {
+            for (final UDPPeer peer : connectedPeers) {
+                send(peer.getAddress(), peer.getPort(), data);
+            }
+        }
+        else {
+            System.err.println("Error - Cannot broadcast. UDPConnection [" + getInetAddress() + ":" + getPort() + "] disabled");
+            Logger.logError("Error - Cannot broadcast. UDPConnection [" + getInetAddress() + ":" + getPort() + "] disabled");
         }
     }
 
@@ -127,10 +133,10 @@ public abstract class UDPConnection implements Runnable {
      * Defines what will be executed when data is received.
      * @param udpConnection The UDPConnection.
      * @param address The address of the client to send the data to.
-     * @param port The port of the client.
+     * @param outPort The outPort of the client (used to send outgoing messages).
      * @param data The data received.
      */
-    public abstract void onReceive(UDPConnection udpConnection, InetAddress address, int port, String data);
+    public abstract void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data);
 
     /**
      * Defines what happens when the UDP connection starts.

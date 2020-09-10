@@ -166,8 +166,14 @@ public class TCPHandler implements Runnable {
      * @param data The data to broadcast.
      */
     public void broadcast(String data) {
-        for (TCPConnection connection : tcpConnections) {
-            connection.send(data);
+        if (isEnabled()) {
+            for (TCPConnection connection : tcpConnections) {
+                connection.send(data);
+            }
+        }
+        else {
+            System.err.println("Error - Cannot broadcast. TCPHandler [" + getPort() + "] disabled");
+            Logger.logError("Error - Cannot broadcast. TCPHandler [" + getPort() + "] disabled");
         }
     }
 

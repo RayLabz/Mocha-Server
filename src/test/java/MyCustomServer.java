@@ -13,12 +13,11 @@ public class MyCustomServer extends Server {
 
     @Override
     public void process() {
-        try {
-            //...
-        }
-        catch (Exception e) {
-            stop();
-        }
+        sendTCP("192.168.10.10", 1234, "Hi!");
+        sendTCP(tcpConnection, "Hi!");
+
+        sendUDP("192.168.10.10", 1234, "Hi!");
+        sendUDP(udpConnection, 1234, "Hi!");
     }
 
     @Override

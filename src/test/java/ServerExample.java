@@ -9,8 +9,21 @@ public class ServerExample {
         BasicServer server = new BasicServer("My Basic Server");
         Mocha.start(server);
 
-        server.removeTCPHandler(4321);
-        server.removeTCPHandler(myTCPHandler);
+        server.addTCPHandler(new TCPHandler(1234, new TCPReceivable() {
+            @Override
+            public void onReceive(TCPConnection tcpConnection, String data) {
+                //Echo the message back to the client:
+                tcpConnection.send(data);
+            }
+        }));
+
+        server.addUDPHandler(new UDPConnection(1234) {
+            @Override
+            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+                //Echo the message back to the client:
+                udpConnection.send(address, outPort, data);
+            }
+        });
 
     }
 

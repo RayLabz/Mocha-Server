@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+    <link rel="shortcut icon" type="image/png" href="images/mocha.png"/>
+    <meta name="theme-color" content="#795548"/>
+    <title>Mocha - RayLabz</title>
+
+    <!-- CSS  -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <style>
+        h3 {
+            text-shadow: 1px 1px 2px grey;
+        }
+    </style>
+</head>
+<body>
+
+<!--<nav>-->
+<!--    <div class="nav-wrapper orange darken-4"></div>-->
+<!--</nav>-->
+
+<main>
+
+    <div class="section no-pad-bot" id="index-banner">
+        <div class="container">
+            <br>
+            <h1 class="header center brown-text">Mocha</h1>
+            <br>
+            <div class="row center">
+                <img class="responsive-img" src="images/mocha.png" width="200"/>
+            </div>
+            <div class="row center">
+                <h4 class="header col s12 light">A lightweight, multi-threaded TCP/UDP client-server library for Java</h4>
+            </div>
+
+            <hr/>
+
+            <div class="row center">
+                <h3>Guide</h3>
+            </div>
+
+            <h4>Contents</h4>
+
+            <ul class="browser-default">
+                <li><a href="#"></a></li>
+            </ul>
+
+            <h4 id="creatingABasicServer">Creating a basic server</h4>
+
+            <p>A basic server is a server that does not have a custom runtime. Basic servers allow you to handle
+                messages/requests coming from clients, <u>but do not execute any code in the background</u>. Due to their
+                reactive nature, these are ideal for web, application, chat, file servers and so on.
+                You can create basic server using the <span class="code">BasicServer</span> class constructor and giving it a name:
+            </p>
+
+            <pre class="prettyprint">
+BasicServer server = new BasicServer("My Basic Server");</pre>
+
+            <h4 id="runningAServer">Running a server</h4>
+
+            <p>
+                To start your server, you can call <span class="code">Mocha.start()</span> and provide the server to start:
+            </p>
+
+            <pre class="prettyprint">
+Mocha.start(server);</pre>
+
+            <p>Output:</p>
+
+            <pre class="code">
+Server 'My server' started.</pre>
+
+            <div class="info-panel light-blue lighten-1 white-text">
+                <p class="center">
+                    The BasicServer is a helper class which allows you to quickly create a simple basic server. To define your
+                    own runtime behavior, create a <a class="yellow-text" href="#customServers"><u>custom server</u></a>.
+                </p>
+            </div>
+
+            <p></p>
+
+            <div class="info-panel light-blue lighten-1 white-text">
+                <p class="center">
+                    Each Server object is in itself a thread, which is run independently and concurrently with any other code.
+                </p>
+            </div>
+
+            <p></p>
+
+            <div class="info-panel light-blue lighten-1 white-text">
+                <p class="center">
+                    Note that the server will run indefinitely until it is interrupted (e.g. using CTRL+C in Windows).
+                </p>
+            </div>
+
+            <h4 id="customServers">Creating a custom server</h4>
+
+            <p>Several scenarios will require that you define some custom behavior for your server. <u>Custom servers
+                allow you to define a custom runtime, which means that code can be executed in the background</u>.
+                Such servers are ideal for simulations, games and so on. You can create a custom server by extending the <span class="code">Server</span> class:
+            </p>
+
+            <pre class="prettyprint">
+public class MyCustomServer extends Server {
+
+    public MyCustomServer(String name) {
+        super(name);
+    }
+
+    @Override
+    public void <b>initialize()</b> {
+        //Run code once
+    }
+
+    @Override
+    public void <b>process()</b> {
+        //Run code continuously
+    }
+
+}</pre>
+
+            <p>Note the two overriden methods called <b><span class="code">initialize()</span></b> and <b><span class="code">process()</span></b>:</p>
+
+            <h5 id="initialize">Initialize</h5>
+
+            <p>
+                This method is <u>ran only once, shortly after the server is started</u>. You can use this method to initialize any
+                server settings/configuration, connect to a database and so on.
+            </p>
+
+            <h5 id="process">Process</h5>
+
+            <p>
+                The <span class="code">process()</span> method is ran continuously until the server is stopped. It allows you to specify a custom server
+                runtime which will be constantly running in the background.
+            </p>
+
+            <div class="info-panel orange darken-4 white-text">
+                <p class="center">
+                    Since the <span class="code">process()</span> method is ran continuously, it is best to avoid placing
+                    any unnecessary code in this method, which may dramatically slow down your server. It is also a good idea
+                    to write code that re-uses objects instead of initializing new ones.
+                </p>
+            </div>
+
+            <h5 id="processDelay">Execution delay</h5>
+
+            <p>
+                Depending on your server, you may wish to set a delay between the execution of each <span class="code">process()</span> call.
+                To set a delay you can use the <span class="code">setExecutionDelay()</span> method and providing a time delay
+                <u>in milliseconds</u>:
+            </p>
+
+            <pre class="prettyprint">
+setExecutionDelay(1000);</pre>
+
+            <p>
+                or
+            </p>
+
+            <pre class="prettyprint">
+server.setExecutionDelay(1000);</pre>
+
+            <div class="info-panel light-blue lighten-1 white-text">
+                <p class="center">
+                    You can instantiate and start a custom server in the same way with a basic server.
+                </p>
+            </div>
+
+            <h4 id="stoppingAServer">Stopping a server</h4>
+
+            <p>
+                Servers will run indefinitely until they are stopped or their program is forcefully interrupted.
+                To gracefully stop a server, you can use the <span class="code">stop()</span> method. You can use this method from
+                anywhere, but <u>a good way to stop your server is to place this call somewhere inside the <span class="code">process()</span>
+                method.</u>
+            </p>
+
+            <pre class="prettyprint">
+...
+@Override
+public void process() {
+    try {
+        //...
+    }
+    catch (Exception e) {
+        //...
+        stop();
+    }
+}
+...</pre>
+
+            <h5 id="onstop">onStop()</h5>
+
+            <p>The server can execute code before stopping. This allows you to close database connections, stop threads etc. before the server is stopped.
+                You can define what will be executed before the server is stopped by overriding the
+                <span class="code">onStop()</span> method in your custom server class:</p>
+
+            <pre class="prettyprint">
+@Override
+public void onStop() {
+    System.err.println("Server is about to stop...");
+}</pre>
+
+            <h4 id="handlers">Connection handlers</h4>
+
+            <h5 id="tcpHandlers">Adding a TCP handler</h5>
+
+            <p>
+                Handlers are server components that listen for incoming messages and do
+                something when a message is received.
+                Each handler has an independent thread that runs in parallel with your server thread.
+                Handlers can thus run in parallel with each other so that a server can process
+                requests coming from many ports at the same time while also being under the
+                supervision of the main server thread.
+                Each handler is assigned to a particular port and you must define what will happen
+                once a message/request is received through that port.
+            </p>
+
+            <p>
+                You can create a TCP port handler using the <span class="code">TCPHandler</span> class
+                and then supplying the <b>port</b> that this handler will listen to as well as a <b><span class="code">TCPReceivable</span> instance</b>,
+                which determines what will happen when a message is received.
+            </p>
+
+            <p>
+                In the example below, a TCP handler is created on TCP port 1234. The <span class="code">TCPReceivable</span>
+                class contains a single method called <span class="code">onReceive()</span>, which determines what the
+                handler will do when each message is received. Receivable instances can be nameless:
+            </p>
+
+            <pre class="prettyprint">
+TCPHandler tcpHandler = new TCPHandler(1234, new TCPReceivable() {
+    @Override
+    public void onReceive(TCPConnection tcpConnection, String data) {
+        System.out.println("Received message: " + data + " from " + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort());
+    }
+});</pre>
+
+            <p>
+                The second parameter of the receivable called <span class="code">data</span>, holds the message sent by the client.
+                You can utilize this object as you like depending on your server's intended logic.
+                In the example above the server simply prints the message on the console.
+            </p>
+
+            <p>
+                Pay particular attention to the first parameter of the <span class="code">onReceive()</span> method.
+                A <span class="code">TCPConnection</span> object describes a connection
+                made to the server from a particular client.
+            </p>
+
+            <p>You can get the particular client's IP address from a TCPConnection using <b><span class="code">getInetAddress()</span>:</b></p>
+
+            <pre class="prettyprint">
+tcpConnection.getInetAddress()</pre>
+
+            <p>You can get the receiving port number from a TCPConnection using <b><span class="code">getPort()</span>:</b></p>
+
+            <pre class="prettyprint">
+tcpConnection.getPort()</pre>
+
+            <p>You can also get the connected socket between this client and the server using <b><span class="code">getSocket()</span>:</b></p>
+
+            <pre class="prettyprint">
+tcpConnection.getSocket()</pre>
+
+            <p>Finally, you can add the TCP handler to the server using the <b><span class="code">addTCPHandler()</span></b> method:</p>
+
+            <pre class="prettyprint">
+server.addTCPHandler(tcpHandler);</pre>
+
+            <div class="info-panel light-blue lighten-1 white-text">
+                <p class="center">You may add handlers before or after starting the server.
+                However, attempting to add a handler that has the same port and protocol with an existing handler
+                will not affect execution and the operation will be ignored.
+                </p>
+            </div>
+
+            <p>
+                To quickly add a nameless handler, use:
+            </p>
+
+            <pre class="prettyprint">
+server.addTCPHandler(new TCPHandler(1234, new TCPReceivable() {
+    @Override
+    public void onReceive(TCPConnection tcpConnection, String data) {
+        System.out.println("Received message: " + data + " from " + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort());
+    }
+}));</pre>
+
+            <h5 id="udpHandlers">UDP handlers</h5>
+
+            <p>
+                Adding a UDP handler is as easy as adding a TCP handler, but a bit different.
+                Due to differences between the two protocols (TCP vs UDP), UDP handlers are 
+                added directly using <span class="code">UDPConnection</span> objects.
+                Each <span class="code">UDPConnection</span> object can be instantiated
+                by providing a port number and calling its constructor. It is best to
+                add a nameless UDP handler directly:
+            </p>
+
+            <pre class="prettyprint">
+server.addUDPHandler(new UDPConnection(1234) {
+    @Override
+    public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+        System.out.println("Received message: " + data + " from " + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort());
+    }
+});</pre>
+
+            <div class="info-panel light-blue lighten-1 white-text">
+                <p class="center">
+                    There are fundamental differences between the TCP and UDP protocols. TCP works by establishing direct channels
+                    of communication between the client and the server. On the other hand, UDP does not require a direct channel
+                    and each client can send messages at any time. This affects the way Mocha manages its handlers, which is why
+                    there are some minor differences when creating TCP and UDP handlers.
+                </p>
+            </div>
+
+            <p>
+                <a href="handlers.html"><u>Learn more about Mocha's handler architecture</u></a>
+            </p>
+
+            <h4 id="removeHandlers">Removing handlers</h4>
+
+            <p>
+                You can remove a handler while the server is running by using <span class="code">removeTCPHandler()</span>
+                or <span class="code">removeUDPHandler()</span> respectively. You can either pass a port or a handler instance
+                as a parameter to this method.
+            </p>
+
+            <u>TCP:</u>
+
+            <pre class="prettyprint">
+server.removeTCPHandler(4321);
+server.removeTCPHandler(myTCPHandler);</pre>
+
+            <u>UDP:</u>
+
+            <pre class="prettyprint">
+server.removeUDPHandler(4321);
+server.removeUDPHandler(myUDPHandler);</pre>
+
+            <h4 id="sendingMessages">Sending messages to clients</h4>
+
+            <p>Servers can send messages using the <span class="code">sendTCP()</span> and <span class="code">sendUDP()</span> methods:</p>
+
+            <h5 id="sendTCP">sendTCP()</h5>
+
+            <p>For the <span class="code">sendTCP()</span> method you can provide:</p>
+
+            <ul class="browser-default">
+                <li>The IP address (string), port (int) and message to send (string)</li>
+                <li>A TCPConnection object and message to send (string)</li>
+            </ul>
+
+            <pre class="prettyprint">
+//Using IP and port number:
+sendTCP("192.168.10.10", 1234, "Hi!");
+
+//Using a TCPConnection object:
+sendTCP(tcpConnection, "Hi!");</pre>
+
+            <h5 id="sendUDP">sendUDP()</h5>
+
+            <p>For the <span class="code">sendUDP()</span> method you can provide:</p>
+
+            <ul class="browser-default">
+                <li>The IP address (string), <u>outward</u> port (int) and message to send (string)</li>
+                <li>A UDPConnection object and message to send (string)</li>
+            </ul>
+
+            <pre class="prettyprint">
+//Using IP and outward port number:
+sendUDP("192.168.10.10", 1234, "Hi!");
+
+//Using a UDPConnection object and outward port number:
+sendUDP(udpConnection, 1234, "Hi!");</pre>
+
+            <h5 id="serverResponses">Server responses</h5>
+
+            <p>
+                When a message is received from a client, a server has to send back a reply to that
+                client. We have already seen how to define what happens when a message is received
+                through the <a href="#handlers"><u><span class="code">onReceive()</span> method for TCP and UDP handlers.</u></a>
+                To send a response to a client from inside the <span class="code">onReceive()</span> method, you
+                may simply use the <span class="code">send()</span> method from either <span class="code">TCPConnection</span>
+                or <span class="code">UDPConnection</span>:
+            </p>
+
+            <u>TCPConnection onReceive():</u>
+
+            <pre class="prettyprint">
+server.addTCPHandler(new TCPHandler(1234, new TCPReceivable() {
+    @Override
+    public void onReceive(TCPConnection tcpConnection, String data) {
+        //Echo the message back to the client:
+        <b>tcpConnection.send(data);</b>
+    }
+}));</pre>
+
+            <p></p>
+
+            <u>UDPConnection onReceive():</u>
+
+            <pre class="prettyprint">
+server.addUDPHandler(new UDPConnection(1234) {
+    @Override
+    public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+        //Echo the message back to the client:
+        <b>udpConnection.send(address, outPort, data);</b>
+    }
+});</pre>
+
+            <h4 id="multicasting">Multicasting</h4>
+
+            <p></p>
+
+            <h4 id="broadcasting">Broadcasting</h4>
+
+            <p></p>
+
+
+            <!-- TODO - IMPORTANT, MULTICASTING FUNCTIONALITY!!!-->
+
+
+            <!--TODO: Add this in broadcasting section-->
+<!--            <div class="info-panel light-blue lighten-1 white-text">-->
+<!--                Broadcasting to a specific port requires that the server has a handler associated-->
+<!--                with that port and that clients have already made connections to the server.-->
+<!--            </div>-->
+
+            <!--------------------------------------------------------------------------------------------------------->
+
+            <br/>
+            <hr/>
+
+            <h3 id="documentation">Documentation</h3>
+
+            <p><a href="javadoc">View the documentation.</a></p>
+
+            <hr/>
+
+            <h3 id="usage">License</h3>
+
+            <p>
+                Mocha is released under the <a href="https://github.com/RayLabz/Mocha-Server/blob/master/LICENSE">MIT license</a>.
+            </p>
+
+            <hr/>
+
+            <h3 id="sourceCode">Source code</h3>
+
+            <p>
+                You can find the source code at the project's repository <a
+                    href="https://github.com/RayLabz/Mocha-Server/">here</a>.
+            </p>
+
+            <hr/>
+
+            <h3 id="bugreport">Bug reporting</h3>
+
+            <p>Please report bugs <a href="mailto:RayLabzg@gmail.com?subject=Mocha-Server">here</a>.</p>
+
+            <br/><br/>
+        </div>
+    </div>
+
+</main>
+
+<footer class="page-footer brown">
+    <div class="container">
+        <div class="center light">Made by <a class="white-text" href="http://www.RayLabz.com">RayLabz</a></div>
+        <br/>
+    </div>
+</footer>
+
+
+<!--  Scripts-->
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="js/materialize.js"></script>
+<script src="js/init.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+
+</body>
+</html>

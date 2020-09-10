@@ -254,27 +254,17 @@ public abstract class Server implements Runnable {
     public abstract void process();
 
     /**
-     * Utility method which checks if the server is running before attempting to send data.
-     * @return Returns true if the server is running, false otherwise.
-     */
-    private boolean validateRunningBeforeSend() {
-        if (!isRunning()) {
-            final String text = "Warning: Cannot send while the server is not running.";
-            System.err.println(text);
-            Logger.logWarning(text);
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Sends data through TCP.
      * @param tcpConnection The TCPConnection to send the data through.
      * @param data The data.
      */
-    public final void sendTCP(TCPConnection tcpConnection, final String data) {
-        if (validateRunningBeforeSend()) {
+    protected final void sendTCP(TCPConnection tcpConnection, final String data) {
+        if (tcpConnection.isEnabled()) {
             tcpConnection.send(data);
+        }
+        else {
+            System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
+            Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
         }
     }
 
@@ -284,23 +274,27 @@ public abstract class Server implements Runnable {
      * @param port The port to send the data through.
      * @param data The data.
      */
-    public final void sendTCP(final String ipAddress, final int port, final String data) {
-        if (validateRunningBeforeSend()) {
-            try {
-                InetAddress inetAddress = InetAddress.getByName(ipAddress);
-                if (port >= 0 && port <= 65535) {
-                    for (TCPHandler h : tcpHandlers) {
-                        if (h.getPort() == port) {
-                            for (TCPConnection tcpConnection : h.getTcpConnections()) {
-                                if (tcpConnection.getInetAddress().equals(inetAddress)) {
+    protected final void sendTCP(final String ipAddress, final int port, final String data) {
+        try {
+            InetAddress inetAddress = InetAddress.getByName(ipAddress);
+            if (port >= 0 && port <= 65535) {
+                for (TCPHandler h : tcpHandlers) {
+                    if (h.getPort() == port) {
+                        for (TCPConnection tcpConnection : h.getTcpConnections()) {
+                            if (tcpConnection.getInetAddress().equals(inetAddress)) {
+                                if (tcpConnection.isEnabled()) {
                                     tcpConnection.send(data);
+                                }
+                                else {
+                                    System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
+                                    Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
                                 }
                             }
                         }
                     }
                 }
-            } catch (Exception ignored) {
             }
+        } catch (Exception ignored) {
         }
     }
 
@@ -310,14 +304,18 @@ public abstract class Server implements Runnable {
      * @param port The port to send the data through.
      * @param data The data.
      */
-    public final void sendTCP(final InetAddress inetAddress, final int port, final String data) {
-        if (validateRunningBeforeSend()) {
-            if (port >= 0 && port <= 65535) {
-                for (TCPHandler h : tcpHandlers) {
-                    if (h.getPort() == port) {
-                        for (TCPConnection tcpConnection : h.getTcpConnections()) {
-                            if (tcpConnection.getInetAddress().equals(inetAddress)) {
+    protected final void sendTCP(final InetAddress inetAddress, final int port, final String data) {
+        if (port >= 0 && port <= 65535) {
+            for (TCPHandler h : tcpHandlers) {
+                if (h.getPort() == port) {
+                    for (TCPConnection tcpConnection : h.getTcpConnections()) {
+                        if (tcpConnection.getInetAddress().equals(inetAddress)) {
+                            if (tcpConnection.isEnabled()) {
                                 tcpConnection.send(data);
+                            }
+                            else {
+                                System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
+                                Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
                             }
                         }
                     }
@@ -333,31 +331,39 @@ public abstract class Server implements Runnable {
      * @param outPort The port of the client.
      * @param data The data.
      */
-    public final void sendUDP(final UDPConnection udpConnection, InetAddress address, int outPort, final String data) {
-        if (validateRunningBeforeSend()) {
-            udpConnection.send(address, outPort, data);
+    protected final void sendUDP(final UDPConnection udpConnection, int outPort, final String data) {
+        if (udpConnection.isEnabled()) {
+            udpConnection.send(udpConnection.getInetAddress(), outPort, data);
+        }
+        else {
+            System.err.println("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
+            Logger.logError("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
         }
     }
 
     /**
      * Sends data through UDP.
      * @param ipAddress The IP address to send the data to.
-     * @param port The port to tsend the data through.
+     * @param outPort The outPort to send the data through.
      * @param data The data.
      */
-    public final void sendUDP(final String ipAddress, final int port, final String data) {
-        if (validateRunningBeforeSend()) {
-            try {
-                InetAddress inetAddress = InetAddress.getByName(ipAddress);
-                if (port >= 0 && port <= 65535) {
-                    for (UDPConnection udpConnection : udpHandlers) {
-                        if (udpConnection.getPort() == port && udpConnection.getInetAddress().equals(inetAddress)) {
-                            udpConnection.send(inetAddress, port, data);
+    protected final void sendUDP(final String ipAddress, final int outPort, final String data) {
+        try {
+            InetAddress inetAddress = InetAddress.getByName(ipAddress);
+            if (outPort >= 0 && outPort <= 65535) {
+                for (UDPConnection udpConnection : udpHandlers) {
+                    if (udpConnection.getPort() == outPort && udpConnection.getInetAddress().equals(inetAddress)) {
+                        if (udpConnection.isEnabled()) {
+                            udpConnection.send(inetAddress, outPort, data);
+                        }
+                        else {
+                            System.err.println("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
+                            Logger.logError("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
                         }
                     }
                 }
-            } catch (Exception ignored) {
             }
+        } catch (Exception ignored) {
         }
     }
 
@@ -366,7 +372,7 @@ public abstract class Server implements Runnable {
      * @param port The connection to broadcast the data to.
      * @param data The data to broadcast.
      */
-    public final void broadcastUDP(final int port, final String data) {
+    protected final void broadcastUDP(final int port, final String data) {
         Vector<UDPConnection> udpListeners = getUdpHandlers();
         for (UDPConnection connection : udpListeners) {
             if (connection.getPort() == port) {
@@ -381,7 +387,7 @@ public abstract class Server implements Runnable {
      * @param port The connection to broadcast the data to.
      * @param data The data to broadcast.
      */
-    public final void broadcastTCP(final int port, final String data) {
+    protected final void broadcastTCP(final int port, final String data) {
         final Vector<TCPHandler> tcpHandlers = getTcpHandlers();
         for (TCPHandler handler : tcpHandlers) {
             if (handler.getPort() == port) {
