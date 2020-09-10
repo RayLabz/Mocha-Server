@@ -18,6 +18,7 @@ public class MyCustomServer extends Server {
 
         sendUDP("192.168.10.10", 1234, "Hi!");
         sendUDP(udpConnection, 1234, "Hi!");
+        sendUDP(udpPeer, "Hi!");
     }
 
     @Override

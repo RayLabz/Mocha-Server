@@ -3,9 +3,11 @@ package com.raylabz.mocha.server;
 import com.raylabz.mocha.logger.Logger;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -98,7 +100,7 @@ public class TCPHandler implements Runnable {
             try {
                 serverSocket.close();
             } catch (IOException e) {
-                e.printStackTrace(); //TODO
+                e.printStackTrace(); //TODO?
             }
         }
     }
@@ -174,6 +176,25 @@ public class TCPHandler implements Runnable {
         else {
             System.err.println("Error - Cannot broadcast. TCPHandler [" + getPort() + "] disabled");
             Logger.logError("Error - Cannot broadcast. TCPHandler [" + getPort() + "] disabled");
+        }
+    }
+
+    /**
+     * Multicasts a message to selected clients based on their IP address.
+     * @param data The data to send.
+     * @param ipAddresses A list of IP addresses.
+     */
+    public void multicast(String data, ArrayList<InetAddress> ipAddresses) {
+        if (isEnabled()) {
+            for (TCPConnection connection : tcpConnections) {
+                if (ipAddresses.contains(connection.getInetAddress())) {
+                    connection.send(data);
+                }
+            }
+        }
+        else {
+            System.err.println("Error - Cannot multicast. TCPHandler [" + getPort() + "] disabled");
+            Logger.logError("Error - Cannot multicast. TCPHandler [" + getPort() + "] disabled");
         }
     }
 

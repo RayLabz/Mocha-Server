@@ -371,6 +371,7 @@ sendTCP(tcpConnection, "Hi!");</pre>
             <ul class="browser-default">
                 <li>The IP address (string), <u>outward</u> port (int) and message to send (string)</li>
                 <li>A UDPConnection object and message to send (string)</li>
+                <li>A UDPPeer object and message to send (string)</li>
             </ul>
 
             <pre class="prettyprint">
@@ -378,7 +379,18 @@ sendTCP(tcpConnection, "Hi!");</pre>
 sendUDP("192.168.10.10", 1234, "Hi!");
 
 //Using a UDPConnection object and outward port number:
-sendUDP(udpConnection, 1234, "Hi!");</pre>
+sendUDP(udpConnection, 1234, "Hi!");
+
+//Using a UDPPeer object:
+sendUDP(udpPeer, "Hi!");</pre>
+
+            <div class="info-panel light-blue lighten-1 white-text">
+                <p class="center">
+                    The <span class="code">UDPPeer</span> class is a simple class which
+                    contains information about a specific client - specifically its IP address
+                    and outward port number.
+                </p>
+            </div>
 
             <h5 id="serverResponses">Server responses</h5>
 
@@ -422,9 +434,6 @@ server.addUDPHandler(new UDPConnection(1234) {
             <h4 id="broadcasting">Broadcasting</h4>
 
             <p></p>
-
-
-            <!-- TODO - IMPORTANT, MULTICASTING FUNCTIONALITY!!!-->
 
 
             <!--TODO: Add this in broadcasting section-->

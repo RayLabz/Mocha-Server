@@ -7,6 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -110,6 +111,25 @@ public abstract class UDPConnection implements Runnable {
         } catch (IOException e) {
             Logger.logError(e.getMessage());
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Multicasts a message to selected clients.
+     * @param data The data to send
+     * @param ipAddresses A list of IP addresses to send the data to.
+     */
+    public final void multicast(final String data, ArrayList<InetAddress> ipAddresses) {
+        if (isEnabled()) {
+            for (UDPPeer peer : connectedPeers) {
+                if (ipAddresses.contains(peer.getAddress())) {
+                    send(peer.getAddress(), peer.getPort(), data);
+                }
+            }
+        }
+        else {
+            System.err.println("Error - Cannot multicast. UDPConnection [" + getPort() + "] disabled");
+            Logger.logError("Error - Cannot multicast. UDPConnection [" + getPort() + "] disabled");
         }
     }
 
