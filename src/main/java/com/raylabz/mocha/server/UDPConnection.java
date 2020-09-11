@@ -195,12 +195,10 @@ public abstract class UDPConnection implements Runnable {
                 socket.receive(packet);
 
                 if (server.getBannedAddresses().contains(packet.getAddress())) {
-                    socket.close();
                     System.out.println("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
                     Logger.logWarning("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
                 }
                 else {
-
                     boolean added = connectedPeers.add(new UDPPeer(packet.getAddress(), packet.getPort()));
                     if (added) {
                         System.out.println("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
