@@ -1,6 +1,7 @@
 package com.raylabz.mocha.client;
 
 import com.raylabz.mocha.server.Mocha;
+import com.raylabz.mocha.server.Receivable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Defines functionality for a TCP Client.
@@ -33,10 +35,37 @@ public abstract class TCPClient extends Client {
      */
     private BufferedReader reader;
 
+    private Thread receptionThread;
+
+    private final Runnable receptionThreadRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isConnected()) {
+                System.out.println("Reception thread started"); //TODO REMOVE
+                String input;
+                try {
+                    while ((input = reader.readLine()) != null && isListening() && isConnected()) {
+                        onReceive(input);
+                    }
+                } catch (SocketException se) {
+                    if (!unblock) {
+                        setListening(false);
+                        setConnected(false);
+                        onConnectionRefused();
+                    }
+                } catch (IOException e) {
+                    System.err.println("Error receiving: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("Reception thread stopped."); // TODO REMOVE
+        }
+    };
+
     /**
      * Constructs a TCP Client.
      *
-     * @param name The client's name.
+     * @param name      The client's name.
      * @param ipAddress The IP address of that this TCP client will connect to.
      * @param port      The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.
@@ -54,24 +83,7 @@ public abstract class TCPClient extends Client {
             onConnectionRefused();
         }
 
-        Thread receptionThread = new Thread(() -> {
-            if (isConnected()) {
-                String input;
-                try {
-                    while ((input = reader.readLine()) != null && isListening() && isConnected()) {
-                        onReceive(input);
-                    }
-                } catch (SocketException se) {
-                    setListening(false);
-                    setConnected(false);
-                    onConnectionRefused();
-                } catch (IOException e) {
-                    System.err.println("Error receiving: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-        }, name + "-Listener");
-        receptionThread.start();
+        new Thread(receptionThreadRunnable, name + "-Listener").start();
     }
 
     /**
@@ -93,6 +105,42 @@ public abstract class TCPClient extends Client {
         if (isConnected()) {
             writer.println(data);
         }
+    }
+
+    @Override
+    public void sendAndReceive(String data, Receivable receivable) {
+
+        unblock = true;
+        try {
+            socket.close();
+            receptionThread.join();
+            this.socket = new Socket(getAddress(), getPort());
+            writer = new PrintWriter(socket.getOutputStream(), true);
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        } catch (Exception e) {
+            //Do nothing.
+        }
+
+        if (isConnected()) {
+            writer.println(data);
+            String input;
+            try {
+                reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                input = reader.readLine();
+                receivable.onReceive(input);
+                setListening(true);
+            } catch (SocketException se) {
+                setListening(false);
+                setConnected(false);
+                onConnectionRefused();
+            } catch (IOException e) {
+                System.err.println("Error receiving: " + e.getMessage());
+                e.printStackTrace();
+                setListening(true);
+            }
+        }
+
+        new Thread(receptionThreadRunnable).start();
     }
 
 }

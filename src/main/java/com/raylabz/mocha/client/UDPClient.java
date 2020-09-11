@@ -1,5 +1,7 @@
 package com.raylabz.mocha.client;
 
+import com.raylabz.mocha.server.Receivable;
+
 import java.io.IOException;
 import java.net.*;
 
@@ -85,6 +87,34 @@ public abstract class UDPClient extends Client {
                 final byte[] bytes = data.getBytes();
                 DatagramPacket packet = new DatagramPacket(bytes, bytes.length, getAddress(), getPort());
                 socket.send(packet);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    public void sendAndReceive(String data, Receivable receivable) {
+        if (isConnected()) {
+            try {
+                final byte[] bytes = data.getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(bytes, bytes.length, getAddress(), getPort());
+                socket.send(sendPacket);
+
+                try {
+                    final DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
+                    socket.receive(receivePacket);
+                    final String receiveData = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                    receivable.onReceive(receiveData);
+                } catch (ConnectException ce) {
+                    setListening(false);
+                    setConnected(false);
+                    onConnectionRefused();
+                } catch (IOException e) {
+                    System.err.println("Error receiving: " + e.getMessage());
+                    e.printStackTrace();
+                }
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

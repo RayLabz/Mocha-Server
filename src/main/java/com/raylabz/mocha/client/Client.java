@@ -1,5 +1,7 @@
 package com.raylabz.mocha.client;
 
+import com.raylabz.mocha.server.Receivable;
+
 import java.net.InetAddress;
 import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
@@ -41,6 +43,8 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
      * The execution delay between calls to the process() method.
      */
     private int executionDelay = 0;
+
+    protected boolean unblock = false;
 
     /**
      * Constructs a new Client.
@@ -155,6 +159,12 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
      * Executes code handling the case where the client may not be able to connect to the server.
      */
     public abstract void onConnectionRefused();
+
+    /**
+     * Sends data and blocks execution until a response is received.
+     * @param data The data to send.
+     */
+    public abstract void sendAndReceive(String data, Receivable receivable);
 
     /**
      * Runs the client.
