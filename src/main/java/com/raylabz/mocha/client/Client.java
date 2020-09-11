@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class Client implements Runnable, MessageBroker {
+public abstract class Client implements Runnable, MessageBroker, BackgroundProcessor {
 
     /**
      * The name of this client.
@@ -36,6 +36,11 @@ public abstract class Client implements Runnable, MessageBroker {
      * Indicates whether this client is connected to the server.
      */
     private final AtomicBoolean connected = new AtomicBoolean(false);
+
+    /**
+     * The execution delay between calls to the process() method.
+     */
+    private int executionDelay = 0;
 
     /**
      * Constructs a new Client.
@@ -131,19 +136,25 @@ public abstract class Client implements Runnable, MessageBroker {
     }
 
     /**
+     * Retrieves the execution delay.
+     * @return Returns integer.
+     */
+    public int getExecutionDelay() {
+        return executionDelay;
+    }
+
+    /**
+     * Sets the execution delay.
+     * @param executionDelay The execution delay in milliseconds.
+     */
+    public void setExecutionDelay(int executionDelay) {
+        this.executionDelay = executionDelay;
+    }
+
+    /**
      * Executes code handling the case where the client may not be able to connect to the server.
      */
     public abstract void onConnectionRefused();
-
-    /**
-     * Executes code to initialize the client.
-     */
-    public abstract void initialize();
-
-    /**
-     * Defines the processing instructions for this client
-     */
-    public abstract void process();
 
     /**
      * Runs the client.
@@ -153,6 +164,13 @@ public abstract class Client implements Runnable, MessageBroker {
         initialize();
         while (isConnected()) {
             process();
+            if (executionDelay > 0) {
+                try {
+                    Thread.sleep(executionDelay);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

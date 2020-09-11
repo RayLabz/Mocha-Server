@@ -41,19 +41,21 @@ public abstract class UDPClient extends Client {
         }
         Thread listeningThread = new Thread(() -> {
             if (isConnected()) {
-                while (isConnected() && isListening()) {
-                    try {
-                        final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                        socket.receive(packet);
-                        final String data = new String(packet.getData(), 0, packet.getLength());
-                        onReceive(data);
-                    } catch (ConnectException ce) {
-                        setListening(false);
-                        setConnected(false);
-                        onConnectionRefused();
-                    } catch (IOException e) {
-                        System.err.println("Error receiving: " + e.getMessage());
-                        e.printStackTrace();
+                while (isConnected()) {
+                    if (isListening()) {
+                        try {
+                            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                            socket.receive(packet);
+                            final String data = new String(packet.getData(), 0, packet.getLength());
+                            onReceive(data);
+                        } catch (ConnectException ce) {
+                            setListening(false);
+                            setConnected(false);
+                            onConnectionRefused();
+                        } catch (IOException e) {
+                            System.err.println("Error receiving: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

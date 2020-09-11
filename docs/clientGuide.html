@@ -48,12 +48,211 @@
             <h4>Contents</h4>
 
             <ul class="browser-default">
-                <!--TODO-->
+                <li><a href="#creatingAClient">Creating a client</a>
+                    <ul class="browser-default">
+                        <li><a href="#tcpClients">TCP clients</a></li>
+                        <li><a href="#udpClients">UDP clients</a></li>
+                        <li><a href="#websocketClients">WebSocket clients</a></li>
+                    </ul>
+                </li>
+                <li><a href="#startingAClient">Starting a client</a></li>
+                <li><a href="#executionDelay">Execution delay</a></li>
+                <li><a href="#listening">Enable/disable listening</a></li>
             </ul>
 
-            <h4 id=""></h4>
+            <h4 id="creatingAClient">Creating a client</h4>
+
+            <p>
+                Clients can be used to send requests and receive information from servers.
+                Mocha supports three types of clients:
+            </p>
+
+            <ul class="browser-default">
+                <li>TCP clients</li>
+                <li>UDP clients</li>
+                <li>WebSocket clients</li>
+            </ul>
+
+            <h5 id="tcpClients">TCP clients</h5>
+
+            <p>
+                TCP clients can be created by extending the <span class="code">TCPClient</span> class
+                and implementing its methods:
+            </p>
+
+            <pre class="prettyprint">
+public class MyTCPClient extends TCPClient {
+
+    public MyTCPClient(String ipAddress, int port) throws IOException {
+        super("MyTCPClient", ipAddress, port);
+    }
+
+    @Override
+    public void <b>onConnectionRefused</b>() {
+        //Code to run when the connection is lost or refused.
+    }
+
+    @Override
+    public void <b>initialize</b>() {
+        //Code to initialize the client - ran once at the start.
+    }
+
+    @Override
+    public void <b>process</b>() {
+        //Code to run continuously for processing.
+    }
+
+    @Override
+    public void <b>onReceive</b>(String data) {
+        //Code that is executed once a message is received.
+    }
+
+}</pre>
+
+            <p><u><span class="code">onConnectionRefused()</span></u>:</p>
+
+            <p>
+                This method executes when the client's connection to the server is lost
+                or when the server refuses connection to the client. Use this method to
+                display any error messages and gracefully stop the client.
+            </p>
+
+            <p><u><span class="code">initialize()</span></u>:</p>
+
+            <p>
+                This method is ran once <u>after connecting to the server</u> but
+                before executing any other background code (i.e. using the <span class="code">process()</span> method).
+            </p>
+
+            <p><u><span class="code">process()</span></u>:</p>
+
+            <p>
+                This method is continuously ran in intervals while the client
+                is running. The amount of delay between each interval is determined
+                by the <span class="code">executionDelay</span> attribute, which can be
+                set using <span class="code">setExecutionDelay()</span>.
+            </p>
+
+            <p><u><span class="code">onReceive()</span></u>:</p>
+
+            <p>
+                This method defines code which will be ran when a message is received from the server.
+            </p>
+
+            <h5 id="udpClients">UDP clients</h5>
+
+            <p>
+                UDP clients can be created by extending the <span class="code">UDPClient</span> class.
+                The creation process is identical to that of TCP clients.
+            </p>
+
+            <pre class="prettyprint">
+public class MyUDPClient extends UDPClient {
+
+    public MyUDPClient(String ipAddress, int port) throws IOException {
+        super("MyUDPClient", ipAddress, port);
+    }
+
+    @Override
+    public void onConnectionRefused() {
+        //Code to run when the connection is lost or refused.
+    }
+
+    @Override
+    public void initialize() {
+        //Code to initialize the client - ran once at the start.
+    }
+
+    @Override
+    public void process() {
+        //Code to run continuously for processing.
+    }
+
+    @Override
+    public void onReceive(String data) {
+        //Code that is executed once a message is received.
+    }
+
+}</pre>
+
+            <h5 id="websocketClients">WebSocket clients</h5>
+
+            <p>
+                You can create a WebSocket client by extending the <span class="code">WebSocketClient</span>
+                class. This class is similar with TCP and UDP clients but does not have the
+                <span class="code">onConnectionRefused()</span> method.
+            </p>
+
+            <pre class="prettyprint">
+public class MyWebSocketClient extends WebSocketClient {
+
+    public MyWebSocketClient(String endpointURI) throws IOException, WebSocketException {
+        super("MyWebSocketClient", endpointURI);
+    }
+
+    @Override
+    public void initialize() {
+        //Code to initialize the client - ran once at the start.
+    }
+
+    @Override
+    public void process() {
+        //Code to run continuously for processing.
+    }
+
+    @Override
+    public void onReceive(String data) {
+        //Code that is executed once a message is received.
+    }
+
+}</pre>
+
+            <h4 id="startingAClient">Starting a client</h4>
+
+            <p>
+                You can start any of these types of clients by instantiating
+                an object of their classes and then starting them using the method <span class="code">Mocha.start()</span>:
+            </p>
+
+            <pre class="prettyprint">
+//Construct and start a TCP client:
+MyTCPClient myTCPClient = new MyTCPClient("192.168.10.10", 1234);
+Mocha.start(myTCPClient);
+
+//Construct and start a UDP client:
+MyUDPClient myUDPClient = new MyUDPClient("192.168.10.10", 1234);
+Mocha.start(myUDPClient);
+
+//Construct and start a WebSocket client:
+MyWebSocketClient myWebSocketClient = new MyWebSocketClient("wss://echo.websocket.org");
+Mocha.start(myWebSocketClient);</pre>
+
+
+            <h4 id="executionDelay">Execution delay</h4>
+
+            <p>
+                You can set the execution delay <u>in milliseconds</u> between continuous calls to the
+                <span class="code">process()</span> method for a client using the
+                <span class="code">setExecutionDelay()</span>
+                method:
+            </p>
+
+            <pre class="prettyprint">
+myTCPClient.setExecutionDelay(1000);</pre>
+
+            <h4 id="listening">Enable/disable listening</h4>
+
+            <p>
+                You can also enable or disable the client from listening to incoming messages
+                by using <span class="code">setListening()</span>:
+            </p>
+
+            <pre class="prettyprint">
+myTCPClient.setListening(true); //Enable listening
+myUDPClient.setListening(false); //Disable listening</pre>
 
             <p><a href="#top">Back to top</a></p>
+            <p><a href="index.html">Back to home</a></p>
             <p><a href="serverGuide.html">View the server guide</a></p>
 
             <br/><br/>

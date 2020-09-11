@@ -9,7 +9,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Manages a WebSocket client.
  */
-public abstract class WebSocketClient implements Runnable, MessageBroker {
+public abstract class WebSocketClient implements Runnable, MessageBroker, BackgroundProcessor {
+
+    /**
+     * The client's name.
+     */
+    private final String name;
 
     /**
      * The web socket endpoint URI.
@@ -32,13 +37,20 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
     private final AtomicBoolean listening =  new AtomicBoolean(true);
 
     /**
+     * The execution delay between calls to the process() method.
+     */
+    private int executionDelay = 0;
+
+    /**
      * Creates a new WebSocketClient
+     * @param name The client's name.
      * @param endpointURI The client's socket URI.
      * @throws IOException Throws an exception when the socket cannot be created.
      * @throws WebSocketException Throws an exception when the socket cannot be created.
      */
-    public WebSocketClient(String endpointURI) throws IOException, WebSocketException {
-        if (!endpointURI.startsWith("ws://") || endpointURI.startsWith("wss://")) {
+    public WebSocketClient(String name, String endpointURI) throws IOException, WebSocketException {
+        this.name = name;
+        if (!endpointURI.startsWith("ws://") && !endpointURI.startsWith("wss://")) {
             throw new SocketException("WebSocket address must start with either 'ws://' or 'wss://'.");
         }
         else {
@@ -58,6 +70,14 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
             });
             receptionThread.start();
         }
+    }
+
+    /**
+     * Retrieves the name of the client.
+     * @return Returns a String.
+     */
+    public String getName() {
+        return name;
     }
 
     /**
@@ -106,6 +126,37 @@ public abstract class WebSocketClient implements Runnable, MessageBroker {
      */
     public void setListening(boolean listening) {
         this.listening.set(listening);
+    }
+
+    /**
+     * Retrieves the execution delay.
+     * @return Returns integer.
+     */
+    public int getExecutionDelay() {
+        return executionDelay;
+    }
+
+    /**
+     * Sets the execution delay.
+     * @param executionDelay The execution delay in milliseconds.
+     */
+    public void setExecutionDelay(int executionDelay) {
+        this.executionDelay = executionDelay;
+    }
+
+    @Override
+    public void run() {
+        initialize();
+        while (isEnabled()) {
+            process();
+            if (executionDelay > 0) {
+                try {
+                    Thread.sleep(executionDelay);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
