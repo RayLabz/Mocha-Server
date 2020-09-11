@@ -1,5 +1,7 @@
 import com.raylabz.mocha.server.*;
 
+import java.net.InetAddress;
+
 public class MyCustomServer extends Server {
 
     public MyCustomServer(String name) {
@@ -44,6 +46,13 @@ public class MyCustomServer extends Server {
                 tcpConnection.send("You said: " + data);
             }
         }));
+        server.addUDPHandler(new UDPConnection(7080) {
+            @Override
+            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+                System.out.println(udpConnection.getInetAddress().toString() + ": " + data);
+                udpConnection.send(address, outPort, "You said: " + data);
+            }
+        });
         Mocha.start(server);
     }
 

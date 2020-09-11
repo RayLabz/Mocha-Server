@@ -93,8 +93,12 @@ public abstract class UDPClient extends Client {
         }
     }
 
+
+    //TODO - Implement this correctly
+
     @Override
     public void sendAndReceive(String data, Receivable receivable) {
+        setListening(false);
         if (isConnected()) {
             try {
                 final byte[] bytes = data.getBytes();
@@ -119,6 +123,7 @@ public abstract class UDPClient extends Client {
                 throw new RuntimeException(e);
             }
         }
+        setListening(true);
     }
 
 }

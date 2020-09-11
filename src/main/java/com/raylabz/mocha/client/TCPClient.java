@@ -35,8 +35,14 @@ public abstract class TCPClient extends Client {
      */
     private BufferedReader reader;
 
+    /**
+     * A thread listening to messages from the server.
+     */
     private Thread receptionThread;
 
+    /**
+     * The runnable ran by receptionThread.
+     */
     private final Runnable receptionThreadRunnable = new Runnable() {
         @Override
         public void run() {
@@ -83,7 +89,8 @@ public abstract class TCPClient extends Client {
             onConnectionRefused();
         }
 
-        new Thread(receptionThreadRunnable, name + "-Listener").start();
+        receptionThread = new Thread(receptionThreadRunnable, name + "-Listener");
+        receptionThread.start();
     }
 
     /**
@@ -109,7 +116,6 @@ public abstract class TCPClient extends Client {
 
     @Override
     public void sendAndReceive(String data, Receivable receivable) {
-
         unblock = true;
         try {
             socket.close();
@@ -140,7 +146,10 @@ public abstract class TCPClient extends Client {
             }
         }
 
-        new Thread(receptionThreadRunnable).start();
+        unblock = false;
+
+        receptionThread = new Thread(receptionThreadRunnable, getName() + "-Listener");
+        receptionThread.start();
     }
 
 }

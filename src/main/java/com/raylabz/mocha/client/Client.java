@@ -44,6 +44,9 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
      */
     private int executionDelay = 0;
 
+    /**
+     * Unblocks the input stream for the socket to enable sendAndReceive() functionality.
+     */
     protected boolean unblock = false;
 
     /**
