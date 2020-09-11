@@ -57,31 +57,31 @@ public class ClientsExample {
 
         @Override
         public void process() {
-            send("TCP All the way!");
-            timeSent = System.currentTimeMillis();
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            send("TCP All the way!");
+//            timeSent = System.currentTimeMillis();
+//            try {
+//                Thread.sleep(2000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
 
         @Override
         public void onReceive(String data) {
             System.out.println("Received: " + data);
-            timeReceived = System.currentTimeMillis();
-            System.out.println("LATENCY ==> " + (timeReceived - timeSent) + "ms");
+//            timeReceived = System.currentTimeMillis();
+//            System.out.println("LATENCY ==> " + (timeReceived - timeSent) + "ms");
         }
     }
 
     public static void main(String[] args) throws IOException {
-        MyTCPClient tcpClient = new MyTCPClient("localhost", 7081);
-        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 7082);
+        MyTCPClient tcpClient = new MyTCPClient("localhost", 7080);
+//        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 7082);
 //        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 4321);
 //        MyUDPClient udpClient = new MyUDPClient("localhost", 7080);
 //        MyUDPClient udpClient2 = new MyUDPClient("localhost", 4321);
         Mocha.start(tcpClient);
-        Mocha.start(tcpClient2);
+//        Mocha.start(tcpClient2);
 //        new Thread(udpClient).start();
     }
 

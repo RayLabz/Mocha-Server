@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -114,6 +115,17 @@ public class TCPConnection implements Runnable {
         try {
             while ((input = reader.readLine()) != null && isEnabled()) {
                 receivable.onReceive(this, input);
+            }
+        }
+        catch (SocketException se) {
+            if (!isEnabled()) {
+                System.out.println("Lost connection to TCP client: " + getInetAddress() + ".");
+                Logger.logInfo("Lost connection to TCP client: " + getInetAddress() + ".");
+            }
+            else {
+                System.err.println("Error: " + se.getMessage());
+                se.printStackTrace();
+                Logger.logError(se.getMessage());
             }
         }
         catch (IOException e) {

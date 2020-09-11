@@ -348,6 +348,14 @@ server.removeUDPHandler(myUDPHandler);</pre>
 
             <p>Servers can send messages using the <span class="code">sendTCP()</span> and <span class="code">sendUDP()</span> methods:</p>
 
+            <div class="info-panel orange darken-4 white-text">
+                <p class="center">
+                    <b>Important</b> <br/> In order to send messages on a certain port, you have
+                    to activate communication through that port by <a class="yellow-text" href="#handlers"><u>defining a handler</u></a>,
+                    even if the handler is not needed.
+                </p>
+            </div>
+
             <h5 id="sendTCP">sendTCP()</h5>
 
             <p>For the <span class="code">sendTCP()</span> method you can provide:</p>

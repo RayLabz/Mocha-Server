@@ -225,8 +225,8 @@ public class TCPHandler implements Runnable {
             removeTCPConnectionsAndThreads();
         } catch (SocketException se) {
             if (!isEnabled()) {
-                System.out.println("Stopped listening to UDP port " + port + ".");
-                Logger.logInfo("Stopped listening to UDP port " + port + ".");
+                System.out.println("Stopped listening to TCP port " + port + ".");
+                Logger.logInfo("Stopped listening to TCP port " + port + ".");
             }
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
