@@ -134,6 +134,11 @@ public abstract class Client implements Runnable, MessageBroker {
     public abstract void onConnectionRefused();
 
     /**
+     * Executes code to initialize the client.
+     */
+    public abstract void initialize();
+
+    /**
      * Defines the processing instructions for this client
      */
     public abstract void process();
@@ -143,6 +148,7 @@ public abstract class Client implements Runnable, MessageBroker {
      */
     @Override
     public final void run() {
+        initialize();
         while (isConnected()) {
             process();
         }

@@ -19,6 +19,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class UDPConnection implements Runnable {
 
     /**
+     * The server that this UDP connection belongs to.
+     */
+    private Server server;
+
+    /**
      * The client's socket.
      */
     private DatagramSocket socket;
@@ -44,6 +49,22 @@ public abstract class UDPConnection implements Runnable {
      */
     public UDPConnection(int port) {
         this.port = port;
+    }
+
+    /**
+     * Retrieves the server of this UDPConnection.
+     * @return Returns a Server.
+     */
+    protected Server getServer() {
+        return this.server;
+    }
+
+    /**
+     * Sets the server of this UDPConnection.
+     * @param server A server
+     */
+    void setServer(Server server) {
+        this.server = server;
     }
 
     /**
@@ -166,15 +187,28 @@ public abstract class UDPConnection implements Runnable {
     public void run() {
         try {
             socket = new DatagramSocket(port);
-            System.out.println("Waiting for connections on UDP port " + port + ".");
-            Logger.logInfo("Waiting for connections on UDP port " + port + ".");
+            System.out.println("Waiting for messages on UDP port " + port + ".");
+            Logger.logInfo("Waiting for messages on UDP port " + port + ".");
             while (isEnabled()) {
                 byte[] buffer = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
-                connectedPeers.add(new UDPPeer(packet.getAddress(), packet.getPort()));
-                final String data = new String(packet.getData(), 0, packet.getLength());
-                onReceive(this, packet.getAddress(), packet.getPort(), data);
+
+                if (server.getBannedAddresses().contains(packet.getAddress())) {
+                    socket.close();
+                    System.out.println("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
+                    Logger.logWarning("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
+                }
+                else {
+
+                    boolean added = connectedPeers.add(new UDPPeer(packet.getAddress(), packet.getPort()));
+                    if (added) {
+                        System.out.println("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
+                        Logger.logInfo("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
+                    }
+                    final String data = new String(packet.getData(), 0, packet.getLength());
+                    onReceive(this, packet.getAddress(), packet.getPort(), data);
+                }
             }
         } catch (SocketException se) {
             if (!isEnabled()) {

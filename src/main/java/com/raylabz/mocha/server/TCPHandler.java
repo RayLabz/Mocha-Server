@@ -19,6 +19,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class TCPHandler implements Runnable {
 
     /**
+     * The server that this TCP handler belongs to.
+     */
+    private Server server;
+
+    /**
      * The TCP port handled by the handler.
      */
     private final int port;
@@ -56,6 +61,22 @@ public class TCPHandler implements Runnable {
     public TCPHandler(int port, final TCPReceivable receivable) {
         this.port = port;
         this.receivable = receivable;
+    }
+
+    /**
+     * Retrieves the server of this TCPHandler.
+     * @return Returns a Server.
+     */
+    protected Server getServer() {
+        return server;
+    }
+
+    /**
+     * Sets the server of this TCPHandler.
+     * @param server A server
+     */
+    void setServer(Server server) {
+        this.server = server;
     }
 
     /**
@@ -214,13 +235,22 @@ public class TCPHandler implements Runnable {
             Logger.logInfo("Waiting for connections on TCP port " + port + ".");
             while (isEnabled()) {
                 Socket socket = serverSocket.accept();
-                System.out.println("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
-                Logger.logInfo("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
-                TCPConnection tcpConnection = new TCPConnection(socket, receivable);
-                tcpConnections.add(tcpConnection);
-                Thread t = new Thread(tcpConnection, "TCP-Thread-" + socket.getInetAddress().toString());
-                tcpConnectionThreads.add(t);
-                t.start();
+
+                String socketAddress = socket.getInetAddress().toString();
+                if (server.getBannedAddresses().contains(socket.getInetAddress())) {
+                    socket.close();
+                    System.out.println("Banned IP address " + socketAddress + " attempted to connect on TCP port " + port + " but was disconnected.");
+                    Logger.logWarning("Banned IP address " + socketAddress + " attempted to connect on TCP port " + port + " but was disconnected.");
+                }
+                else {
+                    System.out.println("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
+                    Logger.logInfo("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
+                    TCPConnection tcpConnection = new TCPConnection(socket, receivable);
+                    tcpConnections.add(tcpConnection);
+                    Thread t = new Thread(tcpConnection, "TCP-Thread-" + socket.getInetAddress().toString());
+                    tcpConnectionThreads.add(t);
+                    t.start();
+                }
             }
             removeTCPConnectionsAndThreads();
         } catch (SocketException se) {

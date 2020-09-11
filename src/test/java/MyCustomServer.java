@@ -1,5 +1,7 @@
 import com.raylabz.mocha.server.*;
 
+import java.net.InetAddress;
+
 public class MyCustomServer extends Server {
 
     public MyCustomServer(String name) {
@@ -15,34 +17,30 @@ public class MyCustomServer extends Server {
 
     @Override
     public void process() {
-        if (messagesSent < 10) {
-            multicastTCP("Hello " + messagesSent, 7080, "localhost", "192.168.10.11");
-            messagesSent++;
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-            stop();
+        broadcastUDP(7080, "Hello");
+        messagesSent++;
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public void onStop() {
-        System.err.println("Server is about to stop...");
+        System.out.println("Server is about to stop...");
     }
 
     public static void main(String[] args) {
 
         MyCustomServer server = new MyCustomServer("Server");
-        server.addTCPHandler(new TCPHandler(7080, new TCPReceivable() {
+        server.addUDPHandler(new UDPConnection(7080) {
             @Override
-            public void onReceive(TCPConnection tcpConnection, String data) {
-                System.out.println(tcpConnection.getInetAddress() + ": " + data);
+            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+
             }
-        }));
+        });
+        server.banIP("192.168.10.11");
         Mocha.start(server);
     }
 

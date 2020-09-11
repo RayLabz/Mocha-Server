@@ -40,7 +40,7 @@
             <hr/>
 
             <div class="row center">
-                <h3>Guide</h3>
+                <h3>Server guide</h3>
             </div>
 
             <h4>Contents</h4>
@@ -203,7 +203,7 @@ public void process() {
             <pre class="prettyprint">
 @Override
 public void onStop() {
-    System.err.println("Server is about to stop...");
+    System.out.println("Server is about to stop...");
 }</pre>
 
             <h4 id="handlers">Connection handlers</h4>
@@ -350,7 +350,7 @@ server.removeUDPHandler(myUDPHandler);</pre>
 
             <div class="info-panel orange darken-4 white-text">
                 <p class="center">
-                    <b>Important</b> <br/> In order to send messages on a certain port, you have
+                    <b>Important</b>: In order to send messages on a certain port, you have
                     to activate communication through that port by <a class="yellow-text" href="#handlers"><u>defining a handler</u></a>,
                     even if the handler is not needed.
                 </p>
@@ -437,18 +437,73 @@ server.addUDPHandler(new UDPConnection(1234) {
 
             <h4 id="multicasting">Multicasting</h4>
 
-            <p></p>
+            <p>
+                In several cases, you may need to send a message to multiple clients simultaneously.
+                In networking terms, this is known as multicasting. Mocha allows multicasting
+                using the <span class="code">multicastTCP()</span> and <span class="code">multicastUDP()</span>
+                methods, which can take several parameters:
+            </p>
+
+            <ul class="browser-default">
+                <li>The data to send, the port to send it through and an array of InetAddress objects.</li>
+                <li>The data to send, the port to send it through and a list of InetAddress objects.</li>
+                <li>The data to send, the port to send it through and an array of String-formatted IP addresses.</li>
+            </ul>
+
+            <p>
+                For example:
+            </p>
+
+            <pre class="prettyprint">
+//Using an array of InetAddress objects:
+multicastTCP("Hello", 1234, inetAddress1, inetAddress2, inetAddressN);
+//or
+multicastTCP("Hello", 1234, inetAddressArray);
+
+//Using a list of InetAddress objects:
+multicastTCP("Hello", 1234, inetAddressList);
+
+//Using an array of String-formatted IP addresses:
+multicastTCP("Hello", 1234, "192.168.10.1", "192.168.10.2");
+//or
+multicastTCP("Hello", 1234, ipAddresses);</pre>
+
+            <p>Similarly with UDP:</p>
+
+            <pre class="prettyprint">
+//Using an array of InetAddress objects:
+multicastUDP("Hello", 1234, inetAddress1, inetAddress2, inetAddressN);
+//or
+multicastUDP("Hello", 1234, inetAddressArray);
+
+//Using a list of InetAddress objects:
+multicastUDP("Hello", 1234, inetAddressList);
+
+//Using an array of String-formatted IP addresses:
+multicastUDP("Hello", 1234, "192.168.10.1", "192.168.10.2");
+//or
+multicastUDP("Hello", 1234, ipAddresses);</pre>
 
             <h4 id="broadcasting">Broadcasting</h4>
 
-            <p></p>
+            <p>
+                You may also need to send a message to all connected clients simultaneously - aka broadcasting.
+                To broadcast a message to all connected clients, you can use the <span class="code">broadcastTCP()</span> and
+                <span class="code">broadcastUDP()</span> methods and provide the port to broadcast through and the data to broadcast:
+            </p>
 
+            <pre class="prettyprint">
+broadcastTCP(1234, "Hello");</pre>
 
-            <!--TODO: Add this in broadcasting section-->
-<!--            <div class="info-panel light-blue lighten-1 white-text">-->
-<!--                Broadcasting to a specific port requires that the server has a handler associated-->
-<!--                with that port and that clients have already made connections to the server.-->
-<!--            </div>-->
+            <p>For UDP:</p>
+
+            <pre class="prettyprint">
+broadcastUDP(1234, "Hello");</pre>
+
+            <div class="info-panel orange darken-4 white-text">
+                <b>Important</b>: Broadcasting over UDP requires that the client sends at least one message to the server
+                so that it is acknowledged as a peer.
+            </div>
 
             <!--------------------------------------------------------------------------------------------------------->
 

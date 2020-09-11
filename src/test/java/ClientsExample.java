@@ -21,17 +21,22 @@ public class ClientsExample {
         }
 
         @Override
+        public void initialize() {
+            send("Hi");
+        }
+
+        @Override
         public void process() {
-            int counter = 0;
-            while (isConnected()) {
-                send("UDP Message " + counter);
-                counter++;
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+//            int counter = 0;
+//            while (isConnected()) {
+//                send("UDP Message " + counter);
+//                counter++;
+//                try {
+//                    Thread.sleep(2000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
 
         @Override
@@ -56,6 +61,11 @@ public class ClientsExample {
         }
 
         @Override
+        public void initialize() {
+
+        }
+
+        @Override
         public void process() {
 //            send("TCP All the way!");
 //            timeSent = System.currentTimeMillis();
@@ -75,14 +85,14 @@ public class ClientsExample {
     }
 
     public static void main(String[] args) throws IOException {
-        MyTCPClient tcpClient = new MyTCPClient("localhost", 7080);
+//        MyTCPClient tcpClient = new MyTCPClient("localhost", 7080);
 //        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 7082);
 //        MyTCPClient tcpClient2 = new MyTCPClient("localhost", 4321);
-//        MyUDPClient udpClient = new MyUDPClient("localhost", 7080);
+        MyUDPClient udpClient = new MyUDPClient("localhost", 7080);
 //        MyUDPClient udpClient2 = new MyUDPClient("localhost", 4321);
-        Mocha.start(tcpClient);
+//        Mocha.start(tcpClient);
 //        Mocha.start(tcpClient2);
-//        new Thread(udpClient).start();
+        Mocha.start(udpClient);
     }
 
 }

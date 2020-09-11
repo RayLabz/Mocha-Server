@@ -5,9 +5,7 @@ import com.raylabz.mocha.logger.Logger;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -53,6 +51,11 @@ public abstract class Server implements Runnable {
     private final Vector<Thread> tcpHandlerThreads = new Vector<>();
 
     /**
+     * A list of banned addresses. Connections from these IP addresses will be dropped.
+     */
+    private final HashSet<InetAddress> bannedAddresses = new HashSet<>();
+
+    /**
      * Constructs a new server.
      * @param name The name of the server.
      */
@@ -66,6 +69,7 @@ public abstract class Server implements Runnable {
      * @return Returns true if the UDP handler was added, false otherwise.
      */
     public final boolean addUDPHandler(UDPConnection udpConnection) {
+        udpConnection.setServer(this);
         for (UDPConnection p : udpHandlers) {
             if (p.getPort() == udpConnection.getPort()) {
                 return false;
@@ -81,6 +85,7 @@ public abstract class Server implements Runnable {
      * @return Returns true if the TCP handler was added, false otherwise.
      */
     public final boolean addTCPHandler(TCPHandler tcpHandler) {
+        tcpHandler.setServer(this);
         for (TCPHandler h : tcpHandlers) {
             if (h.getPort() == tcpHandler.getPort()) {
                 return false;
@@ -352,6 +357,21 @@ public abstract class Server implements Runnable {
      * @param port The port to set the data through.
      * @param ipAddresses A list of IP addresses to send the data to.
      */
+    public final void multicastTCP(String data, int port, List<InetAddress> ipAddresses) {
+        for (TCPHandler handler : tcpHandlers) {
+            if (handler.getPort() == port) {
+                handler.multicast(data, new ArrayList<>(ipAddresses));
+                break;
+            }
+        }
+    }
+
+    /**
+     * Multicasts data to a set of IP addresses on a specific port.
+     * @param data The data to send.
+     * @param port The port to set the data through.
+     * @param ipAddresses A list of IP addresses to send the data to.
+     */
     public final void multicastTCP(String data, int port, String... ipAddresses) {
         ArrayList<InetAddress> inetAddresses = new ArrayList<>();
         for (String ipString : ipAddresses) {
@@ -458,6 +478,21 @@ public abstract class Server implements Runnable {
      * @param port The port to set the data through.
      * @param ipAddresses A list of IP addresses to send the data to.
      */
+    public final void multicastUDP(String data, int port, List<InetAddress> ipAddresses) {
+        for (UDPConnection udpConnection : udpHandlers) {
+            if (udpConnection.getPort() == port) {
+                udpConnection.multicast(data, new ArrayList<>(ipAddresses));
+                break;
+            }
+        }
+    }
+
+    /**
+     * Multicasts data to a set of IP addresses on a specific port.
+     * @param data The data to send.
+     * @param port The port to set the data through.
+     * @param ipAddresses A list of IP addresses to send the data to.
+     */
     public final void multicastUDP(String data, int port, String... ipAddresses) {
         ArrayList<InetAddress> inetAddresses = new ArrayList<>();
         for (String ipString : ipAddresses) {
@@ -465,8 +500,8 @@ public abstract class Server implements Runnable {
                 InetAddress inetAddress = InetAddress.getByName(ipString);
                 inetAddresses.add(inetAddress);
             } catch (UnknownHostException e) {
-                System.err.println("Invalid multicast target [TCP]: " + ipString);
-                Logger.logError("Invalid multicast target [TCP]: " + ipString);
+                System.err.println("Invalid multicast target [UDP]: " + ipString);
+                Logger.logError("Invalid multicast target [UDP]: " + ipString);
             }
         }
 
@@ -532,6 +567,66 @@ public abstract class Server implements Runnable {
         }
         System.out.println("Server '" + name + "' stopped.");
         Logger.logInfo("Server '" + name + "' stopped.");
+    }
+
+    /**
+     * Bans an IP address.
+     * @param inetAddress The IP address to ban.
+     */
+    public final void banIP(InetAddress inetAddress) {
+        bannedAddresses.add(inetAddress);
+        System.out.println("'" + name + "' Banned IP: " + inetAddress.toString());
+        Logger.logInfo("'" + name + "' Banned IP: " + inetAddress.toString());
+    }
+
+    /**
+     * Bans an IP address.
+     * @param ipAddress The IP address to ban.
+     */
+    public final void banIP(String ipAddress) {
+        try {
+            bannedAddresses.add(InetAddress.getByName(ipAddress));
+            System.out.println("'" + name + "' Banned IP: " + ipAddress);
+            Logger.logInfo("'" + name + "' Banned IP: " + ipAddress);
+        } catch (UnknownHostException e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            Logger.logError(e.getMessage());
+        }
+    }
+
+    /**
+     * Un-bans an IP address.
+     * @param inetAddress The IP address to unban.
+     */
+    public final void unbanIP(InetAddress inetAddress) {
+        bannedAddresses.remove(inetAddress);
+        System.out.println("'" + name + "' Un-banned IP: " + inetAddress.toString());
+        Logger.logInfo("'" + name + "' Un-banned IP: " + inetAddress.toString());
+    }
+
+    /**
+     * Un-bans an IP address.
+     * @param ipAddress The IP address to unban.
+     */
+    public final void unbanIP(String ipAddress) {
+        try {
+            bannedAddresses.remove(InetAddress.getByName(ipAddress));
+            System.out.println("'" + name + "' Un-banned IP: " + ipAddress);
+            Logger.logInfo("'" + name + "' Un-banned IP: " + ipAddress);
+        } catch (UnknownHostException e) {
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            Logger.logError(e.getMessage());
+        }
+    }
+
+    /**
+     * Retrieves the set of banned addresses for this server.
+     * @return Returns a HashSet of InetAddress.
+     */
+    public HashSet<InetAddress> getBannedAddresses() {
+        return bannedAddresses;
     }
 
     /**

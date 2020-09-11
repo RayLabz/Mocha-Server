@@ -58,4 +58,12 @@ public class UDPPeer {
         return Objects.hash(address, port);
     }
 
+    @Override
+    public String toString() {
+        return "UDPPeer{" +
+                "address=" + address +
+                ", port=" + port +
+                '}';
+    }
+
 }
