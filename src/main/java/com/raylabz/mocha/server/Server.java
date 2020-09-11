@@ -100,7 +100,7 @@ public abstract class Server implements Runnable {
      * @param tcpHandler The TCP handler to remove.
      * @return Returns true if the handler was successfully removed, false otherwise.
      */
-    public final boolean removeTCPHandler(TCPHandler tcpHandler) throws IOException {
+    public final boolean removeTCPHandler(TCPHandler tcpHandler) {
         tcpHandler.setEnabled(false);
         tcpHandler.removeTCPConnectionsAndThreads();
         return tcpHandlers.remove(tcpHandler);

@@ -505,6 +505,53 @@ broadcastUDP(1234, "Hello");</pre>
                 so that it is acknowledged as a peer.
             </div>
 
+            <h4 id="banningIPs">Banning IPs</h4>
+
+            <p>
+                In some cases you may want to ban incoming traffic from a specific IP address. To do this, you
+            can use <span class="code">banIP()</span>:
+            </p>
+
+            <p>From inside the <span class="code">Server</span> class:</p>
+
+            <pre class="prettyprint">
+banIP("192.168.10.1");</pre>
+
+            <p>From outside the <span class="code">Server</span> class:</p>
+
+            <pre class="prettyprint">
+server.banIP("192.168.10.1");</pre>
+
+            <h4 id="unbanningIPs">Un-banning IPs</h4>
+
+            <p>
+                Conversely, you may want to un-ban an IP using <span class="code">unbanIP()</span>:
+            </p>
+
+            <p>From inside the <span class="code">Server</span> class:</p>
+
+            <pre class="prettyprint">
+unbanIP("192.168.10.1");</pre>
+
+            <p>From outside the <span class="code">Server</span> class:</p>
+
+            <pre class="prettyprint">
+server.unbanIP("192.168.10.1");</pre>
+
+            <div class="info-panel light-blue lighten-1 white-text">
+                <p class="center">
+                    Banning entire IP addresses may not be a good idea for application servers because
+                    different users may be located within the same network and therefore have the same
+                    IP address. To more effectively control communication, you can utilize a session-based
+                    system to ban specific users from interacting with your app server without limiting
+                    access to others from the same network.
+                </p>
+                <p class="center">
+                    On the other hand, you may need to completely disable access from
+                    a specific IP that causes traffic spikes to avoid DDos attacks.
+                </p>
+            </div>
+
             <!--------------------------------------------------------------------------------------------------------->
 
             <br/>

@@ -22,6 +22,8 @@ public abstract class UDPClient extends Client {
 
     /**
      * Constructs a new UDPClient.
+     *
+     * @param name The client's name.
      * @param ipAddress The IP address that this client will connect to.
      * @param port The port that this client will connect through.
      * @throws UnknownHostException Thrown when the IP address is invalid.

@@ -36,6 +36,7 @@ public abstract class TCPClient extends Client {
     /**
      * Constructs a TCP Client.
      *
+     * @param name The client's name.
      * @param ipAddress The IP address of that this TCP client will connect to.
      * @param port      The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.

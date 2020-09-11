@@ -39,6 +39,7 @@ public abstract class Client implements Runnable, MessageBroker {
 
     /**
      * Constructs a new Client.
+     * @param name The client's name.
      * @param ipAddress Text-based internet address to which this client will connect.
      * @param port The port of this client.
      * @throws UnknownHostException Thrown when an invalid IP address was provided.
@@ -57,6 +58,7 @@ public abstract class Client implements Runnable, MessageBroker {
 
     /**
      * Constructs a new Client.
+     * @param name The client's name.
      * @param inetAddress The IP address to which this client will connect.
      * @param port The port of this client.
      * @throws PortUnreachableException Thrown when an invalid port was provided.

@@ -17,7 +17,7 @@ public class MyCustomServer extends Server {
 
     @Override
     public void process() {
-        broadcastUDP(7080, "Hello");
+        multicastUDP("Hello", 7080, "192.168.10.11");
         messagesSent++;
         try {
             Thread.sleep(3000);
@@ -40,7 +40,7 @@ public class MyCustomServer extends Server {
 
             }
         });
-        server.banIP("192.168.10.11");
+//        server.banIP("192.168.10.11");
         Mocha.start(server);
     }
 
