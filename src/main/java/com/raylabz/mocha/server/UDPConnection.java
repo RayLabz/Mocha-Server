@@ -125,13 +125,19 @@ public abstract class UDPConnection implements Runnable {
      * @param data The data to send.
      */
     public final void send(InetAddress address, int outPort, final String data) {
-        try {
-            final byte[] bytes = data.getBytes();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
-            socket.send(packet);
-        } catch (IOException e) {
-            Logger.logError(e.getMessage());
-            throw new RuntimeException(e);
+        if (!server.getBannedAddresses().contains(address)) {
+            try {
+                final byte[] bytes = data.getBytes();
+                DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
+                socket.send(packet);
+            } catch (IOException e) {
+                Logger.logError(e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }
+        else {
+            System.out.println("Cannot send UDP message to banned IP address: " + address.toString());
+            Logger.logWarning("Cannot send UDP message to banned IP address: " + address.toString());
         }
     }
 
