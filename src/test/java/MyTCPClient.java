@@ -20,7 +20,7 @@ public class MyTCPClient extends TCPClient {
 
     @Override
     public void initialize() {
-        //Code to initialize the client - ran once at the start.
+        setExecutionDelay(3000);
     }
 
     @Override
@@ -32,11 +32,6 @@ public class MyTCPClient extends TCPClient {
             }
         });
         messageID++;
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

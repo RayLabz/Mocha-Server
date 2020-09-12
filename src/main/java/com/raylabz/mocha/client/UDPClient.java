@@ -2,7 +2,10 @@ package com.raylabz.mocha.client;
 
 import com.raylabz.mocha.server.Receivable;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.*;
 
 /**
@@ -23,6 +26,46 @@ public abstract class UDPClient extends Client {
     private final byte[] buffer = new byte[65535];
 
     /**
+     * A thread listening to messages from the server.
+     */
+    private Thread receptionThread;
+
+    /**
+     * The runnable ran by receptionThread.
+     */
+    private final Runnable receptionThreadRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isConnected() && !socket.isClosed()) {
+                while (isConnected() && !socket.isClosed()) {
+                    if (isListening()) {
+                        try {
+                            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                            socket.receive(packet);
+                            final String data = new String(packet.getData(), 0, packet.getLength());
+                            onReceive(data);
+                        } catch (ConnectException ce) {
+                            if (!unblock) {
+                                setListening(false);
+                                setConnected(false);
+                                onConnectionRefused();
+                            }
+                        } catch (IOException e) {
+                            if (!unblock) {
+                                System.err.println("Error receiving: " + e.getMessage());
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                onConnectionRefused();
+            }
+        }
+    };
+
+    /**
      * Constructs a new UDPClient.
      *
      * @param name The client's name.
@@ -41,31 +84,9 @@ public abstract class UDPClient extends Client {
             setConnected(false);
             onConnectionRefused();
         }
-        Thread listeningThread = new Thread(() -> {
-            if (isConnected()) {
-                while (isConnected()) {
-                    if (isListening()) {
-                        try {
-                            final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                            socket.receive(packet);
-                            final String data = new String(packet.getData(), 0, packet.getLength());
-                            onReceive(data);
-                        } catch (ConnectException ce) {
-                            setListening(false);
-                            setConnected(false);
-                            onConnectionRefused();
-                        } catch (IOException e) {
-                            System.err.println("Error receiving: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-            else {
-                onConnectionRefused();
-            }
-        }, name + "-Listener");
-        listeningThread.start();
+
+        receptionThread = new Thread(receptionThreadRunnable, name  + "-Listener");
+        receptionThread.start();
     }
 
     /**
@@ -93,12 +114,19 @@ public abstract class UDPClient extends Client {
         }
     }
 
-
-    //TODO - Implement this correctly
-
     @Override
     public void sendAndReceive(String data, Receivable receivable) {
-        setListening(false);
+
+        unblock = true;
+
+        try {
+            socket.close();
+            receptionThread.join();
+            this.socket = new DatagramSocket();
+        } catch (Exception e) {
+            //Do nothing.
+        }
+
         if (isConnected()) {
             try {
                 final byte[] bytes = data.getBytes();
@@ -123,7 +151,12 @@ public abstract class UDPClient extends Client {
                 throw new RuntimeException(e);
             }
         }
-        setListening(true);
+
+        unblock = false;
+
+        receptionThread = new Thread(receptionThreadRunnable, getName()  + "-Listener");
+        receptionThread.start();
+
     }
 
 }

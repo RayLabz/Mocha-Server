@@ -47,7 +47,6 @@ public abstract class TCPClient extends Client {
         @Override
         public void run() {
             if (isConnected()) {
-                System.out.println("Reception thread started"); //TODO REMOVE
                 String input;
                 try {
                     while ((input = reader.readLine()) != null && isListening() && isConnected()) {
@@ -64,7 +63,6 @@ public abstract class TCPClient extends Client {
                     e.printStackTrace();
                 }
             }
-            System.out.println("Reception thread stopped."); // TODO REMOVE
         }
     };
 
