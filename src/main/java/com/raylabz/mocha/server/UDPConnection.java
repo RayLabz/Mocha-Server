@@ -44,6 +44,11 @@ public abstract class UDPConnection implements Runnable {
     private final HashSet<UDPPeer> connectedPeers = new HashSet<>();
 
     /**
+     * A set of unique connected peers of this UDP connection.
+     */
+    private final HashSet<InetAddress> udpPeers = new HashSet<>();
+
+    /**
      * Constructs a new UDPConnection.
      * @param port The connection's port.
      */
@@ -205,8 +210,8 @@ public abstract class UDPConnection implements Runnable {
                     Logger.logWarning("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
                 }
                 else {
-                    boolean added = connectedPeers.add(new UDPPeer(packet.getAddress(), packet.getPort()));
-                    if (added) {
+                    connectedPeers.add(new UDPPeer(packet.getAddress(), packet.getPort()));
+                    if (udpPeers.add(packet.getAddress())) {
                         System.out.println("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
                         Logger.logInfo("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
                     }

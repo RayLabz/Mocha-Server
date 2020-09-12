@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,6 +53,8 @@ public class TCPHandler implements Runnable {
      * The handler's TCP receivable, which determines what its TCPConnections will execute once they receive data.
      */
     private final TCPReceivable receivable;
+
+    private final HashSet<InetAddress> tcpPeers = new HashSet<>();
 
     /**
      * Constructs a TCPHandler.
@@ -201,6 +204,14 @@ public class TCPHandler implements Runnable {
     }
 
     /**
+     * Retrieves the set of peers for this handler.
+     * @return Returns a HashSet of InetAddress.
+     */
+    public HashSet<InetAddress> getTcpPeers() {
+        return tcpPeers;
+    }
+
+    /**
      * Multicasts a message to selected clients based on their IP address.
      * @param data The data to send.
      * @param ipAddresses A list of IP addresses.
@@ -243,10 +254,12 @@ public class TCPHandler implements Runnable {
                     Logger.logWarning("Banned IP address " + socketAddress + " attempted to connect on TCP port " + port + " but was disconnected.");
                 }
                 else {
-                    System.out.println("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
-                    Logger.logInfo("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
                     TCPConnection tcpConnection = new TCPConnection(socket, receivable);
                     tcpConnections.add(tcpConnection);
+                    if (tcpPeers.add(socket.getInetAddress())) {
+                        System.out.println("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
+                        Logger.logInfo("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());
+                    }
                     Thread t = new Thread(tcpConnection, "TCP-Thread-" + socket.getInetAddress().toString());
                     tcpConnectionThreads.add(t);
                     t.start();

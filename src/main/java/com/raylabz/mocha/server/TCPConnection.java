@@ -124,13 +124,11 @@ public class TCPConnection implements Runnable {
             }
             else {
                 System.err.println("Error: " + se.getMessage());
-                se.printStackTrace();
                 Logger.logError(se.getMessage());
             }
         }
         catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
             Logger.logError(e.getMessage());
         }
     }
