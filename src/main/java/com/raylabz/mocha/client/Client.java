@@ -187,4 +187,9 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
         }
     }
 
+    /**
+     * Stops the client.
+     */
+    public abstract void stop();
+
 }

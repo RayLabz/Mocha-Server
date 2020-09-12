@@ -114,7 +114,14 @@ public abstract class UDPClient extends Client {
         }
     }
 
-//    @Override
+    @Override
+    public void stop() {
+        setConnected(false);
+        setListening(false);
+        socket.close();
+    }
+
+    //    @Override
 //    public void sendAndReceive(String data, Receivable receivable) {
 //
 //        unblock = true;

@@ -123,7 +123,7 @@ public class TCPConnection implements Runnable {
                 Logger.logInfo("Lost connection to TCP client: " + getInetAddress() + ".");
             }
             else {
-                System.err.println("Error: " + se.getMessage());
+                System.err.println("[TCP " + getInetAddress().toString() + ":" + getPort() + "]" + "Error: " + se.getMessage());
                 Logger.logError(se.getMessage());
             }
         }

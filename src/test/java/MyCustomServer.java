@@ -42,17 +42,15 @@ public class MyCustomServer extends Server {
         server.addTCPHandler(new TCPHandler(7080, new TCPReceivable() {
             @Override
             public void onReceive(TCPConnection tcpConnection, String data) {
-                System.out.println(tcpConnection.getInetAddress().toString() + ": " + data);
-                tcpConnection.send("You said: " + data);
+                tcpConnection.send(data);
             }
         }));
-        server.addUDPHandler(new UDPConnection(7080) {
-            @Override
-            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
-                System.out.println(address.toString() + ": " + data);
-                udpConnection.send(address, outPort, "You said: " + data);
-            }
-        });
+//        server.addUDPHandler(new UDPConnection(7080) {
+//            @Override
+//            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+//                udpConnection.send(address, outPort, "You said: " + data);
+//            }
+//        });
         Mocha.start(server);
     }
 

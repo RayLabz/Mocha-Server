@@ -181,7 +181,7 @@ public class TCPHandler implements Runnable {
             }
         }
         catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
+            System.err.println("[TCP " + port + "]" + "Error: " + e.getMessage());
             e.printStackTrace();
             Logger.logError(e.getMessage());
         }
@@ -198,8 +198,8 @@ public class TCPHandler implements Runnable {
             }
         }
         else {
-            System.err.println("Error - Cannot broadcast. TCPHandler [" + getPort() + "] disabled");
-            Logger.logError("Error - Cannot broadcast. TCPHandler [" + getPort() + "] disabled");
+            System.err.println("[TCP " + port + "]" + "Error - Cannot broadcast. TCPHandler [" + getPort() + "] disabled");
+            Logger.logError("[TCP " + port + "]" + "Error - Cannot broadcast. TCPHandler [" + getPort() + "] disabled");
         }
     }
 
@@ -225,8 +225,8 @@ public class TCPHandler implements Runnable {
             }
         }
         else {
-            System.err.println("Error - Cannot multicast. TCPHandler [" + getPort() + "] disabled");
-            Logger.logError("Error - Cannot multicast. TCPHandler [" + getPort() + "] disabled");
+            System.err.println("[TCP " + port + "]" + "Error - Cannot multicast. TCPHandler [" + getPort() + "] disabled");
+            Logger.logError("[TCP " + port + "]" + "Error - Cannot multicast. TCPHandler [" + getPort() + "] disabled");
         }
     }
 
@@ -272,7 +272,7 @@ public class TCPHandler implements Runnable {
                 Logger.logInfo("Stopped listening to TCP port " + port + ".");
             }
         } catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
+            System.err.println("[TCP " + port + "]" + "Error: " + e.getMessage());
             e.printStackTrace();
             Logger.logError(e.getMessage());
         }

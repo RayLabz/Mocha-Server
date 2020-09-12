@@ -112,7 +112,16 @@ public abstract class TCPClient extends Client {
         }
     }
 
-//    @Override
+    @Override
+    public void stop() {
+        setConnected(false);
+        setListening(false);
+        try {
+            socket.shutdownInput();
+        } catch (IOException e) { }
+    }
+
+    //    @Override
 //    public void sendAndReceive(String data, Receivable receivable) {
 //        unblock = true;
 //        try {

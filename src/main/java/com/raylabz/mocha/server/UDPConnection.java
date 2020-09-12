@@ -160,8 +160,8 @@ public abstract class UDPConnection implements Runnable {
             }
         }
         else {
-            System.err.println("Error - Cannot multicast. UDPConnection [" + getPort() + "] disabled");
-            Logger.logError("Error - Cannot multicast. UDPConnection [" + getPort() + "] disabled");
+            System.err.println("[UDP " + port + "]" + "Error - Cannot multicast. UDPConnection [" + getPort() + "] disabled");
+            Logger.logError("[UDP " + port + "]" + "Error - Cannot multicast. UDPConnection [" + getPort() + "] disabled");
         }
     }
 
@@ -176,8 +176,8 @@ public abstract class UDPConnection implements Runnable {
             }
         }
         else {
-            System.err.println("Error - Cannot broadcast. UDPConnection [" + getInetAddress() + ":" + getPort() + "] disabled");
-            Logger.logError("Error - Cannot broadcast. UDPConnection [" + getInetAddress() + ":" + getPort() + "] disabled");
+            System.err.println("[UDP " + port + "]" + "Error - Cannot broadcast. UDPConnection [" + getInetAddress() + ":" + getPort() + "] disabled");
+            Logger.logError("[UDP " + port + "]" + "Error - Cannot broadcast. UDPConnection [" + getInetAddress() + ":" + getPort() + "] disabled");
         }
     }
 
@@ -225,7 +225,7 @@ public abstract class UDPConnection implements Runnable {
                 Logger.logInfo("Stopped listening to UDP port " + port + ".");
             }
         } catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
+            System.err.println("[UDP " + port + "]" + "Error: " + e.getMessage());
             e.printStackTrace();
             Logger.logError(e.getMessage());
         }
