@@ -1,4 +1,3 @@
-import com.raylabz.mocha.client.TCPClient;
 import com.raylabz.mocha.client.UDPClient;
 import com.raylabz.mocha.server.Mocha;
 import com.raylabz.mocha.server.Receivable;

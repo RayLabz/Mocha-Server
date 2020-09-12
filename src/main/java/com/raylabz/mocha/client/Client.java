@@ -47,7 +47,7 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
     /**
      * Unblocks the input stream for the socket to enable sendAndReceive() functionality.
      */
-    protected boolean unblock = false;
+//    protected boolean unblock = false;
 
     /**
      * Constructs a new Client.
@@ -163,11 +163,11 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
      */
     public abstract void onConnectionRefused();
 
-    /**
-     * Sends data and blocks execution until a response is received.
-     * @param data The data to send.
-     */
-    public abstract void sendAndReceive(String data, Receivable receivable);
+//    /**
+//     * Sends data and blocks execution until a response is received.
+//     * @param data The data to send.
+//     */
+//    public abstract void sendAndReceive(String data, Receivable receivable);
 
     /**
      * Runs the client.

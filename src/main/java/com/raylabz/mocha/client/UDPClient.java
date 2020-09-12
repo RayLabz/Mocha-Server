@@ -45,16 +45,16 @@ public abstract class UDPClient extends Client {
                             final String data = new String(packet.getData(), 0, packet.getLength());
                             onReceive(data);
                         } catch (ConnectException ce) {
-                            if (!unblock) {
+//                            if (!unblock) {
                                 setListening(false);
                                 setConnected(false);
                                 onConnectionRefused();
-                            }
+//                            }
                         } catch (IOException e) {
-                            if (!unblock) {
+//                            if (!unblock) {
                                 System.err.println("Error receiving: " + e.getMessage());
                                 e.printStackTrace();
-                            }
+//                            }
                         }
                     }
                 }
@@ -114,49 +114,49 @@ public abstract class UDPClient extends Client {
         }
     }
 
-    @Override
-    public void sendAndReceive(String data, Receivable receivable) {
-
-        unblock = true;
-
-        try {
-            socket.close();
-            receptionThread.join();
-            this.socket = new DatagramSocket();
-        } catch (Exception e) {
-            //Do nothing.
-        }
-
-        if (isConnected()) {
-            try {
-                final byte[] bytes = data.getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(bytes, bytes.length, getAddress(), getPort());
-                socket.send(sendPacket);
-
-                try {
-                    final DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
-                    socket.receive(receivePacket);
-                    final String receiveData = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                    receivable.onReceive(receiveData);
-                } catch (ConnectException ce) {
-                    setListening(false);
-                    setConnected(false);
-                    onConnectionRefused();
-                } catch (IOException e) {
-                    System.err.println("Error receiving: " + e.getMessage());
-                    e.printStackTrace();
-                }
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        unblock = false;
-
-        receptionThread = new Thread(receptionThreadRunnable, getName()  + "-Listener");
-        receptionThread.start();
-
-    }
+//    @Override
+//    public void sendAndReceive(String data, Receivable receivable) {
+//
+//        unblock = true;
+//
+//        try {
+//            socket.close();
+//            receptionThread.join();
+//            this.socket = new DatagramSocket();
+//        } catch (Exception e) {
+//            //Do nothing.
+//        }
+//
+//        if (isConnected()) {
+//            try {
+//                final byte[] bytes = data.getBytes();
+//                DatagramPacket sendPacket = new DatagramPacket(bytes, bytes.length, getAddress(), getPort());
+//                socket.send(sendPacket);
+//
+//                try {
+//                    final DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
+//                    socket.receive(receivePacket);
+//                    final String receiveData = new String(receivePacket.getData(), 0, receivePacket.getLength());
+//                    receivable.onReceive(receiveData);
+//                } catch (ConnectException ce) {
+//                    setListening(false);
+//                    setConnected(false);
+//                    onConnectionRefused();
+//                } catch (IOException e) {
+//                    System.err.println("Error receiving: " + e.getMessage());
+//                    e.printStackTrace();
+//                }
+//
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//
+//        unblock = false;
+//
+//        receptionThread = new Thread(receptionThreadRunnable, getName()  + "-Listener");
+//        receptionThread.start();
+//
+//    }
 
 }

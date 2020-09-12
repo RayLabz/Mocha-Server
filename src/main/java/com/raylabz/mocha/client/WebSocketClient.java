@@ -76,7 +76,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Retrieves the name of the client.
      * @return Returns a String.
      */
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
@@ -84,7 +84,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Retrieves the client's socket
      * @return Returns a WebSocket.
      */
-    public WebSocket getSocket() {
+    public final WebSocket getSocket() {
         return socket;
     }
 
@@ -92,7 +92,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Retrieves the status of this client.
      * @return Returns true if the client is running, false otherwise.
      */
-    public boolean isEnabled() {
+    public final boolean isEnabled() {
         return enabled.get();
     }
 
@@ -100,7 +100,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Sets the status of this client.
      * @param enabled Set to true for running, false for not running.
      */
-    public void setEnabled(boolean enabled) {
+    public final void setEnabled(boolean enabled) {
         this.enabled.set(enabled);
     }
 
@@ -108,7 +108,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Retrieves the client's websocket endpoint URI.
      * @return Returns a String.
      */
-    public String getEndpointURI() {
+    public final String getEndpointURI() {
         return endpointURI;
     }
 
@@ -116,7 +116,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Retrieves whether or not the client is listening.
      * @return Returns true if the client is listening, false otherwise.
      */
-    public boolean isListening() {
+    public final boolean isListening() {
         return listening.get();
     }
 
@@ -124,7 +124,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Sets the listening status of this client.
      * @param listening Set to true for listening, false for not listening.
      */
-    public void setListening(boolean listening) {
+    public final void setListening(boolean listening) {
         this.listening.set(listening);
     }
 
@@ -132,7 +132,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Retrieves the execution delay.
      * @return Returns integer.
      */
-    public int getExecutionDelay() {
+    public final int getExecutionDelay() {
         return executionDelay;
     }
 
@@ -140,12 +140,12 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * Sets the execution delay.
      * @param executionDelay The execution delay in milliseconds.
      */
-    public void setExecutionDelay(int executionDelay) {
+    public final void setExecutionDelay(int executionDelay) {
         this.executionDelay = executionDelay;
     }
 
     @Override
-    public void run() {
+    public final void run() {
         initialize();
         while (isEnabled()) {
             process();
@@ -164,7 +164,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * @param data The data to send to the server.
      */
     @Override
-    public void send(String data) {
+    public final void send(String data) {
         if (isEnabled()) {
             socket.sendText(data);
         }

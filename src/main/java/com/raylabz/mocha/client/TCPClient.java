@@ -53,11 +53,11 @@ public abstract class TCPClient extends Client {
                         onReceive(input);
                     }
                 } catch (SocketException se) {
-                    if (!unblock) {
+//                    if (!unblock) {
                         setListening(false);
                         setConnected(false);
                         onConnectionRefused();
-                    }
+//                    }
                 } catch (IOException e) {
                     System.err.println("Error receiving: " + e.getMessage());
                     e.printStackTrace();
@@ -112,42 +112,42 @@ public abstract class TCPClient extends Client {
         }
     }
 
-    @Override
-    public void sendAndReceive(String data, Receivable receivable) {
-        unblock = true;
-        try {
-            socket.close();
-            receptionThread.join();
-            this.socket = new Socket(getAddress(), getPort());
-            writer = new PrintWriter(socket.getOutputStream(), true);
-            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (Exception e) {
-            //Do nothing.
-        }
-
-        if (isConnected()) {
-            writer.println(data);
-            String input;
-            try {
-                reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                input = reader.readLine();
-                receivable.onReceive(input);
-                setListening(true);
-            } catch (SocketException se) {
-                setListening(false);
-                setConnected(false);
-                onConnectionRefused();
-            } catch (IOException e) {
-                System.err.println("Error receiving: " + e.getMessage());
-                e.printStackTrace();
-                setListening(true);
-            }
-        }
-
-        unblock = false;
-
-        receptionThread = new Thread(receptionThreadRunnable, getName() + "-Listener");
-        receptionThread.start();
-    }
+//    @Override
+//    public void sendAndReceive(String data, Receivable receivable) {
+//        unblock = true;
+//        try {
+//            socket.close();
+//            receptionThread.join();
+//            this.socket = new Socket(getAddress(), getPort());
+//            writer = new PrintWriter(socket.getOutputStream(), true);
+//            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//        } catch (Exception e) {
+//            //Do nothing.
+//        }
+//
+//        if (isConnected()) {
+//            writer.println(data);
+//            String input;
+//            try {
+//                reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//                input = reader.readLine();
+//                receivable.onReceive(input);
+//                setListening(true);
+//            } catch (SocketException se) {
+//                setListening(false);
+//                setConnected(false);
+//                onConnectionRefused();
+//            } catch (IOException e) {
+//                System.err.println("Error receiving: " + e.getMessage());
+//                e.printStackTrace();
+//                setListening(true);
+//            }
+//        }
+//
+//        unblock = false;
+//
+//        receptionThread = new Thread(receptionThreadRunnable, getName() + "-Listener");
+//        receptionThread.start();
+//    }
 
 }
