@@ -24,12 +24,7 @@ public class MyTCPClient extends TCPClient {
 
     @Override
     public void process() {
-        sendAndReceive("Hi " + messageID, new Receivable() {
-            @Override
-            public void onReceive(String data) {
-                System.out.println("Server: " + data);
-            }
-        });
+        send("Message " + messageID);
         messageID++;
     }
 
