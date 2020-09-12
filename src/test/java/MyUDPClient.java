@@ -17,20 +17,33 @@ public class MyUDPClient extends UDPClient {
 
     @Override
     public void initialize() {
-        setExecutionDelay(3000);
+        send("Message " + messageID);
     }
 
     private int messageID = 0;
 
     @Override
     public void process() {
-        send("Message " + messageID);
-        messageID++;
+
     }
+
+    long sendTime;
+    long receiveTime;
 
     @Override
     public void onReceive(String data) {
-        System.out.println(data);
+        receiveTime = System.currentTimeMillis();
+
+        if (messageID < 49) {
+            System.out.println(data);
+            messageID++;
+            send("hi " + messageID);
+            sendTime = System.currentTimeMillis();
+        }
+        else {
+            stop();
+            System.out.println();
+        }
     }
 
     public static void main(String[] args) throws IOException {
