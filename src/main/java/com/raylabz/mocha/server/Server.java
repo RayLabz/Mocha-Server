@@ -252,18 +252,14 @@ public abstract class Server implements Runnable {
     /**
      * Initializes the server.
      */
-    public abstract void initialize();
+    protected abstract void initialize();
 
     /**
      * Defines functionality that is executed by the server during its runtime.
      * Important note: This method is executed CONTINUOUSLY during the server's runtime. Make sure that this method
      * only contains necessary code that should continuously be executed.
      */
-    public abstract void process();
-
-    /**
-     * Inner static class which contains functionality specific to TCP.
-     */
+    protected abstract void process();
 
     /**
      * Sends data through TCP.
