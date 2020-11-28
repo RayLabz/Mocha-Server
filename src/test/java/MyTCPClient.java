@@ -26,9 +26,9 @@ public class MyTCPClient extends TCPClient {
 
     @Override
     public void process() {
-        send("hi");
+        send("hi " + x);
         x++;
-        if (x > 10) {
+        if (x > 9) {
             try {
                 stop();
             } catch (IOException e) {

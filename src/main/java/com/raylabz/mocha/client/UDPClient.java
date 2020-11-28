@@ -121,6 +121,12 @@ public abstract class UDPClient extends Client {
         socket.close();
     }
 
+    @Override
+    public void initialize() { }
+
+    @Override
+    public void process() { }
+
     //    @Override
 //    public void sendAndReceive(String data, Receivable receivable) {
 //

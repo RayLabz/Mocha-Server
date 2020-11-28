@@ -180,12 +180,19 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
         return thread;
     }
 
+    @Override
+    public void initialize() { }
+
+    @Override
+    public void process() { }
+
     /**
      * Stops the client.
      */
     public final void stop() {
         setListening(false);
         setEnabled(false);
+        socket.sendClose(WebSocketCloseCode.NORMAL);
     }
 
 }

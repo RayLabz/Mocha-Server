@@ -20,7 +20,13 @@ public class MyServer extends Server {
                 tcpConnection.send("--> " + data);
             }
         }));
-        unWhitelistIP("192.1.1.2");
+        addUDPHandler(new UDPConnection(8888) {
+            @Override
+            public void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data) {
+                udpConnection.send(address, outPort, "--> " + data);
+            }
+        });
+//        whitelistIP("127.0.0.1");
     }
 
     long startTime;
@@ -32,9 +38,9 @@ public class MyServer extends Server {
 
     @Override
     protected void runIndefinitely() {
-        if (System.currentTimeMillis() > startTime + (15 * 1000)) {
-            stop();
-        }
+//        if (System.currentTimeMillis() > startTime + (20 * 1000)) {
+//            stop();
+//        }
     }
 
     public static void main(String[] args) {
