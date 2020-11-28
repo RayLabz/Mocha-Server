@@ -370,7 +370,7 @@ public abstract class Server implements Runnable {
      * @param tag The runnable's tag, used for identification.
      * @return Returns the thread running the runnable.
      */
-    public Thread runInBackground(final Runnable runnable, final String tag) {
+    public final Thread runInBackground(final Runnable runnable, final String tag) {
         Thread thread = new Thread(runnable, tag);
         thread.start();
         return thread;
