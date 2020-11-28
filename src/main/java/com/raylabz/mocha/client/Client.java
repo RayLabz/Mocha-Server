@@ -2,6 +2,7 @@ package com.raylabz.mocha.client;
 
 import com.raylabz.mocha.server.Receivable;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
@@ -160,8 +161,9 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
 
     /**
      * Executes code handling the case where the client may not be able to connect to the server.
+     * Does nothing - must be implemented by extending classes if needed.
      */
-    public abstract void onConnectionRefused();
+    public void onConnectionRefused() { }
 
 //    /**
 //     * Sends data and blocks execution until a response is received.
@@ -188,8 +190,18 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
     }
 
     /**
+     * Starts the client.
+     * @return Returns the thread running this client.
+     */
+    public final Thread start() {
+        Thread thread = new Thread(this, name);
+        thread.start();
+        return thread;
+    }
+
+    /**
      * Stops the client.
      */
-    public abstract void stop();
+    public abstract void stop() throws IOException;
 
 }

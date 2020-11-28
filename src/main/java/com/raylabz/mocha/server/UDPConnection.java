@@ -124,25 +124,19 @@ public abstract class UDPConnection implements Runnable {
     }
 
     /**
-     * Sends data to the server.
+     * Sends data to a client.
      * @param address The address to send the data to.
      * @param outPort The port of the client.
      * @param data The data to send.
      */
     public final void send(InetAddress address, int outPort, final String data) {
-        if (!server.getBannedAddresses().contains(address)) {
-            try {
-                final byte[] bytes = data.getBytes();
-                DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
-                socket.send(packet);
-            } catch (IOException e) {
-                Logger.logError(e.getMessage());
-                throw new RuntimeException(e);
-            }
-        }
-        else {
-            System.out.println("Cannot send UDP message to banned IP address: " + address.toString());
-            Logger.logWarning("Cannot send UDP message to banned IP address: " + address.toString());
+        try {
+            final byte[] bytes = data.getBytes();
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
+            socket.send(packet);
+        } catch (IOException e) {
+            Logger.logError(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -205,9 +199,11 @@ public abstract class UDPConnection implements Runnable {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
 
-                if (server.getBannedAddresses().contains(packet.getAddress())) {
-                    System.out.println("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
-                    Logger.logWarning("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
+                if (server.getSecurityMode() == SecurityMode.BLACKLIST && server.getBlacklist().contains(packet.getAddress())) {
+                    System.out.println("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was rejected.");
+                }
+                else if (server.getSecurityMode() == SecurityMode.WHITELIST && !server.getWhitelist().contains(packet.getAddress())) {
+                    System.out.println("Non-whitelisted IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was rejected");
                 }
                 else {
                     connectedPeers.add(new UDPPeer(packet.getAddress(), packet.getPort()));

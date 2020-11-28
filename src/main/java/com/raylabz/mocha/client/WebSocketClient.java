@@ -170,4 +170,22 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
         }
     }
 
+    /**
+     * Starts the client.
+     * @return Returns the thread running the client runnable.
+     */
+    public final Thread start() {
+        final Thread thread = new Thread(this, name + "-WebSocketClient");
+        thread.start();
+        return thread;
+    }
+
+    /**
+     * Stops the client.
+     */
+    public final void stop() {
+        setListening(false);
+        setEnabled(false);
+    }
+
 }

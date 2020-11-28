@@ -2,6 +2,8 @@ package com.raylabz.mocha.server;
 
 import com.raylabz.mocha.logger.Logger;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -14,6 +16,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @version 1.0.0
  */
 public abstract class Server implements Runnable {
+
+    public static final String WHITELIST_FILENAME_POSTFIX =  "-whitelist";
+    public static final String BLACKLIST_FILENAME_POSTFIX =  "-blacklist";
+
+    /**
+     * The server's security mode.
+     */
+    private final SecurityMode securityMode;
+
+    /**
+     * The server's whitelist - a list of IP addresses for which to <b>accept</b> communication when running in SecurityMode.WHITELIST.
+     */
+    private final HashSet<InetAddress> whitelist = new HashSet<>();
+
+    /**
+     * The server's blacklist - a list of IP addresses for which to <b>reject</b> communication when running in SecurityMode.BLACKLIST.
+     */
+    private final HashSet<InetAddress> blacklist = new HashSet<>();
 
     /**
      * The name of the server.
@@ -51,16 +71,70 @@ public abstract class Server implements Runnable {
     private final Vector<Thread> tcpHandlerThreads = new Vector<>();
 
     /**
-     * A list of banned addresses. Connections from these IP addresses will be dropped.
-     */
-    private final HashSet<InetAddress> bannedAddresses = new HashSet<>();
-
-    /**
      * Constructs a new server.
      * @param name The name of the server.
+     * @param securityMode The security mode of the server.
      */
-    public Server(String name) {
+    public Server(final String name, final SecurityMode securityMode) {
         this.name = name;
+
+        switch (securityMode) {
+            case WHITELIST:
+
+                //Create if not there:
+                final File whiteListFile = new File(name + WHITELIST_FILENAME_POSTFIX);
+                try {
+                    whiteListFile.createNewFile();
+                } catch (IOException e) {
+                    System.err.println("Whitelist error: could not create whitelist file. Will default to SecurityMode.NONE.");
+                    Logger.logError("Whitelist error: could not create whitelist file. Will default to SecurityMode.NONE.");
+                    this.securityMode = SecurityMode.NONE;
+                    break;
+                }
+
+                this.securityMode = securityMode;
+
+                //Load:
+                try {
+                    loadWhitelist();
+                } catch (FileNotFoundException e) {
+                    System.err.println("Whitelist loading error: file '" + name + WHITELIST_FILENAME_POSTFIX + "' not found.");
+                    Logger.logError("Whitelist loading error: file '" + name + WHITELIST_FILENAME_POSTFIX + "' not found.");
+                }
+
+                break;
+
+            case BLACKLIST:
+
+                //Create if not there:
+                final File blackListFile = new File(name + BLACKLIST_FILENAME_POSTFIX);
+                try {
+                    blackListFile.createNewFile();
+                } catch (IOException e) {
+                    System.err.println("Whitelist error: could not create blacklist file. Will default to SecurityMode.NONE.");
+                    Logger.logError("Whitelist error: could not create blacklist file. Will default to SecurityMode.NONE.");
+                    this.securityMode = SecurityMode.NONE;
+                    break;
+                }
+
+                this.securityMode = securityMode;
+
+                //Load:
+                try {
+                    loadBlacklist();
+                } catch (FileNotFoundException e) {
+                    System.err.println("Blacklist loading error: file '" + name + BLACKLIST_FILENAME_POSTFIX + "' not found.");
+                    Logger.logError("Blacklist loading error: file '" + name + BLACKLIST_FILENAME_POSTFIX + "' not found.");
+                }
+
+                break;
+
+            case NONE:
+            default:
+                this.securityMode = SecurityMode.NONE;
+                System.out.println("Warning: '" + name + "' started without a security mode - consider using SecurityMode.BLACKLIST or SecurityMode.WHITELIST.");
+                Logger.logWarning("Warning: '" + name + "' started without a security mode - consider using SecurityMode.BLACKLIST or SecurityMode.WHITELIST.");
+        }
     }
 
     /**
@@ -250,16 +324,56 @@ public abstract class Server implements Runnable {
     }
 
     /**
-     * Initializes the server.
+     * Retrieves the server's blacklist.
+     * @return Returns a HashSet of InetAddress.
      */
-    protected abstract void initialize();
+    public HashSet<InetAddress> getBlacklist() {
+        return blacklist;
+    }
 
     /**
-     * Defines functionality that is executed by the server during its runtime.
-     * Important note: This method is executed CONTINUOUSLY during the server's runtime. Make sure that this method
-     * only contains necessary code that should continuously be executed.
+     * Retrieves the server's whitelist.
+     * @return Returns a HashSet of InetAddress.
      */
-    protected abstract void process();
+    public HashSet<InetAddress> getWhitelist() {
+        return whitelist;
+    }
+
+    /**
+     * Retrieves the server's SecurityMode.
+     * @return Returns a SecurityMode.
+     */
+    public SecurityMode getSecurityMode() {
+        return securityMode;
+    }
+
+    /**
+     * Initializes the server.
+     * Does nothing - must be implemented by extending classes if needed.
+     */
+    protected void initialize() { }
+
+    /**
+     * Executes a piece of code indefinitely in the background, every <i>executionDelay</i> milliseconds
+     * Does nothing - must be implemented by extending classes if needed.
+     * <b>Important note</b>: This method is executed CONTINUOUSLY during the server's runtime.
+     * Make sure to properly optimize this method to avoid performance degradation.
+     */
+    protected void runIndefinitely() { }
+
+    /**
+     * Executes a piece of code in the background.
+     * This method is not meant for use with code that must run in a loop indefinitely.
+     * For that, consider implementing <i>runIndefinitely()</i> instead.
+     * @param runnable A runnable to run.
+     * @param tag The runnable's tag, used for identification.
+     * @return Returns the thread running the runnable.
+     */
+    public Thread runInBackground(final Runnable runnable, final String tag) {
+        Thread thread = new Thread(runnable, tag);
+        thread.start();
+        return thread;
+    }
 
     /**
      * Sends data through TCP.
@@ -550,7 +664,7 @@ public abstract class Server implements Runnable {
         }
 
         while (isRunning()) {
-            process();
+            runIndefinitely();
             if (executionDelay > 0) {
                 try {
                     Thread.sleep(executionDelay);
@@ -566,13 +680,53 @@ public abstract class Server implements Runnable {
     }
 
     /**
+     * Loads the blacklist from the external file.
+     * @throws FileNotFoundException thrown when a malformed IP address is found.
+     */
+    private void loadBlacklist() throws FileNotFoundException {
+        final Scanner fileScanner = new Scanner(new File(name + BLACKLIST_FILENAME_POSTFIX));
+        while (fileScanner.hasNextLine()) {
+            final String ipAddressStr = fileScanner.nextLine();
+            try {
+                InetAddress inetAddress = InetAddress.getByName(ipAddressStr);
+                blacklist.add(inetAddress);
+            } catch (UnknownHostException e) {
+                System.err.println("Blacklist loading error: invalid IP '" + ipAddressStr + "'.");
+            }
+        }
+    }
+
+    /**
+     * Loads the whitelist from the external file.
+     * @throws FileNotFoundException thrown when a malformed IP address is found.
+     */
+    private void loadWhitelist() throws FileNotFoundException {
+        final Scanner fileScanner = new Scanner(new File(name + WHITELIST_FILENAME_POSTFIX));
+        while (fileScanner.hasNextLine()) {
+            final String ipAddressStr = fileScanner.nextLine();
+            try {
+                InetAddress inetAddress = InetAddress.getByName(ipAddressStr);
+                whitelist.add(inetAddress);
+            } catch (UnknownHostException e) {
+                System.err.println("Whitelist loading error: invalid IP '" + ipAddressStr + "'.");
+            }
+        }
+    }
+
+    /**
      * Bans an IP address.
      * @param inetAddress The IP address to ban.
      */
     public final void banIP(InetAddress inetAddress) {
-        bannedAddresses.add(inetAddress);
-        System.out.println("'" + name + "' Banned IP: " + inetAddress.toString());
-        Logger.logInfo("'" + name + "' Banned IP: " + inetAddress.toString());
+        if (securityMode == SecurityMode.BLACKLIST) {
+            blacklist.add(inetAddress);
+            System.out.println("'" + name + "' Banned IP: " + inetAddress.toString());
+            Logger.logInfo("'" + name + "' Banned IP: " + inetAddress.toString());
+        }
+        else {
+            System.err.println("Cannot ban IP '" + inetAddress.toString() + "' while not on blacklist mode.");
+            Logger.logWarning("Cannot ban IP while not on blacklist mode.");
+        }
     }
 
     /**
@@ -581,12 +735,10 @@ public abstract class Server implements Runnable {
      */
     public final void banIP(String ipAddress) {
         try {
-            bannedAddresses.add(InetAddress.getByName(ipAddress));
-            System.out.println("'" + name + "' Banned IP: " + ipAddress);
-            Logger.logInfo("'" + name + "' Banned IP: " + ipAddress);
+            InetAddress address = InetAddress.getByName(ipAddress);
+            banIP(address);
         } catch (UnknownHostException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Unban error: " + e.getMessage());
             Logger.logError(e.getMessage());
         }
     }
@@ -596,9 +748,15 @@ public abstract class Server implements Runnable {
      * @param inetAddress The IP address to unban.
      */
     public final void unbanIP(InetAddress inetAddress) {
-        bannedAddresses.remove(inetAddress);
-        System.out.println("'" + name + "' Un-banned IP: " + inetAddress.toString());
-        Logger.logInfo("'" + name + "' Un-banned IP: " + inetAddress.toString());
+        if (securityMode == SecurityMode.BLACKLIST) {
+            blacklist.remove(inetAddress);
+            System.out.println("'" + name + "' Un-banned IP: " + inetAddress.toString());
+            Logger.logInfo("'" + name + "' Un-banned IP: " + inetAddress.toString());
+        }
+        else {
+            System.err.println("Cannot unban IP '" + inetAddress.toString() + "' while not on blacklist mode.");
+            Logger.logWarning("Cannot unban IP while not on blacklist mode.");
+        }
     }
 
     /**
@@ -607,30 +765,71 @@ public abstract class Server implements Runnable {
      */
     public final void unbanIP(String ipAddress) {
         try {
-            bannedAddresses.remove(InetAddress.getByName(ipAddress));
-            System.out.println("'" + name + "' Un-banned IP: " + ipAddress);
-            Logger.logInfo("'" + name + "' Un-banned IP: " + ipAddress);
+            InetAddress address = InetAddress.getByName(ipAddress);
+            unbanIP(address);
         } catch (UnknownHostException e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Unban error: " + e.getMessage());
             Logger.logError(e.getMessage());
         }
     }
 
     /**
-     * Retrieves the set of banned addresses for this server.
-     * @return Returns a HashSet of InetAddress.
+     * Whitelists an IP address.
+     * @param address The address to whitelist.
      */
-    public HashSet<InetAddress> getBannedAddresses() {
-        return bannedAddresses;
+    public final void whitelistIP(InetAddress address) {
+        if (securityMode == SecurityMode.WHITELIST) {
+            whitelist.add(address);
+            System.out.println("'" + name + "' Whitelisted IP: " + address.toString());
+            Logger.logInfo("'" + name + "' Whitelisted IP: " + address.toString());
+        }
+        else {
+            System.err.println("Cannot whitelist IP '" + address.toString() + "' while not on whitelist mode.");
+            Logger.logWarning("Cannot whitelist IP '" + address.toString() + "' while not on whitelist mode.");
+        }
+    }
+
+    /**
+     * Whitelists an IP address.
+     * @param ipAddress The IP address to whitelist.
+     */
+    public final void whitelistIP(String ipAddress) {
+        try {
+            InetAddress address = InetAddress.getByName(ipAddress);
+            whitelistIP(address);
+        } catch (UnknownHostException e) {
+            System.err.println("Whitelist error: " + e.getMessage());
+            Logger.logError(e.getMessage());
+        }
+    }
+
+    public final void unWhitelistIP(InetAddress address) {
+        if (securityMode == SecurityMode.WHITELIST) {
+            whitelist.remove(address);
+            System.out.println("'" + name + "' IP: " + address.toString() + " removed from whitelist.");
+            Logger.logInfo("'" + name + "' IP: " + address.toString() + " removed from whitelist.");
+        }
+        else {
+            System.err.println("Cannot un-whitelist IP '" + address.toString() + "' while not on whitelist mode.");
+            Logger.logWarning("Cannot un-whitelist IP '" + address.toString() + "' while not on whitelist mode.");
+        }
+    }
+
+    public final void unWhitelistIP(String ipAddress) {
+        try {
+            InetAddress address = InetAddress.getByName(ipAddress);
+            unWhitelistIP(address);
+        } catch (UnknownHostException e) {
+            System.err.println("Un-whitelist error: " + e.getMessage());
+            Logger.logError(e.getMessage());
+        }
     }
 
     /**
      * Executes code before shutting down the server.
+     * Does nothing by default - must be implemented (if needed) by the extending class.
      */
-    public void onStop() {
-        //Does nothing by default - must be implemented (if needed) by the extending class.
-    }
+    public void onStop() { }
 
     /**
      * Stops the server.
@@ -640,6 +839,16 @@ public abstract class Server implements Runnable {
         removeAllTCPHandlers();
         removeAllUDPHandlers();
         setRunning(false);
+    }
+
+    /**
+     * Starts the server.
+     * @return Returns the thread running this client.
+     */
+    public final Thread start() {
+        Thread thread = new Thread(this, name);
+        thread.start();
+        return thread;
     }
 
 }

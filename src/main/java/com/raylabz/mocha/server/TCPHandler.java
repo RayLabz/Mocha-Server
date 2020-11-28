@@ -248,10 +248,15 @@ public class TCPHandler implements Runnable {
                 Socket socket = serverSocket.accept();
 
                 String socketAddress = socket.getInetAddress().toString();
-                if (server.getBannedAddresses().contains(socket.getInetAddress())) {
+                if (server.getSecurityMode() == SecurityMode.BLACKLIST && server.getBlacklist().contains(socket.getInetAddress())) {
                     socket.close();
                     System.out.println("Banned IP address " + socketAddress + " attempted to connect on TCP port " + port + " but was disconnected.");
                     Logger.logWarning("Banned IP address " + socketAddress + " attempted to connect on TCP port " + port + " but was disconnected.");
+                }
+                else if (server.getSecurityMode() == SecurityMode.WHITELIST && !server.getWhitelist().contains(socket.getInetAddress())) {
+                    socket.close();
+                    System.out.println("Non-whitelisted IP address " + socketAddress + " attempted to connect on TCP port " + port + " but was disconnected.");
+                    Logger.logWarning("Non-whitelisted IP address " + socketAddress + " attempted to connect on TCP port " + port + " but was disconnected.");
                 }
                 else {
                     TCPConnection tcpConnection = new TCPConnection(socket, receivable);

@@ -1,8 +1,5 @@
 package com.raylabz.mocha.client;
 
-import com.raylabz.mocha.server.Mocha;
-import com.raylabz.mocha.server.Receivable;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -113,13 +110,20 @@ public abstract class TCPClient extends Client {
     }
 
     @Override
-    public void stop() {
+    public void stop() throws IOException {
         setConnected(false);
         setListening(false);
-        try {
-            socket.shutdownInput();
-        } catch (IOException e) { }
+        socket.shutdownInput();
+        socket.shutdownOutput();
+        socket.close();
     }
+
+    @Override
+    public void initialize() { }
+
+    @Override
+    public void process() { }
+
 
     //    @Override
 //    public void sendAndReceive(String data, Receivable receivable) {
