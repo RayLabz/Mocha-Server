@@ -18,6 +18,20 @@ public class MyServer extends Server {
         }));
     }
 
+    long startTime;
+
+    @Override
+    protected void initialize() {
+        startTime = System.currentTimeMillis();
+    }
+
+    @Override
+    protected void runIndefinitely() {
+        if (System.currentTimeMillis() > startTime + (15 * 1000)) {
+            stop();
+        }
+    }
+
     public static void main(String[] args) {
         MyServer myServer = new MyServer("myServer", SecurityMode.BLACKLIST);
         myServer.start();

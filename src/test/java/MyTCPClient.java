@@ -22,9 +22,19 @@ public class MyTCPClient extends TCPClient {
         System.out.println(data);
     }
 
+    int x = 0;
+
     @Override
     public void process() {
         send("hi");
+        x++;
+        if (x > 10) {
+            try {
+                stop();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException {

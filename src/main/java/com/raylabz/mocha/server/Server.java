@@ -4,6 +4,7 @@ import com.raylabz.mocha.logger.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -13,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Provides functionality for a server.
  * @author Nicos Kasenides
- * @version 1.0.0
+ * @version 0.1.2?
  */
 public abstract class Server implements Runnable {
 
@@ -692,8 +693,10 @@ public abstract class Server implements Runnable {
                 blacklist.add(inetAddress);
             } catch (UnknownHostException e) {
                 System.err.println("Blacklist loading error: invalid IP '" + ipAddressStr + "'.");
+                Logger.logError("Blacklist loading error: invalid IP '" + ipAddressStr + "'.");
             }
         }
+        fileScanner.close();
     }
 
     /**
@@ -709,7 +712,47 @@ public abstract class Server implements Runnable {
                 whitelist.add(inetAddress);
             } catch (UnknownHostException e) {
                 System.err.println("Whitelist loading error: invalid IP '" + ipAddressStr + "'.");
+                Logger.logError("Whitelist loading error: invalid IP '" + ipAddressStr + "'.");
             }
+        }
+        fileScanner.close();
+    }
+
+    /**
+     * Saves the blacklist into a file.
+     */
+    private void saveBlacklistToFile() {
+        try {
+            FileWriter fileWriter = new FileWriter(new File(name + BLACKLIST_FILENAME_POSTFIX));
+            final StringBuilder stringBuilder = new StringBuilder();
+            for (final InetAddress ip : blacklist) {
+                stringBuilder.append(ip.toString()).append(System.lineSeparator());
+            }
+            fileWriter.write(stringBuilder.toString());
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            System.err.println("Blacklist save error: could not write list to file '" + name + BLACKLIST_FILENAME_POSTFIX);
+            Logger.logError("Blacklist save error: could not write list to file '" + name + BLACKLIST_FILENAME_POSTFIX);
+        }
+    }
+
+    /**
+     * Saves the whitelist into a file.
+     */
+    private void saveWhitelistToFile() {
+        try {
+            FileWriter fileWriter = new FileWriter(new File(name + WHITELIST_FILENAME_POSTFIX));
+            final StringBuilder stringBuilder = new StringBuilder();
+            for (final InetAddress ip : whitelist) {
+                stringBuilder.append(ip.toString()).append(System.lineSeparator());
+            }
+            fileWriter.write(stringBuilder.toString());
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            System.err.println("Whitelist save error: could not write list to file '" + name + WHITELIST_FILENAME_POSTFIX);
+            Logger.logError("Whitelist save error: could not write list to file '" + name + WHITELIST_FILENAME_POSTFIX);
         }
     }
 
@@ -720,6 +763,7 @@ public abstract class Server implements Runnable {
     public final void banIP(InetAddress inetAddress) {
         if (securityMode == SecurityMode.BLACKLIST) {
             blacklist.add(inetAddress);
+            saveBlacklistToFile();
             System.out.println("'" + name + "' Banned IP: " + inetAddress.toString());
             Logger.logInfo("'" + name + "' Banned IP: " + inetAddress.toString());
         }
@@ -750,6 +794,7 @@ public abstract class Server implements Runnable {
     public final void unbanIP(InetAddress inetAddress) {
         if (securityMode == SecurityMode.BLACKLIST) {
             blacklist.remove(inetAddress);
+            saveBlacklistToFile();
             System.out.println("'" + name + "' Un-banned IP: " + inetAddress.toString());
             Logger.logInfo("'" + name + "' Un-banned IP: " + inetAddress.toString());
         }
@@ -780,6 +825,7 @@ public abstract class Server implements Runnable {
     public final void whitelistIP(InetAddress address) {
         if (securityMode == SecurityMode.WHITELIST) {
             whitelist.add(address);
+            saveWhitelistToFile();
             System.out.println("'" + name + "' Whitelisted IP: " + address.toString());
             Logger.logInfo("'" + name + "' Whitelisted IP: " + address.toString());
         }
@@ -806,6 +852,7 @@ public abstract class Server implements Runnable {
     public final void unWhitelistIP(InetAddress address) {
         if (securityMode == SecurityMode.WHITELIST) {
             whitelist.remove(address);
+            saveWhitelistToFile();
             System.out.println("'" + name + "' IP: " + address.toString() + " removed from whitelist.");
             Logger.logInfo("'" + name + "' IP: " + address.toString() + " removed from whitelist.");
         }
