@@ -694,8 +694,12 @@ public abstract class Server implements Runnable {
             } catch (UnknownHostException e) {
                 System.err.println("Blacklist loading error: invalid IP '" + ipAddressStr + "'.");
                 Logger.logError("Blacklist loading error: invalid IP '" + ipAddressStr + "'.");
+                fileScanner.close();
+                return;
             }
         }
+        System.out.println("Blacklist loaded: '" + name + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + "] entries");
+        Logger.logInfo("Blacklist loaded: '" + name + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + "] entries");
         fileScanner.close();
     }
 
@@ -713,8 +717,12 @@ public abstract class Server implements Runnable {
             } catch (UnknownHostException e) {
                 System.err.println("Whitelist loading error: invalid IP '" + ipAddressStr + "'.");
                 Logger.logError("Whitelist loading error: invalid IP '" + ipAddressStr + "'.");
+                fileScanner.close();
+                return;
             }
         }
+        System.out.println("Whitelist loaded: '" + name + WHITELIST_FILENAME_POSTFIX + "' - " + whitelist.size() + " entries");
+        Logger.logInfo("Whitelist loaded: '" + name + WHITELIST_FILENAME_POSTFIX + "' - " + whitelist.size() + " entries");
         fileScanner.close();
     }
 
@@ -726,7 +734,7 @@ public abstract class Server implements Runnable {
             FileWriter fileWriter = new FileWriter(new File(name + BLACKLIST_FILENAME_POSTFIX));
             final StringBuilder stringBuilder = new StringBuilder();
             for (final InetAddress ip : blacklist) {
-                stringBuilder.append(ip.toString()).append(System.lineSeparator());
+                stringBuilder.append(ip.toString().split(":")[0].replace("/", "")).append(System.lineSeparator());
             }
             fileWriter.write(stringBuilder.toString());
             fileWriter.flush();
@@ -745,7 +753,7 @@ public abstract class Server implements Runnable {
             FileWriter fileWriter = new FileWriter(new File(name + WHITELIST_FILENAME_POSTFIX));
             final StringBuilder stringBuilder = new StringBuilder();
             for (final InetAddress ip : whitelist) {
-                stringBuilder.append(ip.toString()).append(System.lineSeparator());
+                stringBuilder.append(ip.toString().split(":")[0].replace("/", "")).append(System.lineSeparator());
             }
             fileWriter.write(stringBuilder.toString());
             fileWriter.flush();
