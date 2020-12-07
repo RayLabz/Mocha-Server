@@ -1,17 +1,14 @@
 package com.raylabz.mocha.server.binary;
 
+import com.raylabz.bytesurge.container.ArrayContainer;
 import com.raylabz.bytesurge.stream.StreamReader;
 import com.raylabz.bytesurge.stream.StreamWriter;
 import com.raylabz.mocha.logger.Logger;
 import com.raylabz.mocha.message.Message;
-import com.raylabz.mocha.message.MessageHeader;
 import com.raylabz.mocha.server.SecurityMode;
 import com.raylabz.mocha.server.UDPPeer;
-import com.raylabz.mocha.server.text.TextServer;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -140,11 +137,17 @@ public abstract class UDPBConnection implements Runnable {
      */
     public final void send(InetAddress address, int outPort, final Message message) {
         try {
-            StreamWriter writer = new StreamWriter(message.toSchema());
-            writer.writeObject(message.toContainer());
-            writer.close();
-            final byte[] bytes = writer.getBytes();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
+            StreamWriter streamWriter = new StreamWriter(message.toSchema());
+            streamWriter.writeArray((ArrayContainer) message.toContainer());
+            streamWriter.close();
+            final byte[] bytes = streamWriter.getBytes();
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(byteStream);
+            dos.writeInt(bytes.length);
+            dos.write(bytes);
+            dos.close();
+            byteStream.close();
+            DatagramPacket packet = new DatagramPacket(byteStream.toByteArray(), bytes.length, address, outPort);
             socket.send(packet);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -227,17 +230,6 @@ public abstract class UDPBConnection implements Runnable {
                     DataInputStream reader = new DataInputStream(new ByteArrayInputStream(data));
 
                     final int size = reader.readInt();
-                    final byte[] senderIPBytes = new byte[4];
-                    final byte[] receiverIPBytes = new byte[4];
-                    for (int i = 0; i < 4; i++) {
-                        senderIPBytes[i] = reader.readByte();
-                    }
-                    for (int i = 0; i < 4; i++) {
-                        receiverIPBytes[i] = reader.readByte();
-                    }
-                    final long timestamp = reader.readLong();
-
-                    MessageHeader header = new MessageHeader(size, InetAddress.getByAddress(senderIPBytes), InetAddress.getByAddress(receiverIPBytes), timestamp);
 
                     //Get the rest of the data:
                     final byte[] actualData = new byte[size];
@@ -245,7 +237,10 @@ public abstract class UDPBConnection implements Runnable {
                         data[i] = reader.readByte();
                     }
 
-                    Message message = new Message(header, actualData);
+                    StreamReader reader2 = new StreamReader(Message.getSchema(size), actualData);
+                    final byte[] bytes = reader2.readByteArray();
+
+                    Message message = new Message(bytes);
 
                     //Handle the message:
                     onReceive(this, packet.getAddress(), packet.getPort(), message);

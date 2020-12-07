@@ -1,7 +1,8 @@
 package com.raylabz.mocha.server.binary;
 
 import com.raylabz.mocha.message.Message;
-import com.raylabz.mocha.server.text.TCPTConnection;
+
+import java.io.IOException;
 
 /**
  * Models a TCPReceivable, used to determine what is executed when a TCPConnection receives data.
@@ -15,6 +16,6 @@ public interface TCPBReceivable {
      * @param tcpConnection The TCPConnection receiving the message.
      * @param message The message received.
      */
-    void onReceive(TCPBConnection tcpConnection, Message message);
+    void onReceive(TCPBConnection tcpConnection, Message message) throws IOException;
 
 }

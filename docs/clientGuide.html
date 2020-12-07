@@ -81,10 +81,10 @@
             </p>
 
             <pre class="prettyprint">
-public class MyTCPClient extends TCPClient {
+public class MyTCPTextClient extends TCPClient {
 
-    public MyTCPClient(String ipAddress, int port) throws IOException {
-        super("MyTCPClient", ipAddress, port);
+    public MyTCPTextClient(String ipAddress, int port) throws IOException {
+        super("MyTCPTextClient", ipAddress, port);
     }
 
     @Override
@@ -147,10 +147,10 @@ public class MyTCPClient extends TCPClient {
             </p>
 
             <pre class="prettyprint">
-public class MyUDPClient extends UDPClient {
+public class MyUDPTextClient extends UDPClient {
 
-    public MyUDPClient(String ipAddress, int port) throws IOException {
-        super("MyUDPClient", ipAddress, port);
+    public MyUDPTextClient(String ipAddress, int port) throws IOException {
+        super("MyUDPTextClient", ipAddress, port);
     }
 
     @Override
@@ -216,11 +216,11 @@ public class MyWebSocketClient extends WebSocketClient {
 
             <pre class="prettyprint">
 //Construct and start a TCP client:
-MyTCPClient myTCPClient = new MyTCPClient("192.168.10.10", 1234);
+MyTCPTextClient myTCPClient = new MyTCPTextClient("192.168.10.10", 1234);
 Mocha.start(myTCPClient);
 
 //Construct and start a UDP client:
-MyUDPClient myUDPClient = new MyUDPClient("192.168.10.10", 1234);
+MyUDPTextClient myUDPClient = new MyUDPTextClient("192.168.10.10", 1234);
 Mocha.start(myUDPClient);
 
 //Construct and start a WebSocket client:

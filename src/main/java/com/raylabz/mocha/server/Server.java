@@ -252,8 +252,8 @@ public abstract class Server implements Runnable {
                 return;
             }
         }
-        System.out.println("Blacklist loaded: '" + name + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + "] entries");
-        Logger.logInfo("Blacklist loaded: '" + name + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + "] entries");
+        System.out.println("Blacklist loaded: '" + name + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + " entries");
+        Logger.logInfo("Blacklist loaded: '" + name + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + " entries");
         fileScanner.close();
     }
 

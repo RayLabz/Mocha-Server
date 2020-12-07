@@ -144,7 +144,12 @@
         <dependency>
             <groupId>com.raylabz</groupId>
             <artifactId>bytesurge</artifactId>
-            <version>0.0.3</version>
+            <version>0.0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.raylabz</groupId>
+            <artifactId>servexpresso</artifactId>
+            <version>1.1.0</version>
         </dependency>
 
     </dependencies>

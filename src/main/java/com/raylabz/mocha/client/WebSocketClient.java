@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Manages a WebSocket client.
  */
-public abstract class WebSocketClient implements Runnable, MessageBroker, BackgroundProcessor {
+public abstract class WebSocketClient implements Runnable, MessageBroker<String>, BackgroundProcessor {
 
     /**
      * The client's name.

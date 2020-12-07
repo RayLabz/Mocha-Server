@@ -1,9 +1,10 @@
 package com.raylabz.mocha.server.binary;
 
+import com.raylabz.bytesurge.container.ArrayContainer;
+import com.raylabz.bytesurge.stream.StreamReader;
 import com.raylabz.bytesurge.stream.StreamWriter;
 import com.raylabz.mocha.logger.Logger;
 import com.raylabz.mocha.message.Message;
-import com.raylabz.mocha.message.MessageHeader;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -80,9 +81,10 @@ public class TCPBConnection implements Runnable {
     public final void send(final Message message) throws RuntimeException {
         try {
             StreamWriter streamWriter = new StreamWriter(message.toSchema());
-            streamWriter.writeObject(message.toContainer());
+            streamWriter.writeArray((ArrayContainer) message.toContainer());
             streamWriter.close();
             final byte[] bytes = streamWriter.getBytes();
+            writer.writeInt(bytes.length); //Forward total message size declaration
             writer.write(bytes);
             writer.flush();
         } catch (IOException e) {
@@ -122,19 +124,10 @@ public class TCPBConnection implements Runnable {
     public final void run() {
         try {
             while (isEnabled()) {
+
                 //Read the header:
                 final int size = reader.readInt();
-                final byte[] senderIPBytes = new byte[4];
-                final byte[] receiverIPBytes = new byte[4];
-                for (int i = 0; i < 4; i++) {
-                    senderIPBytes[i] = reader.readByte();
-                }
-                for (int i = 0; i < 4; i++) {
-                    receiverIPBytes[i] = reader.readByte();
-                }
-                final long timestamp = reader.readLong();
-
-                MessageHeader header = new MessageHeader(size, InetAddress.getByAddress(senderIPBytes), InetAddress.getByAddress(receiverIPBytes), timestamp);
+                System.out.println("size = " + size);
 
                 //Get the rest of the data:
                 final byte[] data = new byte[size];
@@ -142,7 +135,10 @@ public class TCPBConnection implements Runnable {
                     data[i] = reader.readByte();
                 }
 
-                Message message = new Message(header, data);
+                StreamReader reader = new StreamReader(Message.getSchema(size), data);
+                final byte[] bytes = reader.readByteArray();
+
+                Message message = new Message(bytes);
 
                 //Handle the message:
                 receivable.onReceive(this, message);

@@ -1,17 +1,17 @@
 package com.raylabz.mocha.client;
 
-public interface MessageBroker {
+public interface MessageBroker<TMessageType> {
 
     /**
-     * Sends data to the server.
-     * @param data The data to send to the server.
+     * Sends a message to the server.
+     * @param message The message to send to the server.
      */
-    void send(final String data);
+    void send(final TMessageType message);
 
     /**
-     * Defines what will be executed once data is received by the client.
-     * @param data The data received by the client.
+     * Defines what will be executed once a message is received by the client.
+     * @param message The message received by the client.
      */
-    void onReceive(String data);
+    void onReceive(TMessageType message);
 
 }

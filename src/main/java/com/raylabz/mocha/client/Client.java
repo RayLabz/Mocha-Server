@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class Client implements Runnable, MessageBroker, BackgroundProcessor {
+public abstract class Client implements Runnable, BackgroundProcessor {
 
     /**
      * The name of this client.

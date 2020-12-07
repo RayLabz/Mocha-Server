@@ -5,9 +5,6 @@ import com.raylabz.mocha.message.Message;
 import com.raylabz.mocha.server.SecurityMode;
 import com.raylabz.mocha.server.Server;
 import com.raylabz.mocha.server.UDPPeer;
-import com.raylabz.mocha.server.text.TCPTConnection;
-import com.raylabz.mocha.server.text.TCPTHandler;
-import com.raylabz.mocha.server.text.UDPTConnection;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -35,8 +32,8 @@ public abstract class BinaryServer extends Server {
 
     /**
      * Constructs a TCP server.
-     * @param name
-     * @param securityMode
+     * @param name The name of the server.
+     * @param securityMode The security mode.
      */
     public BinaryServer(String name, SecurityMode securityMode) {
         super(name, securityMode);

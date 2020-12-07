@@ -1,8 +1,8 @@
-import com.raylabz.mocha.client.TCPClient;
+import com.raylabz.mocha.client.TCPTClient;
 
 import java.io.IOException;
 
-public class MyTCPClient extends TCPClient {
+public class MyTCPTextClient extends TCPTClient {
 
     /**
      * Constructs a TCP Client.
@@ -12,7 +12,7 @@ public class MyTCPClient extends TCPClient {
      * @param port      The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.
      */
-    public MyTCPClient(String name, String ipAddress, int port) throws IOException {
+    public MyTCPTextClient(String name, String ipAddress, int port) throws IOException {
         super(name, ipAddress, port);
         setExecutionDelay(1000);
     }
@@ -28,7 +28,7 @@ public class MyTCPClient extends TCPClient {
     public void process() {
         send("hi " + x);
         x++;
-        if (x > 9) {
+        if (x > 10) {
             try {
                 stop();
             } catch (IOException e) {
@@ -38,7 +38,7 @@ public class MyTCPClient extends TCPClient {
     }
 
     public static void main(String[] args) throws IOException {
-        MyTCPClient myTCPClient = new MyTCPClient("myTCPClient", "localhost", 7080);
+        MyTCPTextClient myTCPClient = new MyTCPTextClient("myTCPClient", "localhost", 7080);
         myTCPClient.start();
     }
 

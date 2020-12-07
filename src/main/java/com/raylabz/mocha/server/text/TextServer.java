@@ -28,8 +28,8 @@ public abstract class TextServer extends Server {
 
     /**
      * Constructs a TCP server.
-     * @param name
-     * @param securityMode
+     * @param name The name of the server.
+     * @param securityMode The security mode.
      */
     public TextServer(String name, SecurityMode securityMode) {
         super(name, securityMode);

@@ -1,10 +1,9 @@
-import com.raylabz.mocha.client.UDPClient;
+import com.raylabz.mocha.client.UDPTClient;
 
-import java.io.IOException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class MyUDPClient extends UDPClient {
+public class MyUDPTextClient extends UDPTClient {
 
 
     /**
@@ -16,7 +15,7 @@ public class MyUDPClient extends UDPClient {
      * @throws UnknownHostException Thrown when the IP address is invalid.
      * @throws SocketException      Thrown when the client's socket cannot be instantiated.
      */
-    public MyUDPClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
+    public MyUDPTextClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
         super(name, ipAddress, port);
         setExecutionDelay(200);
     }
@@ -39,7 +38,7 @@ public class MyUDPClient extends UDPClient {
     }
 
     public static void main(String[] args) throws SocketException, UnknownHostException {
-        MyUDPClient udpClient = new MyUDPClient("udpClient", "localhost", 8888);
+        MyUDPTextClient udpClient = new MyUDPTextClient("udpClient", "localhost", 8888);
         udpClient.start();
     }
 

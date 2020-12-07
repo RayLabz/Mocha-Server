@@ -3,9 +3,6 @@ package com.raylabz.mocha.server.binary;
 import com.raylabz.mocha.logger.Logger;
 import com.raylabz.mocha.message.Message;
 import com.raylabz.mocha.server.SecurityMode;
-import com.raylabz.mocha.server.text.TCPTConnection;
-import com.raylabz.mocha.server.text.TCPTReceivable;
-import com.raylabz.mocha.server.text.TextServer;
 
 import java.io.IOException;
 import java.net.InetAddress;

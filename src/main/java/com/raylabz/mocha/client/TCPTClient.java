@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutionException;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class TCPClient extends Client {
+public abstract class TCPTClient extends Client implements MessageBroker<String> {
 
     /**
      * The client's socket.
@@ -71,7 +71,7 @@ public abstract class TCPClient extends Client {
      * @param port      The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.
      */
-    public TCPClient(String name, String ipAddress, int port) throws IOException {
+    public TCPTClient(String name, String ipAddress, int port) throws IOException {
         super(name, ipAddress, port);
         try {
             this.socket = new Socket(getAddress(), getPort());

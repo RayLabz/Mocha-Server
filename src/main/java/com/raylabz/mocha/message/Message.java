@@ -1,43 +1,36 @@
 package com.raylabz.mocha.message;
 
 import com.raylabz.bytesurge.container.ArrayContainer;
-import com.raylabz.bytesurge.container.ObjectContainer;
+import com.raylabz.bytesurge.container.Container;
 import com.raylabz.bytesurge.schema.ArraySchema;
 import com.raylabz.bytesurge.schema.ByteSchema;
-import com.raylabz.bytesurge.schema.ObjectSchema;
+import com.raylabz.bytesurge.schema.Schema;
 import com.raylabz.bytesurge.stream.Streamable;
 
 public class Message implements Streamable {
 
-    private final MessageHeader header;
-    private final byte[] data;
+    protected final byte[] data;
 
-    public Message(MessageHeader header, byte[] bytes) {
-        this.header = header;
-        this.data = bytes;
+    public Message(byte[] data) {
+        this.data = data;
     }
 
     public byte[] getData() {
         return data;
     }
 
-    public MessageHeader getHeader() {
-        return header;
+    @Override
+    public Container toContainer() {
+        return ArrayContainer.fromByteArray(data);
     }
 
     @Override
-    public ObjectContainer toContainer() {
-        return new ObjectContainer(toSchema())
-                .putAttribute("header", header.toContainer())
-                .putAttribute("data", ArrayContainer.fromByteArray(data));
+    public Schema toSchema() {
+        return getSchema(data.length);
     }
 
-    @Override
-    public ObjectSchema toSchema() {
-        return new ObjectSchema.Builder()
-                .expectObject("header", MessageHeader.SCHEMA)
-                .expectArray("data", new ArraySchema(new ByteSchema(), header.getSize()))
-                .build();
+    public static ArraySchema getSchema(int size) {
+        return new ArraySchema(new ByteSchema(), size);
     }
 
 }
