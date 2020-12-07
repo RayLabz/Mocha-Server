@@ -1,6 +1,7 @@
-package com.raylabz.mocha.server;
+package com.raylabz.mocha.server.text;
 
 import com.raylabz.mocha.logger.Logger;
+import com.raylabz.mocha.server.SecurityMode;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,12 +18,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public class TCPHandler implements Runnable {
+public class TCPTHandler implements Runnable {
 
     /**
      * The server that this TCP handler belongs to.
      */
-    private Server server;
+    private TextServer server;
 
     /**
      * The TCP port handled by the handler.
@@ -42,7 +43,7 @@ public class TCPHandler implements Runnable {
     /**
      * A list of TCPConnections handled by this handler.
      */
-    private final Vector<TCPConnection> tcpConnections = new Vector<>();
+    private final Vector<TCPTConnection> tcpConnections = new Vector<>();
 
     /**
      * A list of TCPConnection threads handled by this handler.
@@ -52,7 +53,7 @@ public class TCPHandler implements Runnable {
     /**
      * The handler's TCP receivable, which determines what its TCPConnections will execute once they receive data.
      */
-    private final TCPReceivable receivable;
+    private final TCPTReceivable receivable;
 
     private final HashSet<InetAddress> tcpPeers = new HashSet<>();
 
@@ -61,7 +62,7 @@ public class TCPHandler implements Runnable {
      * @param port The TCPHandler's port number.
      * @param receivable The TCPHandler's receivable.
      */
-    public TCPHandler(int port, final TCPReceivable receivable) {
+    public TCPTHandler(int port, final TCPTReceivable receivable) {
         this.port = port;
         this.receivable = receivable;
     }
@@ -70,7 +71,7 @@ public class TCPHandler implements Runnable {
      * Retrieves the server of this TCPHandler.
      * @return Returns a Server.
      */
-    protected Server getServer() {
+    protected TextServer getServer() {
         return server;
     }
 
@@ -78,7 +79,7 @@ public class TCPHandler implements Runnable {
      * Sets the server of this TCPHandler.
      * @param server A server
      */
-    void setServer(Server server) {
+    void setServer(TextServer server) {
         this.server = server;
     }
 
@@ -94,7 +95,7 @@ public class TCPHandler implements Runnable {
      * Retrieves the handler's receivable.
      * @return Returns a TCPReceivable.
      */
-    public TCPReceivable getReceivable() {
+    public TCPTReceivable getReceivable() {
         return receivable;
     }
 
@@ -133,7 +134,7 @@ public class TCPHandler implements Runnable {
      * Retrieves the handler's TCPConnections list.
      * @return Returns a Vector of TCPConnection.
      */
-    public Vector<TCPConnection> getTcpConnections() {
+    public Vector<TCPTConnection> getTcpConnections() {
         return tcpConnections;
     }
 
@@ -149,7 +150,7 @@ public class TCPHandler implements Runnable {
      * Removes a TCP connection.
      * @param tcpConnection The TCP connection to remove.
      */
-    void removeTCPConnection(TCPConnection tcpConnection) {
+    void removeTCPConnection(TCPTConnection tcpConnection) {
         tcpConnection.setEnabled(false);
         tcpConnections.remove(tcpConnection);
     }
@@ -167,7 +168,7 @@ public class TCPHandler implements Runnable {
      */
     void removeTCPConnectionsAndThreads() {
         try {
-            for (TCPConnection connection : tcpConnections) {
+            for (TCPTConnection connection : tcpConnections) {
                 connection.setEnabled(false);
                 connection.getSocket().close();
             }
@@ -193,7 +194,7 @@ public class TCPHandler implements Runnable {
      */
     public void broadcast(String data) {
         if (isEnabled()) {
-            for (TCPConnection connection : tcpConnections) {
+            for (TCPTConnection connection : tcpConnections) {
                 connection.send(data);
             }
         }
@@ -218,7 +219,7 @@ public class TCPHandler implements Runnable {
      */
     public void multicast(String data, ArrayList<InetAddress> ipAddresses) {
         if (isEnabled()) {
-            for (TCPConnection connection : tcpConnections) {
+            for (TCPTConnection connection : tcpConnections) {
                 if (ipAddresses.contains(connection.getInetAddress())) {
                     connection.send(data);
                 }
@@ -259,7 +260,7 @@ public class TCPHandler implements Runnable {
                     Logger.logWarning("Non-whitelisted IP address " + socketAddress + " attempted to connect on TCP port " + port + " but was disconnected.");
                 }
                 else {
-                    TCPConnection tcpConnection = new TCPConnection(socket, receivable);
+                    TCPTConnection tcpConnection = new TCPTConnection(socket, receivable);
                     tcpConnections.add(tcpConnection);
                     if (tcpPeers.add(socket.getInetAddress())) {
                         System.out.println("New TCP connection on port " + port + " from IP: " + socket.getInetAddress());

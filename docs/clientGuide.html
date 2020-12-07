@@ -104,7 +104,7 @@ public class MyTCPClient extends TCPClient {
 
     @Override
     public void <b>onReceive</b>(String data) {
-        //Code that is executed once a message is received.
+        //Code that is executed once a messageHeader is received.
     }
 
 }</pre>
@@ -136,7 +136,7 @@ public class MyTCPClient extends TCPClient {
             <p><u><span class="code">onReceive()</span></u>:</p>
 
             <p>
-                This method defines code which will be ran when a message is received from the server.
+                This method defines code which will be ran when a messageHeader is received from the server.
             </p>
 
             <h5 id="udpClients">UDP clients</h5>
@@ -170,7 +170,7 @@ public class MyUDPClient extends UDPClient {
 
     @Override
     public void onReceive(String data) {
-        //Code that is executed once a message is received.
+        //Code that is executed once a messageHeader is received.
     }
 
 }</pre>
@@ -202,7 +202,7 @@ public class MyWebSocketClient extends WebSocketClient {
 
     @Override
     public void onReceive(String data) {
-        //Code that is executed once a message is received.
+        //Code that is executed once a messageHeader is received.
     }
 
 }</pre>

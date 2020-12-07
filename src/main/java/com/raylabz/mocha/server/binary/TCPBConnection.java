@@ -1,14 +1,9 @@
-package com.raylabz.mocha.server;
+package com.raylabz.mocha.server.binary;
 
-import com.raylabz.mocha.logger.Logger;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import com.raylabz.mocha.message.Message;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -16,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public class TCPConnection implements Runnable {
+public class TCPBConnection implements Runnable {
 
     /**
      * The connection's socket.
@@ -26,12 +21,12 @@ public class TCPConnection implements Runnable {
     /**
      * The connection's output writer.
      */
-    private final PrintWriter writer;
+    private final DataOutputStream writer;
 
     /**
      * The connections input reader.
      */
-    private final BufferedReader reader;
+    private final DataInputStream reader;
 
     /**
      * Determines if this TCP connection is enabled.
@@ -42,7 +37,7 @@ public class TCPConnection implements Runnable {
      * The TCPReceivable of this connection, which defines what happens once data is received.
      * Important note: TCPReceivables are the same object for all TCPConnections of the same TCPHandler.
      */
-    private final TCPReceivable receivable;
+    private final TCPBReceivable receivable;
 
     /**
      * Constructs a new TCPConnection.
@@ -50,10 +45,10 @@ public class TCPConnection implements Runnable {
      * @param receivable The connection's receivable instance.
      * @throws IOException Thrown when the socket's input reader cannot be fetched.
      */
-    public TCPConnection(Socket socket, TCPReceivable receivable) throws IOException {
+    public TCPBConnection(Socket socket, TCPBReceivable receivable) throws IOException {
         this.socket = socket;
-        this.writer = new PrintWriter(socket.getOutputStream(), true);
-        this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.writer = new DataOutputStream(socket.getOutputStream());
+        this.reader = new DataInputStream(socket.getInputStream());
         this.receivable = receivable;
     }
 
@@ -74,11 +69,11 @@ public class TCPConnection implements Runnable {
     }
 
     /**
-     * Sends data to the client on the other end of the TCP connection.
-     * @param data The data to send.
+     * Sends a message to the client on the other end of the TCP connection.
+     * @param message The message to send.
      */
-    public final void send(final String data) {
-        writer.println(data);
+    public final void send(final Message message) {
+        //TODO
     }
 
     /**
@@ -111,26 +106,7 @@ public class TCPConnection implements Runnable {
      */
     @Override
     public final void run() {
-        String input;
-        try {
-            while ((input = reader.readLine()) != null && isEnabled()) {
-                receivable.onReceive(this, input);
-            }
-        }
-        catch (SocketException se) {
-            if (!isEnabled()) {
-                System.out.println("Lost connection to TCP client: " + getInetAddress() + ".");
-                Logger.logInfo("Lost connection to TCP client: " + getInetAddress() + ".");
-            }
-            else {
-                System.err.println("[TCP " + getInetAddress().toString() + ":" + getPort() + "]" + "Error: " + se.getMessage());
-                Logger.logError(se.getMessage());
-            }
-        }
-        catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
-            Logger.logError(e.getMessage());
-        }
+        //TODO
     }
 
 }

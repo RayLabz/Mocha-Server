@@ -43,10 +43,10 @@
                 <div class="center"><h3>Handlers</h3></div>
                 <h4>Summary</h4>
                 <ul class="browser-default">
-                    <li>Handlers are server components that listen for incoming messages and do something when a message is received.</li>
+                    <li>Handlers are server components that listen for incoming messages and do something when a messageHeader is received.</li>
                     <li>Each handler runs on a separate thread. Handlers can thus run in parallel with each other so that a server can process
                         requests coming from many ports at the same time while also being under the supervision of the main server thread.</li>
-                    <li>Each handler is assigned to a particular port and you must define what will happen once a message/request is received through that port.</li>
+                    <li>Each handler is assigned to a particular port and you must define what will happen once a messageHeader/request is received through that port.</li>
                 </ul>
 
                 <p>
@@ -74,7 +74,7 @@
                         The server manages UDPConnections by running each of them on a separate thread. Each UDPConnection
                         listens to incoming requests on a specific UDP port (e.g. 1111). A UDPConnection manages these
                         requests <u>for all clients connected to that port</u>. This is because in UDP, there is no persistent
-                        channel established between the client and the server. Each message that is sent is completely independent
+                        channel established between the client and the server. Each messageHeader that is sent is completely independent
                         (<b>connection-less</b>) and its arrival and arrival time cannot be guaranteed.
                     </p>
                 </div>

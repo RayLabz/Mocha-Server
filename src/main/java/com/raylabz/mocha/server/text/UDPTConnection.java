@@ -1,6 +1,8 @@
-package com.raylabz.mocha.server;
+package com.raylabz.mocha.server.text;
 
 import com.raylabz.mocha.logger.Logger;
+import com.raylabz.mocha.server.SecurityMode;
+import com.raylabz.mocha.server.UDPPeer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -16,12 +18,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class UDPConnection implements Runnable {
+public abstract class UDPTConnection implements Runnable {
 
     /**
      * The server that this UDP connection belongs to.
      */
-    private Server server;
+    private TextServer server;
 
     /**
      * The client's socket.
@@ -52,7 +54,7 @@ public abstract class UDPConnection implements Runnable {
      * Constructs a new UDPConnection.
      * @param port The connection's port.
      */
-    public UDPConnection(int port) {
+    public UDPTConnection(int port) {
         this.port = port;
     }
 
@@ -60,7 +62,7 @@ public abstract class UDPConnection implements Runnable {
      * Retrieves the server of this UDPConnection.
      * @return Returns a Server.
      */
-    protected Server getServer() {
+    protected TextServer getServer() {
         return this.server;
     }
 
@@ -68,7 +70,7 @@ public abstract class UDPConnection implements Runnable {
      * Sets the server of this UDPConnection.
      * @param server A server
      */
-    void setServer(Server server) {
+    void setServer(TextServer server) {
         this.server = server;
     }
 
@@ -182,7 +184,7 @@ public abstract class UDPConnection implements Runnable {
      * @param outPort The outPort of the client (used to send outgoing messages).
      * @param data The data received.
      */
-    public abstract void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data);
+    public abstract void onReceive(UDPTConnection udpConnection, InetAddress address, int outPort, String data);
 
     /**
      * Defines what happens when the UDP connection starts.

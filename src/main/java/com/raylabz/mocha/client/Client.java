@@ -1,7 +1,5 @@
 package com.raylabz.mocha.client;
 
-import com.raylabz.mocha.server.Receivable;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.PortUnreachableException;

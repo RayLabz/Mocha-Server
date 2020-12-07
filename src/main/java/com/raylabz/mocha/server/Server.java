@@ -8,14 +8,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Provides functionality for a server.
- * @author Nicos Kasenides
- * @version 0.1.2?
- */
 public abstract class Server implements Runnable {
 
     public static final String WHITELIST_FILENAME_POSTFIX =  "-whitelist";
@@ -24,52 +21,42 @@ public abstract class Server implements Runnable {
     /**
      * The server's security mode.
      */
-    private final SecurityMode securityMode;
+    protected final SecurityMode securityMode;
 
     /**
      * The server's whitelist - a list of IP addresses for which to <b>accept</b> communication when running in SecurityMode.WHITELIST.
      */
-    private final HashSet<InetAddress> whitelist = new HashSet<>();
+    protected final HashSet<InetAddress> whitelist = new HashSet<>();
 
     /**
      * The server's blacklist - a list of IP addresses for which to <b>reject</b> communication when running in SecurityMode.BLACKLIST.
      */
-    private final HashSet<InetAddress> blacklist = new HashSet<>();
+    protected final HashSet<InetAddress> blacklist = new HashSet<>();
 
     /**
      * The name of the server.
      */
-    private final String name;
+    protected final String name;
 
     /**
      * Whether the server is running or not.
      */
-    private final AtomicBoolean running = new AtomicBoolean(true);
+    protected final AtomicBoolean running = new AtomicBoolean(true);
 
     /**
      * Execution delay between calls to the process() method - In <b>MILLISECONDS</b>.
      */
-    private int executionDelay = 0;
-
-    /**
-     * A list of UDP listeners for this server.
-     */
-    private final Vector<UDPConnection> udpHandlers = new Vector<>();
+    protected int executionDelay = 0;
 
     /**
      * A list of threads running the UDP listeners of this server.
      */
-    private final Vector<Thread> udpHandlerThreads = new Vector<>();
-
-    /**
-     * A list of TCP handlers for this server.
-     */
-    private final Vector<TCPHandler> tcpHandlers = new Vector<>();
+    protected final Vector<Thread> udpHandlerThreads = new Vector<>();
 
     /**
      * A list of threads running the TCP handlers of this server.
      */
-    private final Vector<Thread> tcpHandlerThreads = new Vector<>();
+    protected final Vector<Thread> tcpHandlerThreads = new Vector<>();
 
     /**
      * Constructs a new server.
@@ -139,119 +126,6 @@ public abstract class Server implements Runnable {
     }
 
     /**
-     * Adds a UDP handler to the server.
-     * @param udpConnection The UDP handler to add.
-     * @return Returns true if the UDP handler was added, false otherwise.
-     */
-    public final boolean addUDPHandler(UDPConnection udpConnection) {
-        udpConnection.setServer(this);
-        for (UDPConnection p : udpHandlers) {
-            if (p.getPort() == udpConnection.getPort()) {
-                return false;
-            }
-        }
-        udpHandlers.add(udpConnection);
-        return true;
-    }
-
-    /**
-     * Adds a TCP handler to the server.
-     * @param tcpHandler The TCP handler to add.
-     * @return Returns true if the TCP handler was added, false otherwise.
-     */
-    public final boolean addTCPHandler(TCPHandler tcpHandler) {
-        tcpHandler.setServer(this);
-        for (TCPHandler h : tcpHandlers) {
-            if (h.getPort() == tcpHandler.getPort()) {
-                return false;
-            }
-        }
-        tcpHandlers.add(tcpHandler);
-        return true;
-    }
-
-    /**
-     * Removes a TCP handler.
-     * @param tcpHandler The TCP handler to remove.
-     * @return Returns true if the handler was successfully removed, false otherwise.
-     */
-    public final boolean removeTCPHandler(TCPHandler tcpHandler) {
-        tcpHandler.setEnabled(false);
-        tcpHandler.removeTCPConnectionsAndThreads();
-        return tcpHandlers.remove(tcpHandler);
-    }
-
-    /**
-     * Removes a TCP handler.
-     * @param port The handler's port.
-     * @return Returns true if the handler was successfully removed, false otherwise.
-     */
-    public final boolean removeTCPHandler(int port) {
-        TCPHandler handlerToRemove = null;
-        for (TCPHandler tcpHandler : tcpHandlers) {
-            if (tcpHandler.getPort() == port) {
-                handlerToRemove = tcpHandler;
-                break;
-            }
-        }
-        if (handlerToRemove != null) {
-            handlerToRemove.setEnabled(false);
-            handlerToRemove.removeTCPConnectionsAndThreads();
-        }
-        return tcpHandlers.remove(handlerToRemove);
-    }
-
-    /**
-     * Removes all TCP handlers.
-     */
-    final void removeAllTCPHandlers() {
-        for (TCPHandler tcpHandler : tcpHandlers) {
-            tcpHandler.setEnabled(false);
-            tcpHandler.removeTCPConnectionsAndThreads();
-        }
-        tcpHandlers.clear();
-    }
-
-    /**
-     * Removes a UDP handler.
-     * @param udpConnection The UDP handler to remove.
-     * @return Returns true if the handler was successfully removed, false otherwise.
-     */
-    public final boolean removeUDPHandler(UDPConnection udpConnection) {
-        udpConnection.setEnabled(false);
-        return udpHandlers.remove(udpConnection);
-    }
-
-    /**
-     * Removes a UDP handler.
-     * @param port The handler's port.
-     * @return Returns true if the handler was successfully removed, false otherwise.
-     */
-    public final boolean removeUDPHandler(int port) {
-        UDPConnection handlerToRemove = null;
-        for (UDPConnection h : udpHandlers) {
-            if (h.getPort() == port) {
-                handlerToRemove = h;
-                break;
-            }
-        }
-        if (handlerToRemove != null) {
-            handlerToRemove.setEnabled(false);
-        }
-        return udpHandlers.remove(handlerToRemove);
-    }
-
-    /**
-     * Removes all UDP handlers.
-     */
-    final void removeAllUDPHandlers() {
-        for (UDPConnection udpConnection : udpHandlers) {
-            udpConnection.setEnabled(false);
-        }
-        udpHandlers.clear();
-    }
-
-    /**
      * Checks if the server is running.
      * @return Returns true if the server is running, false otherwise.
      */
@@ -285,27 +159,11 @@ public abstract class Server implements Runnable {
     }
 
     /**
-     * Retrieves the list of UDP listeners for this server.
-     * @return Returns a Vector of UDPConnection.
-     */
-    public final Vector<UDPConnection> getUdpHandlers() {
-        return udpHandlers;
-    }
-
-    /**
      * Retrieves the list of threads running the server's UDP listeners.
      * @return Returns a Vector of Thread.
      */
     public final Vector<Thread> getUdpHandlerThreads() {
         return udpHandlerThreads;
-    }
-
-    /**
-     * Retrieves the list of TCP handlers for this server.
-     * @return Returns a Vector of TCPHandler.
-     */
-    public final Vector<TCPHandler> getTcpHandlers() {
-        return tcpHandlers;
     }
 
     /**
@@ -374,310 +232,6 @@ public abstract class Server implements Runnable {
         Thread thread = new Thread(runnable, tag);
         thread.start();
         return thread;
-    }
-
-    /**
-     * Sends data through TCP.
-     * @param tcpConnection The TCPConnection to send the data through.
-     * @param data The data.
-     */
-    public final void sendTCP(TCPConnection tcpConnection, final String data) {
-        if (tcpConnection.isEnabled()) {
-            tcpConnection.send(data);
-        }
-        else {
-            System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-            Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-        }
-    }
-
-    /**
-     * Sends data through TCP.
-     * @param ipAddress The IP address to send the data to.
-     * @param port The port to send the data through.
-     * @param data The data.
-     */
-    public final void sendTCP(final String ipAddress, final int port, final String data) {
-        try {
-            InetAddress inetAddress = InetAddress.getByName(ipAddress);
-            if (port >= 0 && port <= 65535) {
-                for (TCPHandler h : tcpHandlers) {
-                    if (h.getPort() == port) {
-                        for (TCPConnection tcpConnection : h.getTcpConnections()) {
-                            if (tcpConnection.getInetAddress().equals(inetAddress)) {
-                                if (tcpConnection.isEnabled()) {
-                                    tcpConnection.send(data);
-                                }
-                                else {
-                                    System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-                                    Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    /**
-     * Send data through TCP.
-     * @param inetAddress The internet address to send the data to.
-     * @param port The port to send the data through.
-     * @param data The data.
-     */
-    public final void sendTCP(final InetAddress inetAddress, final int port, final String data) {
-        if (port >= 0 && port <= 65535) {
-            for (TCPHandler h : tcpHandlers) {
-                if (h.getPort() == port) {
-                    for (TCPConnection tcpConnection : h.getTcpConnections()) {
-                        if (tcpConnection.getInetAddress().equals(inetAddress)) {
-                            if (tcpConnection.isEnabled()) {
-                                tcpConnection.send(data);
-                            }
-                            else {
-                                System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-                                Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Multicasts data to a set of IP addresses on a specific port.
-     * @param data The data to send.
-     * @param port The port to set the data through.
-     * @param ipAddresses A list of IP addresses to send the data to.
-     */
-    public final void multicastTCP(String data, int port, InetAddress... ipAddresses) {
-        for (TCPHandler handler : tcpHandlers) {
-            if (handler.getPort() == port) {
-                handler.multicast(data, new ArrayList<>(Arrays.asList(ipAddresses)));
-                break;
-            }
-        }
-    }
-
-    /**
-     * Multicasts data to a set of IP addresses on a specific port.
-     * @param data The data to send.
-     * @param port The port to set the data through.
-     * @param ipAddresses A list of IP addresses to send the data to.
-     */
-    public final void multicastTCP(String data, int port, List<InetAddress> ipAddresses) {
-        for (TCPHandler handler : tcpHandlers) {
-            if (handler.getPort() == port) {
-                handler.multicast(data, new ArrayList<>(ipAddresses));
-                break;
-            }
-        }
-    }
-
-    /**
-     * Multicasts data to a set of IP addresses on a specific port.
-     * @param data The data to send.
-     * @param port The port to set the data through.
-     * @param ipAddresses A list of IP addresses to send the data to.
-     */
-    public final void multicastTCP(String data, int port, String... ipAddresses) {
-        ArrayList<InetAddress> inetAddresses = new ArrayList<>();
-        for (String ipString : ipAddresses) {
-            try {
-                InetAddress inetAddress = InetAddress.getByName(ipString);
-                inetAddresses.add(inetAddress);
-            } catch (UnknownHostException e) {
-                System.err.println("Invalid multicast target [TCP]: " + ipString);
-                Logger.logError("Invalid multicast target [TCP]: " + ipString);
-            }
-        }
-
-        for (TCPHandler handler : tcpHandlers) {
-            if (handler.getPort() == port) {
-                handler.multicast(data, inetAddresses);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Broadcasts a given message to all of the peer of a particular TCP connection.
-     * @param port The connection to broadcast the data to.
-     * @param data The data to broadcast.
-     */
-    public final void broadcastTCP(final int port, final String data) {
-        for (TCPHandler handler : tcpHandlers) {
-            if (handler.getPort() == port) {
-                handler.broadcast(data);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Sends data through UDP.
-     * @param udpConnection The UDPConnection to send the data to.
-     * @param outPort The port of the client.
-     * @param data The data.
-     */
-    public final void sendUDP(final UDPConnection udpConnection, int outPort, final String data) {
-        if (udpConnection.isEnabled()) {
-            udpConnection.send(udpConnection.getInetAddress(), outPort, data);
-        }
-        else {
-            System.err.println("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
-            Logger.logError("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
-        }
-    }
-
-    /**
-     * Sends data through UDP.
-     * @param ipAddress The IP address to send the data to.
-     * @param outPort The outPort to send the data through.
-     * @param data The data.
-     */
-    public final void sendUDP(final String ipAddress, final int outPort, final String data) {
-        try {
-            InetAddress inetAddress = InetAddress.getByName(ipAddress);
-            if (outPort >= 0 && outPort <= 65535) {
-                for (UDPConnection udpConnection : udpHandlers) {
-                    if (udpConnection.getPort() == outPort && udpConnection.getInetAddress().equals(inetAddress)) {
-                        if (udpConnection.isEnabled()) {
-                            udpConnection.send(inetAddress, outPort, data);
-                        }
-                        else {
-                            System.err.println("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
-                            Logger.logError("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    /**
-     * Sends data through UDP.
-     * @param udpPeer The UDPPeer instance to send the data to.
-     * @param data The data to send.
-     */
-    public final void sendUDP(UDPPeer udpPeer, final String data) {
-        sendUDP(udpPeer.getAddress().toString(), udpPeer.getPort(), data);
-    }
-
-    /**
-     * Multicasts data to a set of IP addresses on a specific port.
-     * @param data The data to send.
-     * @param port The port to set the data through.
-     * @param ipAddresses A list of IP addresses to send the data to.
-     */
-    public final void multicastUDP(String data, int port, InetAddress... ipAddresses) {
-        for (UDPConnection udpConnection : udpHandlers) {
-            if (udpConnection.getPort() == port) {
-                udpConnection.multicast(data, new ArrayList<>(Arrays.asList(ipAddresses)));
-                break;
-            }
-        }
-    }
-
-    /**
-     * Multicasts data to a set of IP addresses on a specific port.
-     * @param data The data to send.
-     * @param port The port to set the data through.
-     * @param ipAddresses A list of IP addresses to send the data to.
-     */
-    public final void multicastUDP(String data, int port, List<InetAddress> ipAddresses) {
-        for (UDPConnection udpConnection : udpHandlers) {
-            if (udpConnection.getPort() == port) {
-                udpConnection.multicast(data, new ArrayList<>(ipAddresses));
-                break;
-            }
-        }
-    }
-
-    /**
-     * Multicasts data to a set of IP addresses on a specific port.
-     * @param data The data to send.
-     * @param port The port to set the data through.
-     * @param ipAddresses A list of IP addresses to send the data to.
-     */
-    public final void multicastUDP(String data, int port, String... ipAddresses) {
-        ArrayList<InetAddress> inetAddresses = new ArrayList<>();
-        for (String ipString : ipAddresses) {
-            try {
-                InetAddress inetAddress = InetAddress.getByName(ipString);
-                inetAddresses.add(inetAddress);
-            } catch (UnknownHostException e) {
-                System.err.println("Invalid multicast target [UDP]: " + ipString);
-                Logger.logError("Invalid multicast target [UDP]: " + ipString);
-            }
-        }
-
-        for (UDPConnection connection : udpHandlers) {
-            if (connection.getPort() == port) {
-                connection.multicast(data, inetAddresses);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Broadcasts a given message to all of the peers of a particular UDP connection.
-     * @param port The connection to broadcast the data to.
-     * @param data The data to broadcast.
-     */
-    public final void broadcastUDP(final int port, final String data) {
-        Vector<UDPConnection> udpListeners = getUdpHandlers();
-        for (UDPConnection connection : udpListeners) {
-            if (connection.getPort() == port) {
-                connection.broadcast(data);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Defines the runtime functionality of this server.
-     * This method:
-     * 1) Initializes the server using initialize().
-     * 2) Creates and starts threads for each UDPConnection and TCPHandler.
-     * 3) Continuously executes the process() method while the server is running.
-     *
-     */
-    @Override
-    public final void run() {
-        System.out.println("Server '" + name + "' started.");
-        Logger.logInfo("Server '" + name + "' started.");
-        initialize();
-
-        for (UDPConnection udpConnection : udpHandlers) {
-            Thread t = new Thread(udpConnection, "UDP-Handler-Thread-Port-" + udpConnection.getPort());
-            udpHandlerThreads.add(t);
-            t.start();
-        }
-        for (TCPHandler tcpHandler : tcpHandlers) {
-            Thread t = new Thread(tcpHandler, "TCP-Handler-Thread-Port-" + tcpHandler.getPort());
-            tcpHandlerThreads.add(t);
-            t.start();
-        }
-
-        while (isRunning()) {
-            runIndefinitely();
-            if (executionDelay > 0) {
-                try {
-                    Thread.sleep(executionDelay);
-                } catch (InterruptedException e) {
-                    System.err.println("Error: " + e.getMessage());
-                    e.printStackTrace();
-                    Logger.logError(e.getMessage());
-                }
-            }
-        }
-        System.out.println("Server '" + name + "' stopped.");
-        Logger.logInfo("Server '" + name + "' stopped.");
     }
 
     /**
@@ -885,16 +439,6 @@ public abstract class Server implements Runnable {
      * Does nothing by default - must be implemented (if needed) by the extending class.
      */
     public void onStop() { }
-
-    /**
-     * Stops the server.
-     */
-    public final void stop() {
-        onStop();
-        removeAllTCPHandlers();
-        removeAllUDPHandlers();
-        setRunning(false);
-    }
 
     /**
      * Starts the server.
