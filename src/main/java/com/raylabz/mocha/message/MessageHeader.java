@@ -25,11 +25,11 @@ public class MessageHeader implements Streamable {
     private final InetAddress receiverIP;
     private final long timestamp;
 
-    public MessageHeader(int size, InetAddress senderIP, InetAddress receiverIP) {
+    public MessageHeader(int size, InetAddress senderIP, InetAddress receiverIP, long timestamp) {
         this.size = size;
         this.senderIP = senderIP;
         this.receiverIP = receiverIP;
-        this.timestamp = System.currentTimeMillis();
+        this.timestamp = timestamp;
     }
 
     public final InetAddress getSenderIP() {

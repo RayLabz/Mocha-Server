@@ -1,11 +1,16 @@
 package com.raylabz.mocha.server.binary;
 
+import com.raylabz.bytesurge.stream.StreamReader;
+import com.raylabz.bytesurge.stream.StreamWriter;
 import com.raylabz.mocha.logger.Logger;
 import com.raylabz.mocha.message.Message;
+import com.raylabz.mocha.message.MessageHeader;
 import com.raylabz.mocha.server.SecurityMode;
 import com.raylabz.mocha.server.UDPPeer;
 import com.raylabz.mocha.server.text.TextServer;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -134,7 +139,16 @@ public abstract class UDPBConnection implements Runnable {
      * @param message The message to send.
      */
     public final void send(InetAddress address, int outPort, final Message message) {
-        //TODO
+        try {
+            StreamWriter writer = new StreamWriter(message.toSchema());
+            writer.writeObject(message.toContainer());
+            writer.close();
+            final byte[] bytes = writer.getBytes();
+            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
+            socket.send(packet);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -209,9 +223,32 @@ public abstract class UDPBConnection implements Runnable {
                         Logger.logInfo("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
                     }
 
-                    //TODO
-//                    final String data = new String(packet.getData(), 0, packet.getLength());
-//                    onReceive(this, packet.getAddress(), packet.getPort(), data);
+                    final byte[] data = packet.getData();
+                    DataInputStream reader = new DataInputStream(new ByteArrayInputStream(data));
+
+                    final int size = reader.readInt();
+                    final byte[] senderIPBytes = new byte[4];
+                    final byte[] receiverIPBytes = new byte[4];
+                    for (int i = 0; i < 4; i++) {
+                        senderIPBytes[i] = reader.readByte();
+                    }
+                    for (int i = 0; i < 4; i++) {
+                        receiverIPBytes[i] = reader.readByte();
+                    }
+                    final long timestamp = reader.readLong();
+
+                    MessageHeader header = new MessageHeader(size, InetAddress.getByAddress(senderIPBytes), InetAddress.getByAddress(receiverIPBytes), timestamp);
+
+                    //Get the rest of the data:
+                    final byte[] actualData = new byte[size];
+                    for (int i = 0; i < size; i++) {
+                        data[i] = reader.readByte();
+                    }
+
+                    Message message = new Message(header, actualData);
+
+                    //Handle the message:
+                    onReceive(this, packet.getAddress(), packet.getPort(), message);
                 }
             }
         } catch (SocketException se) {

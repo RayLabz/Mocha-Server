@@ -1,9 +1,14 @@
 package com.raylabz.mocha.server.binary;
 
+import com.raylabz.bytesurge.stream.StreamWriter;
+import com.raylabz.mocha.logger.Logger;
 import com.raylabz.mocha.message.Message;
+import com.raylabz.mocha.message.MessageHeader;
+
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -72,8 +77,17 @@ public class TCPBConnection implements Runnable {
      * Sends a message to the client on the other end of the TCP connection.
      * @param message The message to send.
      */
-    public final void send(final Message message) {
-        //TODO
+    public final void send(final Message message) throws RuntimeException {
+        try {
+            StreamWriter streamWriter = new StreamWriter(message.toSchema());
+            streamWriter.writeObject(message.toContainer());
+            streamWriter.close();
+            final byte[] bytes = streamWriter.getBytes();
+            writer.write(bytes);
+            writer.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -106,7 +120,46 @@ public class TCPBConnection implements Runnable {
      */
     @Override
     public final void run() {
-        //TODO
+        try {
+            while (isEnabled()) {
+                //Read the header:
+                final int size = reader.readInt();
+                final byte[] senderIPBytes = new byte[4];
+                final byte[] receiverIPBytes = new byte[4];
+                for (int i = 0; i < 4; i++) {
+                    senderIPBytes[i] = reader.readByte();
+                }
+                for (int i = 0; i < 4; i++) {
+                    receiverIPBytes[i] = reader.readByte();
+                }
+                final long timestamp = reader.readLong();
+
+                MessageHeader header = new MessageHeader(size, InetAddress.getByAddress(senderIPBytes), InetAddress.getByAddress(receiverIPBytes), timestamp);
+
+                //Get the rest of the data:
+                final byte[] data = new byte[size];
+                for (int i = 0; i < size; i++) {
+                    data[i] = reader.readByte();
+                }
+
+                Message message = new Message(header, data);
+
+                //Handle the message:
+                receivable.onReceive(this, message);
+            }
+        } catch (SocketException se) {
+            if (!isEnabled()) {
+                System.out.println("Lost connection to TCP client: " + getInetAddress() + ".");
+                Logger.logInfo("Lost connection to TCP client: " + getInetAddress() + ".");
+            }
+            else {
+                System.err.println("[TCP " + getInetAddress().toString() + ":" + getPort() + "]" + "Error: " + se.getMessage());
+                Logger.logError(se.getMessage());
+            }
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+            Logger.logError(e.getMessage());
+        }
     }
 
 }
