@@ -1,6 +1,6 @@
-package com.raylabz.mocha.server.binary;
+package com.raylabz.mocha.server;
 
-import com.raylabz.mocha.message.Message;
+import com.google.protobuf.GeneratedMessageV3;
 
 import java.io.IOException;
 
@@ -9,13 +9,13 @@ import java.io.IOException;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public interface TCPBReceivable {
+public interface TCPReceivable<TMessage extends GeneratedMessageV3> {
 
     /**
      * Executes code when a message is received.
      * @param tcpConnection The TCPConnection receiving the message.
      * @param message The message received.
      */
-    void onReceive(TCPBConnection tcpConnection, Message message) throws IOException;
+    void onReceive(TCPConnection<TMessage> tcpConnection, TMessage message) throws IOException;
 
 }

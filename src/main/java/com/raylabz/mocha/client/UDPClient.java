@@ -1,14 +1,19 @@
 package com.raylabz.mocha.client;
 
-import java.io.IOException;
+import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Parser;
+
+import java.io.*;
+import java.lang.reflect.Field;
 import java.net.*;
 
 /**
  * Defines functionality for a UDP Client.
+ *
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class UDPTClient extends Client implements MessageBroker<String> {
+public abstract class UDPClient<TMessage extends GeneratedMessageV3> extends Client<TMessage> implements MessageBroker<TMessage> {
 
     /**
      * The client's socket.
@@ -23,7 +28,7 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
     /**
      * A thread listening to messages from the server.
      */
-    private Thread receptionThread;
+    private final Thread receptionThread;
 
     /**
      * The runnable ran by receptionThread.
@@ -37,24 +42,33 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
                         try {
                             final DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                             socket.receive(packet);
-                            final String data = new String(packet.getData(), 0, packet.getLength());
-                            onReceive(data);
-                        } catch (SocketException ce) {
+                            final byte[] data = packet.getData();
+                            DataInputStream reader = new DataInputStream(new ByteArrayInputStream(data));
+
+                            final int size = reader.readInt();
+                            final byte[] actualData = new byte[size];
+                            reader.read(actualData, 0, size);
+
+                            final TMessage message = messageParser.parseFrom(actualData);
+
+                            //Handle the message:
+                            onReceive(message);
+
+                        } catch (ConnectException ce) {
 //                            if (!unblock) {
-                                setListening(false);
-                                setConnected(false);
-                                onConnectionRefused();
+                            setListening(false);
+                            setConnected(false);
+                            onConnectionRefused();
 //                            }
                         } catch (IOException e) {
 //                            if (!unblock) {
-                                System.err.println("Error receiving: " + e.getMessage());
-                                e.printStackTrace();
+                            System.err.println("Error receiving: " + e.getMessage());
+                            e.printStackTrace();
 //                            }
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 onConnectionRefused();
             }
         }
@@ -63,14 +77,13 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
     /**
      * Constructs a new UDPClient.
      *
-     * @param name The client's name.
      * @param ipAddress The IP address that this client will connect to.
-     * @param port The port that this client will connect through.
+     * @param port      The port that this client will connect through.
      * @throws UnknownHostException Thrown when the IP address is invalid.
-     * @throws SocketException Thrown when the client's socket cannot be instantiated.
+     * @throws SocketException      Thrown when the client's socket cannot be instantiated.
      */
-    public UDPTClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
-        super(name, ipAddress, port);
+    public UDPClient(Class<TMessage> messageClass, String ipAddress, int port) throws UnknownHostException, SocketException {
+        super(messageClass, ipAddress, port);
         try {
             this.socket = new DatagramSocket();
             setConnected(true);
@@ -80,12 +93,13 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
             onConnectionRefused();
         }
 
-        receptionThread = new Thread(receptionThreadRunnable, name  + "-Listener");
+        receptionThread = new Thread(receptionThreadRunnable, getClass().getSimpleName() + "-Listener");
         receptionThread.start();
     }
 
     /**
      * Retrieves the client's socket.
+     *
      * @return Returns a DatagramSocket.
      */
     public DatagramSocket getSocket() {
@@ -93,15 +107,22 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
     }
 
     /**
-     * Sends data to the server.
-     * @param data The data to send to the server.
+     * Sends a message to the server.
+     *
+     * @param message The message to send to the server.
      */
     @Override
-    public final void send(final String data) {
+    public final void send(final TMessage message) {
         if (isConnected()) {
             try {
-                final byte[] bytes = data.getBytes();
-                DatagramPacket packet = new DatagramPacket(bytes, bytes.length, getAddress(), getPort());
+                ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(byteStream);
+                byte[] data = message.toByteArray();
+                dos.writeInt(data.length);
+                dos.write(data);
+                dos.close();
+                byteStream.close();
+                DatagramPacket packet = new DatagramPacket(byteStream.toByteArray(), byteStream.size(), getAddress(), getPort());
                 socket.send(packet);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -115,12 +136,6 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
         setListening(false);
         socket.close();
     }
-
-    @Override
-    public void initialize() { }
-
-    @Override
-    public void process() { }
 
     //    @Override
 //    public void sendAndReceive(String data, Receivable receivable) {

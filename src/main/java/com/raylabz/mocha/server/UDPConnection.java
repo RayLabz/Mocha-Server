@@ -1,10 +1,9 @@
-package com.raylabz.mocha.server.text;
+package com.raylabz.mocha.server;
 
+import com.google.protobuf.GeneratedMessageV3;
 import com.raylabz.mocha.logger.Logger;
-import com.raylabz.mocha.server.SecurityMode;
-import com.raylabz.mocha.server.UDPPeer;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -18,12 +17,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class UDPTConnection implements Runnable {
+public abstract class UDPConnection<TMessage extends GeneratedMessageV3> implements Runnable {
 
     /**
      * The server that this UDP connection belongs to.
      */
-    private TextServer server;
+    private Server<TMessage> server;
 
     /**
      * The client's socket.
@@ -54,7 +53,7 @@ public abstract class UDPTConnection implements Runnable {
      * Constructs a new UDPConnection.
      * @param port The connection's port.
      */
-    public UDPTConnection(int port) {
+    public UDPConnection(int port) {
         this.port = port;
     }
 
@@ -62,7 +61,7 @@ public abstract class UDPTConnection implements Runnable {
      * Retrieves the server of this UDPConnection.
      * @return Returns a Server.
      */
-    protected TextServer getServer() {
+    protected Server<TMessage> getServer() {
         return this.server;
     }
 
@@ -70,7 +69,7 @@ public abstract class UDPTConnection implements Runnable {
      * Sets the server of this UDPConnection.
      * @param server A server
      */
-    void setServer(TextServer server) {
+    void setServer(Server<TMessage> server) {
         this.server = server;
     }
 
@@ -126,32 +125,37 @@ public abstract class UDPTConnection implements Runnable {
     }
 
     /**
-     * Sends data to a client.
-     * @param address The address to send the data to.
+     * Sends a message to a client.
+     * @param address The address to send the message to.
      * @param outPort The port of the client.
-     * @param data The data to send.
+     * @param message The message to send.
      */
-    public final void send(InetAddress address, int outPort, final String data) {
+    public final void send(InetAddress address, int outPort, final TMessage message) {
         try {
-            final byte[] bytes = data.getBytes();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
+            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(byteStream);
+            byte[] data = message.toByteArray();
+            dos.writeInt(data.length);
+            dos.write(data);
+            dos.close();
+            byteStream.close();
+            DatagramPacket packet = new DatagramPacket(byteStream.toByteArray(), byteStream.size(), address, outPort);
             socket.send(packet);
         } catch (IOException e) {
-            Logger.logError(e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
     /**
      * Multicasts a message to selected clients.
-     * @param data The data to send
-     * @param ipAddresses A list of IP addresses to send the data to.
+     * @param message The message to send
+     * @param ipAddresses A list of IP addresses to send the message to.
      */
-    public final void multicast(final String data, ArrayList<InetAddress> ipAddresses) {
+    public final void multicast(final TMessage message, ArrayList<InetAddress> ipAddresses) {
         if (isEnabled()) {
             for (UDPPeer peer : connectedPeers) {
                 if (ipAddresses.contains(peer.getAddress())) {
-                    send(peer.getAddress(), peer.getPort(), data);
+                    send(peer.getAddress(), peer.getPort(), message);
                 }
             }
         }
@@ -163,12 +167,12 @@ public abstract class UDPTConnection implements Runnable {
 
     /**
      * Broadcasts a message to all connected peers.
-     * @param data The data to broadcast.
+     * @param message The message to broadcast.
      */
-    public final void broadcast(final String data) {
+    public final void broadcast(final TMessage message) {
         if (isEnabled()) {
             for (final UDPPeer peer : connectedPeers) {
-                send(peer.getAddress(), peer.getPort(), data);
+                send(peer.getAddress(), peer.getPort(), message);
             }
         }
         else {
@@ -178,13 +182,13 @@ public abstract class UDPTConnection implements Runnable {
     }
 
     /**
-     * Defines what will be executed when data is received.
+     * Defines what will be executed when message is received.
      * @param udpConnection The UDPConnection.
-     * @param address The address of the client to send the data to.
+     * @param address The address of the client to send the message to.
      * @param outPort The outPort of the client (used to send outgoing messages).
-     * @param data The data received.
+     * @param message The message received.
      */
-    public abstract void onReceive(UDPTConnection udpConnection, InetAddress address, int outPort, String data);
+    public abstract void onReceive(UDPConnection<TMessage> udpConnection, InetAddress address, int outPort, TMessage message) throws IOException;
 
     /**
      * Defines what happens when the UDP connection starts.
@@ -213,8 +217,17 @@ public abstract class UDPTConnection implements Runnable {
                         System.out.println("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
                         Logger.logInfo("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
                     }
-                    final String data = new String(packet.getData(), 0, packet.getLength());
-                    onReceive(this, packet.getAddress(), packet.getPort(), data);
+
+                    final byte[] data = packet.getData();
+                    DataInputStream reader = new DataInputStream(new ByteArrayInputStream(data));
+
+                    final int size = reader.readInt();
+                    final byte[] actualData = new byte[size];
+                    reader.read(actualData, 0, size);
+
+                    final TMessage message = server.getMessageParser().parseFrom(actualData);
+
+                    onReceive(this, packet.getAddress(), packet.getPort(), message);
                 }
             }
         } catch (SocketException se) {

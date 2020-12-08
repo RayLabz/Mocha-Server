@@ -1,6 +1,10 @@
 package com.raylabz.mocha.client;
 
+import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Parser;
+
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.PortUnreachableException;
 import java.net.UnknownHostException;
@@ -11,53 +15,47 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class Client implements Runnable, BackgroundProcessor {
-
-    /**
-     * The name of this client.
-     */
-    private final String name;
+public abstract class Client<TMessage extends GeneratedMessageV3> implements Runnable, BackgroundRunner {
 
     /**
      * The internet address that this client will connect to.
      */
-    private final InetAddress address;
+    protected final InetAddress address;
 
     /**
      * The port that this client will connect to.
      */
-    private final int port;
+    protected final int port;
 
     /**
      * Indicates whether this client will be listening for incoming messages.
      */
-    private final AtomicBoolean listening = new AtomicBoolean(true);
+    protected final AtomicBoolean listening = new AtomicBoolean(true);
 
     /**
      * Indicates whether this client is connected to the server.
      */
-    private final AtomicBoolean connected = new AtomicBoolean(false);
+    protected final AtomicBoolean connected = new AtomicBoolean(false);
 
     /**
      * The execution delay between calls to the process() method.
      */
-    private int executionDelay = 0;
+    protected int executionDelay = 0;
 
     /**
-     * Unblocks the input stream for the socket to enable sendAndReceive() functionality.
+     * The client's message parser.
      */
-//    protected boolean unblock = false;
+    protected Parser<TMessage> messageParser;
 
     /**
      * Constructs a new Client.
-     * @param name The client's name.
+     * @param messageClass The class of the message type.
      * @param ipAddress Text-based internet address to which this client will connect.
      * @param port The port of this client.
      * @throws UnknownHostException Thrown when an invalid IP address was provided.
      * @throws PortUnreachableException Thrown when an invalid port was provided.
      */
-    public Client(String name, String ipAddress, int port) throws UnknownHostException, PortUnreachableException {
-        this.name = name;
+    public Client(Class<TMessage> messageClass, String ipAddress, int port) throws UnknownHostException, PortUnreachableException {
         this.address = InetAddress.getByName(ipAddress);
         if (port > 65535 || port < 0) {
             throw new PortUnreachableException("Invalid port number (" + port + "). The port must be in the range 0-65535.");
@@ -65,23 +63,33 @@ public abstract class Client implements Runnable, BackgroundProcessor {
         else {
             this.port = port;
         }
+        try {
+            final Field field = messageClass.getField("PARSER");
+            this.messageParser = (Parser<TMessage>) field.get(null);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Constructs a new Client.
-     * @param name The client's name.
      * @param inetAddress The IP address to which this client will connect.
      * @param port The port of this client.
      * @throws PortUnreachableException Thrown when an invalid port was provided.
      */
-    public Client(String name, InetAddress inetAddress, int port) throws PortUnreachableException {
-        this.name = name;
+    public Client(Class<TMessage> messageClass, InetAddress inetAddress, int port) throws PortUnreachableException {
         this.address = inetAddress;
         if (port > 65535 || port < 0) {
             throw new PortUnreachableException("Invalid port number (" + port + "). The port must be in the range 0-65535.");
         }
         else {
             this.port = port;
+        }
+        try {
+            final Field field = messageClass.getField("PARSER");
+            this.messageParser = (Parser<TMessage>) field.get(null);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -118,11 +126,11 @@ public abstract class Client implements Runnable, BackgroundProcessor {
     }
 
     /**
-     * Retrieves the name of this client.
-     * @return Returns a string.
+     * Retrieves the message parser.
+     * @return Returns a Parser of type TMessage.
      */
-    public String getName() {
-        return name;
+    public Parser<TMessage> getMessageParser() {
+        return messageParser;
     }
 
     /**
@@ -176,7 +184,7 @@ public abstract class Client implements Runnable, BackgroundProcessor {
     public final void run() {
         initialize();
         while (isConnected()) {
-            process();
+            doContinuously();
             if (executionDelay > 0) {
                 try {
                     Thread.sleep(executionDelay);
@@ -192,10 +200,16 @@ public abstract class Client implements Runnable, BackgroundProcessor {
      * @return Returns the thread running this client.
      */
     public final Thread start() {
-        Thread thread = new Thread(this, name);
+        Thread thread = new Thread(this, getClass().getSimpleName());
         thread.start();
         return thread;
     }
+
+    @Override
+    public void initialize() { }
+
+    @Override
+    public void doContinuously() { }
 
     /**
      * Stops the client.

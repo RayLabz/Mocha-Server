@@ -1,20 +1,28 @@
 package com.raylabz.mocha.client;
 
+import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Parser;
 import com.neovisionaries.ws.client.*;
 
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Field;
 import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Manages a WebSocket client.
  */
-public abstract class WebSocketClient implements Runnable, MessageBroker<String>, BackgroundProcessor {
+public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> implements Runnable, MessageBroker<TMessage>, BackgroundRunner {
 
     /**
      * The client's name.
      */
     private final String name;
+
+    /**
+     * A parser for this client's message type.
+     */
+    private final Parser<TMessage> messageParser;
 
     /**
      * The web socket endpoint URI.
@@ -48,7 +56,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker<String>
      * @throws IOException Throws an exception when the socket cannot be created.
      * @throws WebSocketException Throws an exception when the socket cannot be created.
      */
-    public WebSocketClient(String name, String endpointURI) throws IOException, WebSocketException {
+    public WebSocketClient(String name, Class<TMessage> messageClass, String endpointURI) throws IOException, WebSocketException {
         this.name = name;
         if (!endpointURI.startsWith("ws://") && !endpointURI.startsWith("wss://")) {
             throw new SocketException("WebSocket address must start with either 'ws://' or 'wss://'.");
@@ -58,9 +66,16 @@ public abstract class WebSocketClient implements Runnable, MessageBroker<String>
             socket = new WebSocketFactory().createSocket(endpointURI);
             socket.addListener(new WebSocketAdapter() {
                 @Override
-                public void onTextMessage(WebSocket websocket, String text) throws Exception {
+                public void onBinaryMessage(WebSocket websocket, byte[] binary) throws Exception {
                     if (isListening()) {
-                        onReceive(text);
+                        DataInputStream reader = new DataInputStream(new ByteArrayInputStream(binary));
+
+                        final int size = reader.readInt();
+                        final byte[] actualData = new byte[size];
+                        reader.read(actualData, 0, size);
+
+                        final TMessage message = messageParser.parseFrom(actualData);
+                        onReceive(message);
                     }
                 }
             });
@@ -69,6 +84,12 @@ public abstract class WebSocketClient implements Runnable, MessageBroker<String>
                 while (isEnabled()) { }
             });
             receptionThread.start();
+        }
+        try {
+            final Field field = messageClass.getField("PARSER");
+            this.messageParser = (Parser<TMessage>) field.get(null);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -148,7 +169,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker<String>
     public final void run() {
         initialize();
         while (isEnabled()) {
-            process();
+            doContinuously();
             if (executionDelay > 0) {
                 try {
                     Thread.sleep(executionDelay);
@@ -160,13 +181,25 @@ public abstract class WebSocketClient implements Runnable, MessageBroker<String>
     }
 
     /**
-     * Sends data to the web socket.
-     * @param data The data to send to the server.
+     * Sends a message to the web socket.
+     * @param message The message to send to the server.
      */
     @Override
-    public final void send(String data) {
+    public final void send(TMessage message) {
         if (isEnabled()) {
-            socket.sendText(data);
+            try {
+                byte[] messageBytes = message.toByteArray();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(baos);
+                dos.writeInt(messageBytes.length);
+                dos.write(messageBytes);
+                dos.flush();
+                dos.close();
+                baos.close();
+                socket.sendBinary(baos.toByteArray());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -179,12 +212,6 @@ public abstract class WebSocketClient implements Runnable, MessageBroker<String>
         thread.start();
         return thread;
     }
-
-    @Override
-    public void initialize() { }
-
-    @Override
-    public void process() { }
 
     /**
      * Stops the client.

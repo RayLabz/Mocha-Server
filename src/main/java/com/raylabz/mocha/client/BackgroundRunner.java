@@ -3,7 +3,7 @@ package com.raylabz.mocha.client;
 /**
  * Models the initialize-process style of execution.
  */
-public interface BackgroundProcessor {
+public interface BackgroundRunner {
 
     /**
      * Executes code to initialize the client.
@@ -15,6 +15,6 @@ public interface BackgroundProcessor {
      * Defines the processing instructions for this client.
      * Does nothing by default - should be implemented by extending classes.
      */
-    void process();
+    void doContinuously();
 
 }
