@@ -16,16 +16,13 @@ public class TestServer extends Server<StringMessageProto.StringMessage> {
 
     public static void main(String[] args) {
         TestServer server = new TestServer(SecurityMode.BLACKLIST, StringMessageProto.StringMessage.class);
-        server.addTCPHandler(new TCPHandler<>(7080, new TCPReceivable<StringMessageProto.StringMessage>() {
-            @Override
-            public void onReceive(TCPConnection<StringMessageProto.StringMessage> tcpConnection, StringMessageProto.StringMessage stringMessage) throws IOException {
-                final String data = stringMessage.getData();
-                System.out.println("--> " + data);
-                final StringMessageProto.StringMessage message = StringMessageProto.StringMessage.newBuilder()
-                        .setData("You said: " + data)
-                        .build();
-                tcpConnection.send(message);
-            }
+        server.addTCPHandler(new TCPHandler<>(7080, (tcpConnection, stringMessage) -> {
+            final String data = stringMessage.getData();
+            System.out.println("--> " + data);
+            final StringMessageProto.StringMessage message = StringMessageProto.StringMessage.newBuilder()
+                    .setData("You said: " + data)
+                    .build();
+            tcpConnection.send(message);
         }));
         server.start();
     }

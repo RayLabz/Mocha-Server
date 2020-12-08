@@ -40,7 +40,7 @@ public abstract class TCPClient<TMessage extends GeneratedMessageV3> extends Cli
         @Override
         public void run() {
             try {
-                if (isConnected()) {
+                while (isConnected()) {
                     final int numOfBytes = reader.readInt();
                     byte[] data = new byte[numOfBytes];
                     reader.read(data, 0, numOfBytes);
