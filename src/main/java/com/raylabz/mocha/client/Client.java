@@ -73,6 +73,7 @@ public abstract class Client<TMessage extends GeneratedMessageV3> implements Run
 
     /**
      * Constructs a new Client.
+     * @param messageClass The class of the message.
      * @param inetAddress The IP address to which this client will connect.
      * @param port The port of this client.
      * @throws PortUnreachableException Thrown when an invalid port was provided.
@@ -213,6 +214,7 @@ public abstract class Client<TMessage extends GeneratedMessageV3> implements Run
 
     /**
      * Stops the client.
+     * @throws IOException when the socket could not be closed.
      */
     public abstract void stop() throws IOException;
 

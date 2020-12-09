@@ -2,6 +2,7 @@ import com.raylabz.mocha.message.StringMessageProto;
 import com.raylabz.mocha.server.*;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 public class TestServer extends Server<StringMessageProto.StringMessage> {
 
@@ -24,6 +25,17 @@ public class TestServer extends Server<StringMessageProto.StringMessage> {
                     .build();
             tcpConnection.send(message);
         }));
+        server.addUDPHandler(new UDPConnection<StringMessageProto.StringMessage>(7080) {
+            @Override
+            public void onReceive(UDPConnection<StringMessageProto.StringMessage> udpConnection, InetAddress address, int outPort, StringMessageProto.StringMessage stringMessage) throws IOException {
+                final String data = stringMessage.getData();
+                System.out.println("--> " + data);
+                final StringMessageProto.StringMessage message = StringMessageProto.StringMessage.newBuilder()
+                        .setData("You said: " + data)
+                        .build();
+                udpConnection.send(address, outPort, message);
+            }
+        });
         server.start();
     }
 

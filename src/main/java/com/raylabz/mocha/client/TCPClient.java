@@ -61,7 +61,7 @@ public abstract class TCPClient<TMessage extends GeneratedMessageV3> extends Cli
 
     /**
      * Constructs a TCP Client.
-     *
+     * @param messageClass The message class.
      * @param ipAddress The IP address of that this TCP client will connect to.
      * @param port      The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.

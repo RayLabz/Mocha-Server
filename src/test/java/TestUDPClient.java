@@ -1,9 +1,10 @@
 import com.raylabz.mocha.client.TCPClient;
+import com.raylabz.mocha.client.UDPClient;
 import com.raylabz.mocha.message.StringMessageProto;
 
 import java.io.IOException;
 
-public class TestClient extends TCPClient<StringMessageProto.StringMessage> {
+public class TestUDPClient extends UDPClient<StringMessageProto.StringMessage> {
     /**
      * Constructs a TCP Client.
      *
@@ -12,7 +13,7 @@ public class TestClient extends TCPClient<StringMessageProto.StringMessage> {
      * @param port               The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.
      */
-    public TestClient(Class<StringMessageProto.StringMessage> stringMessageClass, String ipAddress, int port) throws IOException {
+    public TestUDPClient(Class<StringMessageProto.StringMessage> stringMessageClass, String ipAddress, int port) throws IOException {
         super(stringMessageClass, ipAddress, port);
         setExecutionDelay(1000);
     }
@@ -35,7 +36,7 @@ public class TestClient extends TCPClient<StringMessageProto.StringMessage> {
     }
 
     public static void main(String[] args) throws IOException {
-        TestClient client = new TestClient(StringMessageProto.StringMessage.class, "localhost", 7080);
+        TestUDPClient client = new TestUDPClient(StringMessageProto.StringMessage.class, "localhost", 7080);
         client.start();
     }
 

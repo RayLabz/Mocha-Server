@@ -51,6 +51,7 @@ public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> imple
 
     /**
      * Creates a new WebSocketClient
+     * @param messageClass The message class.
      * @param name The client's name.
      * @param endpointURI The client's socket URI.
      * @throws IOException Throws an exception when the socket cannot be created.

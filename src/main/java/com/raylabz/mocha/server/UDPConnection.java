@@ -187,6 +187,7 @@ public abstract class UDPConnection<TMessage extends GeneratedMessageV3> impleme
      * @param address The address of the client to send the message to.
      * @param outPort The outPort of the client (used to send outgoing messages).
      * @param message The message received.
+     * @throws IOException thrown when an error occurs while reading the message.
      */
     public abstract void onReceive(UDPConnection<TMessage> udpConnection, InetAddress address, int outPort, TMessage message) throws IOException;
 

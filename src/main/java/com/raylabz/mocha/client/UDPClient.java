@@ -77,6 +77,7 @@ public abstract class UDPClient<TMessage extends GeneratedMessageV3> extends Cli
     /**
      * Constructs a new UDPClient.
      *
+     * @param messageClass The message class.
      * @param ipAddress The IP address that this client will connect to.
      * @param port      The port that this client will connect through.
      * @throws UnknownHostException Thrown when the IP address is invalid.
