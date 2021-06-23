@@ -81,10 +81,10 @@
             </p>
 
             <pre class="prettyprint">
-public class MyTCPTextClient extends TCPClient {
+public class MyTCPClient extends TCPClient {
 
-    public MyTCPTextClient(String ipAddress, int port) throws IOException {
-        super("MyTCPTextClient", ipAddress, port);
+    public MyTCPClient(String ipAddress, int port) throws IOException {
+        super("MyTCPClient", ipAddress, port);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class MyTCPTextClient extends TCPClient {
 
     @Override
     public void <b>onReceive</b>(String data) {
-        //Code that is executed once a messageHeader is received.
+        //Code that is executed once a message is received.
     }
 
 }</pre>
@@ -136,7 +136,7 @@ public class MyTCPTextClient extends TCPClient {
             <p><u><span class="code">onReceive()</span></u>:</p>
 
             <p>
-                This method defines code which will be ran when a messageHeader is received from the server.
+                This method defines code which will be ran when a message is received from the server.
             </p>
 
             <h5 id="udpClients">UDP clients</h5>
@@ -147,10 +147,10 @@ public class MyTCPTextClient extends TCPClient {
             </p>
 
             <pre class="prettyprint">
-public class MyUDPTextClient extends UDPClient {
+public class MyUDPClient extends UDPClient {
 
-    public MyUDPTextClient(String ipAddress, int port) throws IOException {
-        super("MyUDPTextClient", ipAddress, port);
+    public MyUDPClient(String ipAddress, int port) throws IOException {
+        super("MyUDPClient", ipAddress, port);
     }
 
     @Override
@@ -170,7 +170,7 @@ public class MyUDPTextClient extends UDPClient {
 
     @Override
     public void onReceive(String data) {
-        //Code that is executed once a messageHeader is received.
+        //Code that is executed once a message is received.
     }
 
 }</pre>
@@ -202,7 +202,7 @@ public class MyWebSocketClient extends WebSocketClient {
 
     @Override
     public void onReceive(String data) {
-        //Code that is executed once a messageHeader is received.
+        //Code that is executed once a message is received.
     }
 
 }</pre>
@@ -216,11 +216,11 @@ public class MyWebSocketClient extends WebSocketClient {
 
             <pre class="prettyprint">
 //Construct and start a TCP client:
-MyTCPTextClient myTCPClient = new MyTCPTextClient("192.168.10.10", 1234);
+MyTCPClient myTCPClient = new MyTCPClient("192.168.10.10", 1234);
 Mocha.start(myTCPClient);
 
 //Construct and start a UDP client:
-MyUDPTextClient myUDPClient = new MyUDPTextClient("192.168.10.10", 1234);
+MyUDPClient myUDPClient = new MyUDPClient("192.168.10.10", 1234);
 Mocha.start(myUDPClient);
 
 //Construct and start a WebSocket client:

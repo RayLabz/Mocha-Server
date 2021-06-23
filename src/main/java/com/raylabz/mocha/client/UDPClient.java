@@ -1,6 +1,11 @@
 package com.raylabz.mocha.client;
 
+import com.raylabz.mocha.server.Receivable;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.*;
 
 /**
@@ -8,7 +13,7 @@ import java.net.*;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class UDPTClient extends Client implements MessageBroker<String> {
+public abstract class UDPClient extends Client {
 
     /**
      * The client's socket.
@@ -39,7 +44,7 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
                             socket.receive(packet);
                             final String data = new String(packet.getData(), 0, packet.getLength());
                             onReceive(data);
-                        } catch (SocketException ce) {
+                        } catch (ConnectException ce) {
 //                            if (!unblock) {
                                 setListening(false);
                                 setConnected(false);
@@ -69,7 +74,7 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
      * @throws UnknownHostException Thrown when the IP address is invalid.
      * @throws SocketException Thrown when the client's socket cannot be instantiated.
      */
-    public UDPTClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
+    public UDPClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
         super(name, ipAddress, port);
         try {
             this.socket = new DatagramSocket();
@@ -115,12 +120,6 @@ public abstract class UDPTClient extends Client implements MessageBroker<String>
         setListening(false);
         socket.close();
     }
-
-    @Override
-    public void initialize() { }
-
-    @Override
-    public void process() { }
 
     //    @Override
 //    public void sendAndReceive(String data, Receivable receivable) {

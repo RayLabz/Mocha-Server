@@ -1,8 +1,6 @@
-package com.raylabz.mocha.server.text;
+package com.raylabz.mocha.server;
 
 import com.raylabz.mocha.logger.Logger;
-import com.raylabz.mocha.server.SecurityMode;
-import com.raylabz.mocha.server.UDPPeer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,12 +16,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class UDPTConnection implements Runnable {
+public abstract class UDPConnection implements Runnable {
 
     /**
      * The server that this UDP connection belongs to.
      */
-    private TextServer server;
+    private Server server;
 
     /**
      * The client's socket.
@@ -54,7 +52,7 @@ public abstract class UDPTConnection implements Runnable {
      * Constructs a new UDPConnection.
      * @param port The connection's port.
      */
-    public UDPTConnection(int port) {
+    public UDPConnection(int port) {
         this.port = port;
     }
 
@@ -62,7 +60,7 @@ public abstract class UDPTConnection implements Runnable {
      * Retrieves the server of this UDPConnection.
      * @return Returns a Server.
      */
-    protected TextServer getServer() {
+    protected Server getServer() {
         return this.server;
     }
 
@@ -70,7 +68,7 @@ public abstract class UDPTConnection implements Runnable {
      * Sets the server of this UDPConnection.
      * @param server A server
      */
-    void setServer(TextServer server) {
+    void setServer(Server server) {
         this.server = server;
     }
 
@@ -126,19 +124,25 @@ public abstract class UDPTConnection implements Runnable {
     }
 
     /**
-     * Sends data to a client.
+     * Sends data to the server.
      * @param address The address to send the data to.
      * @param outPort The port of the client.
      * @param data The data to send.
      */
     public final void send(InetAddress address, int outPort, final String data) {
-        try {
-            final byte[] bytes = data.getBytes();
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
-            socket.send(packet);
-        } catch (IOException e) {
-            Logger.logError(e.getMessage());
-            throw new RuntimeException(e);
+        if (!server.getBannedAddresses().contains(address)) {
+            try {
+                final byte[] bytes = data.getBytes();
+                DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
+                socket.send(packet);
+            } catch (IOException e) {
+                Logger.logError(e.getMessage());
+                throw new RuntimeException(e);
+            }
+        }
+        else {
+            System.out.println("Cannot send UDP message to banned IP address: " + address.toString());
+            Logger.logWarning("Cannot send UDP message to banned IP address: " + address.toString());
         }
     }
 
@@ -184,7 +188,7 @@ public abstract class UDPTConnection implements Runnable {
      * @param outPort The outPort of the client (used to send outgoing messages).
      * @param data The data received.
      */
-    public abstract void onReceive(UDPTConnection udpConnection, InetAddress address, int outPort, String data);
+    public abstract void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data);
 
     /**
      * Defines what happens when the UDP connection starts.
@@ -201,11 +205,9 @@ public abstract class UDPTConnection implements Runnable {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
 
-                if (server.getSecurityMode() == SecurityMode.BLACKLIST && server.getBlacklist().contains(packet.getAddress())) {
-                    System.out.println("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was rejected.");
-                }
-                else if (server.getSecurityMode() == SecurityMode.WHITELIST && !server.getWhitelist().contains(packet.getAddress())) {
-                    System.out.println("Non-whitelisted IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was rejected");
+                if (server.getBannedAddresses().contains(packet.getAddress())) {
+                    System.out.println("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
+                    Logger.logWarning("Banned IP address " + packet.getAddress().toString() + " attempted to send package on UDP port " + port + " but the package was discarded.");
                 }
                 else {
                     connectedPeers.add(new UDPPeer(packet.getAddress(), packet.getPort()));

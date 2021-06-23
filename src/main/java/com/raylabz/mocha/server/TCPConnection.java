@@ -1,12 +1,11 @@
-package com.raylabz.mocha.server.binary;
+package com.raylabz.mocha.server;
 
-import com.raylabz.bytesurge.container.ArrayContainer;
-import com.raylabz.bytesurge.stream.StreamReader;
-import com.raylabz.bytesurge.stream.StreamWriter;
 import com.raylabz.mocha.logger.Logger;
-import com.raylabz.mocha.message.Message;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -17,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public class TCPBConnection implements Runnable {
+public class TCPConnection implements Runnable {
 
     /**
      * The connection's socket.
@@ -27,12 +26,12 @@ public class TCPBConnection implements Runnable {
     /**
      * The connection's output writer.
      */
-    private final DataOutputStream writer;
+    private final PrintWriter writer;
 
     /**
      * The connections input reader.
      */
-    private final DataInputStream reader;
+    private final BufferedReader reader;
 
     /**
      * Determines if this TCP connection is enabled.
@@ -43,7 +42,7 @@ public class TCPBConnection implements Runnable {
      * The TCPReceivable of this connection, which defines what happens once data is received.
      * Important note: TCPReceivables are the same object for all TCPConnections of the same TCPHandler.
      */
-    private final TCPBReceivable receivable;
+    private final TCPReceivable receivable;
 
     /**
      * Constructs a new TCPConnection.
@@ -51,10 +50,10 @@ public class TCPBConnection implements Runnable {
      * @param receivable The connection's receivable instance.
      * @throws IOException Thrown when the socket's input reader cannot be fetched.
      */
-    public TCPBConnection(Socket socket, TCPBReceivable receivable) throws IOException {
+    public TCPConnection(Socket socket, TCPReceivable receivable) throws IOException {
         this.socket = socket;
-        this.writer = new DataOutputStream(socket.getOutputStream());
-        this.reader = new DataInputStream(socket.getInputStream());
+        this.writer = new PrintWriter(socket.getOutputStream(), true);
+        this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.receivable = receivable;
     }
 
@@ -75,21 +74,11 @@ public class TCPBConnection implements Runnable {
     }
 
     /**
-     * Sends a message to the client on the other end of the TCP connection.
-     * @param message The message to send.
+     * Sends data to the client on the other end of the TCP connection.
+     * @param data The data to send.
      */
-    public final void send(final Message message) throws RuntimeException {
-        try {
-            StreamWriter streamWriter = new StreamWriter(message.toSchema());
-            streamWriter.writeArray((ArrayContainer) message.toContainer());
-            streamWriter.close();
-            final byte[] bytes = streamWriter.getBytes();
-            writer.writeInt(bytes.length); //Forward total message size declaration
-            writer.write(bytes);
-            writer.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public final void send(final String data) {
+        writer.println(data);
     }
 
     /**
@@ -122,28 +111,13 @@ public class TCPBConnection implements Runnable {
      */
     @Override
     public final void run() {
+        String input;
         try {
-            while (isEnabled()) {
-
-                //Read the header:
-                final int size = reader.readInt();
-                System.out.println("size = " + size);
-
-                //Get the rest of the data:
-                final byte[] data = new byte[size];
-                for (int i = 0; i < size; i++) {
-                    data[i] = reader.readByte();
-                }
-
-                StreamReader reader = new StreamReader(Message.getSchema(size), data);
-                final byte[] bytes = reader.readByteArray();
-
-                Message message = new Message(bytes);
-
-                //Handle the message:
-                receivable.onReceive(this, message);
+            while ((input = reader.readLine()) != null && isEnabled()) {
+                receivable.onReceive(this, input);
             }
-        } catch (SocketException se) {
+        }
+        catch (SocketException se) {
             if (!isEnabled()) {
                 System.out.println("Lost connection to TCP client: " + getInetAddress() + ".");
                 Logger.logInfo("Lost connection to TCP client: " + getInetAddress() + ".");
@@ -152,7 +126,8 @@ public class TCPBConnection implements Runnable {
                 System.err.println("[TCP " + getInetAddress().toString() + ":" + getPort() + "]" + "Error: " + se.getMessage());
                 Logger.logError(se.getMessage());
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             System.err.println("Error: " + e.getMessage());
             Logger.logError(e.getMessage());
         }

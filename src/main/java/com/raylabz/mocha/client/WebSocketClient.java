@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Manages a WebSocket client.
  */
-public abstract class WebSocketClient implements Runnable, MessageBroker<String>, BackgroundProcessor {
+public abstract class WebSocketClient implements Runnable, MessageBroker, BackgroundProcessor {
 
     /**
      * The client's name.
@@ -168,31 +168,6 @@ public abstract class WebSocketClient implements Runnable, MessageBroker<String>
         if (isEnabled()) {
             socket.sendText(data);
         }
-    }
-
-    /**
-     * Starts the client.
-     * @return Returns the thread running the client runnable.
-     */
-    public final Thread start() {
-        final Thread thread = new Thread(this, name + "-WebSocketClient");
-        thread.start();
-        return thread;
-    }
-
-    @Override
-    public void initialize() { }
-
-    @Override
-    public void process() { }
-
-    /**
-     * Stops the client.
-     */
-    public final void stop() {
-        setListening(false);
-        setEnabled(false);
-        socket.sendClose(WebSocketCloseCode.NORMAL);
     }
 
 }

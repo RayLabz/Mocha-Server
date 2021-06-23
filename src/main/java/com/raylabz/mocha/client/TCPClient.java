@@ -1,5 +1,8 @@
 package com.raylabz.mocha.client;
 
+import com.raylabz.mocha.server.Mocha;
+import com.raylabz.mocha.server.Receivable;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,7 +18,7 @@ import java.util.concurrent.ExecutionException;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class TCPTClient extends Client implements MessageBroker<String> {
+public abstract class TCPClient extends Client {
 
     /**
      * The client's socket.
@@ -71,7 +74,7 @@ public abstract class TCPTClient extends Client implements MessageBroker<String>
      * @param port      The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.
      */
-    public TCPTClient(String name, String ipAddress, int port) throws IOException {
+    public TCPClient(String name, String ipAddress, int port) throws IOException {
         super(name, ipAddress, port);
         try {
             this.socket = new Socket(getAddress(), getPort());
@@ -110,20 +113,13 @@ public abstract class TCPTClient extends Client implements MessageBroker<String>
     }
 
     @Override
-    public void stop() throws IOException {
+    public void stop() {
         setConnected(false);
         setListening(false);
-        socket.shutdownInput();
-        socket.shutdownOutput();
-        socket.close();
+        try {
+            socket.shutdownInput();
+        } catch (IOException e) { }
     }
-
-    @Override
-    public void initialize() { }
-
-    @Override
-    public void process() { }
-
 
     //    @Override
 //    public void sendAndReceive(String data, Receivable receivable) {
