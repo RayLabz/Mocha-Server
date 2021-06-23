@@ -1,8 +1,8 @@
-package com.raylabz.mocha.server;
+package com.raylabz.mocha.text.server;
 
+import com.raylabz.mocha.UDPPeer;
 import com.raylabz.mocha.logger.Logger;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class Server implements Runnable {
+public abstract class TextServer implements Runnable {
 
     /**
      * The name of the server.
@@ -33,7 +33,7 @@ public abstract class Server implements Runnable {
     /**
      * A list of UDP listeners for this server.
      */
-    private final Vector<UDPConnection> udpHandlers = new Vector<>();
+    private final Vector<TextUDPConnection> udpHandlers = new Vector<>();
 
     /**
      * A list of threads running the UDP listeners of this server.
@@ -43,7 +43,7 @@ public abstract class Server implements Runnable {
     /**
      * A list of TCP handlers for this server.
      */
-    private final Vector<TCPHandler> tcpHandlers = new Vector<>();
+    private final Vector<TextTCPHandler> tcpHandlers = new Vector<>();
 
     /**
      * A list of threads running the TCP handlers of this server.
@@ -59,7 +59,7 @@ public abstract class Server implements Runnable {
      * Constructs a new server.
      * @param name The name of the server.
      */
-    public Server(String name) {
+    public TextServer(String name) {
         this.name = name;
     }
 
@@ -68,9 +68,9 @@ public abstract class Server implements Runnable {
      * @param udpConnection The UDP handler to add.
      * @return Returns true if the UDP handler was added, false otherwise.
      */
-    public final boolean addUDPHandler(UDPConnection udpConnection) {
+    public final boolean addUDPHandler(TextUDPConnection udpConnection) {
         udpConnection.setServer(this);
-        for (UDPConnection p : udpHandlers) {
+        for (TextUDPConnection p : udpHandlers) {
             if (p.getPort() == udpConnection.getPort()) {
                 return false;
             }
@@ -84,9 +84,9 @@ public abstract class Server implements Runnable {
      * @param tcpHandler The TCP handler to add.
      * @return Returns true if the TCP handler was added, false otherwise.
      */
-    public final boolean addTCPHandler(TCPHandler tcpHandler) {
+    public final boolean addTCPHandler(TextTCPHandler tcpHandler) {
         tcpHandler.setServer(this);
-        for (TCPHandler h : tcpHandlers) {
+        for (TextTCPHandler h : tcpHandlers) {
             if (h.getPort() == tcpHandler.getPort()) {
                 return false;
             }
@@ -100,7 +100,7 @@ public abstract class Server implements Runnable {
      * @param tcpHandler The TCP handler to remove.
      * @return Returns true if the handler was successfully removed, false otherwise.
      */
-    public final boolean removeTCPHandler(TCPHandler tcpHandler) {
+    public final boolean removeTCPHandler(TextTCPHandler tcpHandler) {
         tcpHandler.setEnabled(false);
         tcpHandler.removeTCPConnectionsAndThreads();
         return tcpHandlers.remove(tcpHandler);
@@ -112,8 +112,8 @@ public abstract class Server implements Runnable {
      * @return Returns true if the handler was successfully removed, false otherwise.
      */
     public final boolean removeTCPHandler(int port) {
-        TCPHandler handlerToRemove = null;
-        for (TCPHandler tcpHandler : tcpHandlers) {
+        TextTCPHandler handlerToRemove = null;
+        for (TextTCPHandler tcpHandler : tcpHandlers) {
             if (tcpHandler.getPort() == port) {
                 handlerToRemove = tcpHandler;
                 break;
@@ -130,7 +130,7 @@ public abstract class Server implements Runnable {
      * Removes all TCP handlers.
      */
     final void removeAllTCPHandlers() {
-        for (TCPHandler tcpHandler : tcpHandlers) {
+        for (TextTCPHandler tcpHandler : tcpHandlers) {
             tcpHandler.setEnabled(false);
             tcpHandler.removeTCPConnectionsAndThreads();
         }
@@ -142,7 +142,7 @@ public abstract class Server implements Runnable {
      * @param udpConnection The UDP handler to remove.
      * @return Returns true if the handler was successfully removed, false otherwise.
      */
-    public final boolean removeUDPHandler(UDPConnection udpConnection) {
+    public final boolean removeUDPHandler(TextUDPConnection udpConnection) {
         udpConnection.setEnabled(false);
         return udpHandlers.remove(udpConnection);
     }
@@ -153,8 +153,8 @@ public abstract class Server implements Runnable {
      * @return Returns true if the handler was successfully removed, false otherwise.
      */
     public final boolean removeUDPHandler(int port) {
-        UDPConnection handlerToRemove = null;
-        for (UDPConnection h : udpHandlers) {
+        TextUDPConnection handlerToRemove = null;
+        for (TextUDPConnection h : udpHandlers) {
             if (h.getPort() == port) {
                 handlerToRemove = h;
                 break;
@@ -170,7 +170,7 @@ public abstract class Server implements Runnable {
      * Removes all UDP handlers.
      */
     final void removeAllUDPHandlers() {
-        for (UDPConnection udpConnection : udpHandlers) {
+        for (TextUDPConnection udpConnection : udpHandlers) {
             udpConnection.setEnabled(false);
         }
         udpHandlers.clear();
@@ -213,7 +213,7 @@ public abstract class Server implements Runnable {
      * Retrieves the list of UDP listeners for this server.
      * @return Returns a Vector of UDPConnection.
      */
-    public final Vector<UDPConnection> getUdpHandlers() {
+    public final Vector<TextUDPConnection> getUdpHandlers() {
         return udpHandlers;
     }
 
@@ -229,7 +229,7 @@ public abstract class Server implements Runnable {
      * Retrieves the list of TCP handlers for this server.
      * @return Returns a Vector of TCPHandler.
      */
-    public final Vector<TCPHandler> getTcpHandlers() {
+    public final Vector<TextTCPHandler> getTcpHandlers() {
         return tcpHandlers;
     }
 
@@ -266,7 +266,7 @@ public abstract class Server implements Runnable {
      * @param tcpConnection The TCPConnection to send the data through.
      * @param data The data.
      */
-    public final void sendTCP(TCPConnection tcpConnection, final String data) {
+    public final void sendTCP(TextTCPConnection tcpConnection, final String data) {
         if (tcpConnection.isEnabled()) {
             tcpConnection.send(data);
         }
@@ -286,9 +286,9 @@ public abstract class Server implements Runnable {
         try {
             InetAddress inetAddress = InetAddress.getByName(ipAddress);
             if (port >= 0 && port <= 65535) {
-                for (TCPHandler h : tcpHandlers) {
+                for (TextTCPHandler h : tcpHandlers) {
                     if (h.getPort() == port) {
-                        for (TCPConnection tcpConnection : h.getTcpConnections()) {
+                        for (TextTCPConnection tcpConnection : h.getTcpConnections()) {
                             if (tcpConnection.getInetAddress().equals(inetAddress)) {
                                 if (tcpConnection.isEnabled()) {
                                     tcpConnection.send(data);
@@ -314,9 +314,9 @@ public abstract class Server implements Runnable {
      */
     public final void sendTCP(final InetAddress inetAddress, final int port, final String data) {
         if (port >= 0 && port <= 65535) {
-            for (TCPHandler h : tcpHandlers) {
+            for (TextTCPHandler h : tcpHandlers) {
                 if (h.getPort() == port) {
-                    for (TCPConnection tcpConnection : h.getTcpConnections()) {
+                    for (TextTCPConnection tcpConnection : h.getTcpConnections()) {
                         if (tcpConnection.getInetAddress().equals(inetAddress)) {
                             if (tcpConnection.isEnabled()) {
                                 tcpConnection.send(data);
@@ -339,7 +339,7 @@ public abstract class Server implements Runnable {
      * @param ipAddresses A list of IP addresses to send the data to.
      */
     public final void multicastTCP(String data, int port, InetAddress... ipAddresses) {
-        for (TCPHandler handler : tcpHandlers) {
+        for (TextTCPHandler handler : tcpHandlers) {
             if (handler.getPort() == port) {
                 handler.multicast(data, new ArrayList<>(Arrays.asList(ipAddresses)));
                 break;
@@ -354,7 +354,7 @@ public abstract class Server implements Runnable {
      * @param ipAddresses A list of IP addresses to send the data to.
      */
     public final void multicastTCP(String data, int port, List<InetAddress> ipAddresses) {
-        for (TCPHandler handler : tcpHandlers) {
+        for (TextTCPHandler handler : tcpHandlers) {
             if (handler.getPort() == port) {
                 handler.multicast(data, new ArrayList<>(ipAddresses));
                 break;
@@ -380,7 +380,7 @@ public abstract class Server implements Runnable {
             }
         }
 
-        for (TCPHandler handler : tcpHandlers) {
+        for (TextTCPHandler handler : tcpHandlers) {
             if (handler.getPort() == port) {
                 handler.multicast(data, inetAddresses);
                 break;
@@ -394,7 +394,7 @@ public abstract class Server implements Runnable {
      * @param data The data to broadcast.
      */
     public final void broadcastTCP(final int port, final String data) {
-        for (TCPHandler handler : tcpHandlers) {
+        for (TextTCPHandler handler : tcpHandlers) {
             if (handler.getPort() == port) {
                 handler.broadcast(data);
                 break;
@@ -408,7 +408,7 @@ public abstract class Server implements Runnable {
      * @param outPort The port of the client.
      * @param data The data.
      */
-    public final void sendUDP(final UDPConnection udpConnection, int outPort, final String data) {
+    public final void sendUDP(final TextUDPConnection udpConnection, int outPort, final String data) {
         if (udpConnection.isEnabled()) {
             udpConnection.send(udpConnection.getInetAddress(), outPort, data);
         }
@@ -428,7 +428,7 @@ public abstract class Server implements Runnable {
         try {
             InetAddress inetAddress = InetAddress.getByName(ipAddress);
             if (outPort >= 0 && outPort <= 65535) {
-                for (UDPConnection udpConnection : udpHandlers) {
+                for (TextUDPConnection udpConnection : udpHandlers) {
                     if (udpConnection.getPort() == outPort && udpConnection.getInetAddress().equals(inetAddress)) {
                         if (udpConnection.isEnabled()) {
                             udpConnection.send(inetAddress, outPort, data);
@@ -460,7 +460,7 @@ public abstract class Server implements Runnable {
      * @param ipAddresses A list of IP addresses to send the data to.
      */
     public final void multicastUDP(String data, int port, InetAddress... ipAddresses) {
-        for (UDPConnection udpConnection : udpHandlers) {
+        for (TextUDPConnection udpConnection : udpHandlers) {
             if (udpConnection.getPort() == port) {
                 udpConnection.multicast(data, new ArrayList<>(Arrays.asList(ipAddresses)));
                 break;
@@ -475,7 +475,7 @@ public abstract class Server implements Runnable {
      * @param ipAddresses A list of IP addresses to send the data to.
      */
     public final void multicastUDP(String data, int port, List<InetAddress> ipAddresses) {
-        for (UDPConnection udpConnection : udpHandlers) {
+        for (TextUDPConnection udpConnection : udpHandlers) {
             if (udpConnection.getPort() == port) {
                 udpConnection.multicast(data, new ArrayList<>(ipAddresses));
                 break;
@@ -501,7 +501,7 @@ public abstract class Server implements Runnable {
             }
         }
 
-        for (UDPConnection connection : udpHandlers) {
+        for (TextUDPConnection connection : udpHandlers) {
             if (connection.getPort() == port) {
                 connection.multicast(data, inetAddresses);
                 break;
@@ -515,8 +515,8 @@ public abstract class Server implements Runnable {
      * @param data The data to broadcast.
      */
     public final void broadcastUDP(final int port, final String data) {
-        Vector<UDPConnection> udpListeners = getUdpHandlers();
-        for (UDPConnection connection : udpListeners) {
+        Vector<TextUDPConnection> udpListeners = getUdpHandlers();
+        for (TextUDPConnection connection : udpListeners) {
             if (connection.getPort() == port) {
                 connection.broadcast(data);
                 break;
@@ -538,12 +538,12 @@ public abstract class Server implements Runnable {
         Logger.logInfo("Server '" + name + "' started.");
         initialize();
 
-        for (UDPConnection udpConnection : udpHandlers) {
+        for (TextUDPConnection udpConnection : udpHandlers) {
             Thread t = new Thread(udpConnection, "UDP-Handler-Thread-Port-" + udpConnection.getPort());
             udpHandlerThreads.add(t);
             t.start();
         }
-        for (TCPHandler tcpHandler : tcpHandlers) {
+        for (TextTCPHandler tcpHandler : tcpHandlers) {
             Thread t = new Thread(tcpHandler, "TCP-Handler-Thread-Port-" + tcpHandler.getPort());
             tcpHandlerThreads.add(t);
             t.start();

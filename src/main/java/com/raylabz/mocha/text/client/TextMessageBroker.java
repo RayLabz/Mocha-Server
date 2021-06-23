@@ -1,6 +1,6 @@
-package com.raylabz.mocha.client;
+package com.raylabz.mocha.text.client;
 
-public interface MessageBroker {
+public interface TextMessageBroker {
 
     /**
      * Sends data to the server.

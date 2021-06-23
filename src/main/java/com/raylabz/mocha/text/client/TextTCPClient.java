@@ -1,7 +1,4 @@
-package com.raylabz.mocha.client;
-
-import com.raylabz.mocha.server.Mocha;
-import com.raylabz.mocha.server.Receivable;
+package com.raylabz.mocha.text.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +7,6 @@ import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Defines functionality for a TCP Client.
@@ -18,7 +14,7 @@ import java.util.concurrent.ExecutionException;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class TCPClient extends Client {
+public abstract class TextTCPClient extends TextClient {
 
     /**
      * The client's socket.
@@ -74,7 +70,7 @@ public abstract class TCPClient extends Client {
      * @param port      The port that this TCP client will connect to.
      * @throws IOException Thrown when the socket of this client cannot be instantiated.
      */
-    public TCPClient(String name, String ipAddress, int port) throws IOException {
+    public TextTCPClient(String name, String ipAddress, int port) throws IOException {
         super(name, ipAddress, port);
         try {
             this.socket = new Socket(getAddress(), getPort());

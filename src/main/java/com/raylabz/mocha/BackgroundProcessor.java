@@ -1,4 +1,4 @@
-package com.raylabz.mocha.client;
+package com.raylabz.mocha;
 
 /**
  * Models the initialize-process style of execution.

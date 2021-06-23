@@ -1,5 +1,5 @@
 //import com.raylabz.mocha.client.TCPClient;
-//import com.raylabz.mocha.server.Mocha;
+//import Mocha;
 //import com.raylabz.mocha.server.Receivable;
 //
 //import java.io.File;

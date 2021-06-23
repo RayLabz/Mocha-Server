@@ -1,6 +1,8 @@
-package com.raylabz.mocha.server;
+package com.raylabz.mocha.binary.server;
 
+import com.raylabz.mocha.UDPPeer;
 import com.raylabz.mocha.logger.Logger;
+import com.raylabz.mocha.text.server.TextServer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -16,12 +18,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class UDPConnection implements Runnable {
+public abstract class BinaryUDPConnection implements Runnable {
 
     /**
      * The server that this UDP connection belongs to.
      */
-    private Server server;
+    private BinaryServer server;
 
     /**
      * The client's socket.
@@ -52,7 +54,7 @@ public abstract class UDPConnection implements Runnable {
      * Constructs a new UDPConnection.
      * @param port The connection's port.
      */
-    public UDPConnection(int port) {
+    public BinaryUDPConnection(int port) {
         this.port = port;
     }
 
@@ -60,7 +62,7 @@ public abstract class UDPConnection implements Runnable {
      * Retrieves the server of this UDPConnection.
      * @return Returns a Server.
      */
-    protected Server getServer() {
+    protected BinaryServer getServer() {
         return this.server;
     }
 
@@ -68,7 +70,7 @@ public abstract class UDPConnection implements Runnable {
      * Sets the server of this UDPConnection.
      * @param server A server
      */
-    void setServer(Server server) {
+    void setServer(BinaryServer server) {
         this.server = server;
     }
 
@@ -129,11 +131,10 @@ public abstract class UDPConnection implements Runnable {
      * @param outPort The port of the client.
      * @param data The data to send.
      */
-    public final void send(InetAddress address, int outPort, final String data) {
+    public final void send(InetAddress address, int outPort, final byte[] data) {
         if (!server.getBannedAddresses().contains(address)) {
             try {
-                final byte[] bytes = data.getBytes();
-                DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, outPort);
+                DatagramPacket packet = new DatagramPacket(data, data.length, address, outPort);
                 socket.send(packet);
             } catch (IOException e) {
                 Logger.logError(e.getMessage());
@@ -151,7 +152,7 @@ public abstract class UDPConnection implements Runnable {
      * @param data The data to send
      * @param ipAddresses A list of IP addresses to send the data to.
      */
-    public final void multicast(final String data, ArrayList<InetAddress> ipAddresses) {
+    public final void multicast(final byte[] data, ArrayList<InetAddress> ipAddresses) {
         if (isEnabled()) {
             for (UDPPeer peer : connectedPeers) {
                 if (ipAddresses.contains(peer.getAddress())) {
@@ -169,7 +170,7 @@ public abstract class UDPConnection implements Runnable {
      * Broadcasts a message to all connected peers.
      * @param data The data to broadcast.
      */
-    public final void broadcast(final String data) {
+    public final void broadcast(final byte[] data) {
         if (isEnabled()) {
             for (final UDPPeer peer : connectedPeers) {
                 send(peer.getAddress(), peer.getPort(), data);
@@ -188,7 +189,7 @@ public abstract class UDPConnection implements Runnable {
      * @param outPort The outPort of the client (used to send outgoing messages).
      * @param data The data received.
      */
-    public abstract void onReceive(UDPConnection udpConnection, InetAddress address, int outPort, String data);
+    public abstract void onReceive(BinaryUDPConnection udpConnection, InetAddress address, int outPort, byte[] data);
 
     /**
      * Defines what happens when the UDP connection starts.
@@ -215,8 +216,7 @@ public abstract class UDPConnection implements Runnable {
                         System.out.println("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
                         Logger.logInfo("New peer " + packet.getAddress() + " connected on UDP port " + port + ".");
                     }
-                    final String data = new String(packet.getData(), 0, packet.getLength());
-                    onReceive(this, packet.getAddress(), packet.getPort(), data);
+                    onReceive(this, packet.getAddress(), packet.getPort(), packet.getData());
                 }
             }
         } catch (SocketException se) {

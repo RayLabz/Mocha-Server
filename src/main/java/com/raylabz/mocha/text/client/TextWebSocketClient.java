@@ -1,6 +1,7 @@
-package com.raylabz.mocha.client;
+package com.raylabz.mocha.text.client;
 
 import com.neovisionaries.ws.client.*;
+import com.raylabz.mocha.BackgroundProcessor;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -9,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Manages a WebSocket client.
  */
-public abstract class WebSocketClient implements Runnable, MessageBroker, BackgroundProcessor {
+public abstract class TextWebSocketClient implements Runnable, TextMessageBroker, BackgroundProcessor {
 
     /**
      * The client's name.
@@ -48,7 +49,7 @@ public abstract class WebSocketClient implements Runnable, MessageBroker, Backgr
      * @throws IOException Throws an exception when the socket cannot be created.
      * @throws WebSocketException Throws an exception when the socket cannot be created.
      */
-    public WebSocketClient(String name, String endpointURI) throws IOException, WebSocketException {
+    public TextWebSocketClient(String name, String endpointURI) throws IOException, WebSocketException {
         this.name = name;
         if (!endpointURI.startsWith("ws://") && !endpointURI.startsWith("wss://")) {
             throw new SocketException("WebSocket address must start with either 'ws://' or 'wss://'.");

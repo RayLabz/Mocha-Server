@@ -1,4 +1,4 @@
-package com.raylabz.mocha.server;
+package com.raylabz.mocha.text.server;
 
 import com.raylabz.mocha.logger.Logger;
 
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public class TCPConnection implements Runnable {
+public class TextTCPConnection implements Runnable {
 
     /**
      * The connection's socket.
@@ -42,7 +42,7 @@ public class TCPConnection implements Runnable {
      * The TCPReceivable of this connection, which defines what happens once data is received.
      * Important note: TCPReceivables are the same object for all TCPConnections of the same TCPHandler.
      */
-    private final TCPReceivable receivable;
+    private final TextTCPReceivable receivable;
 
     /**
      * Constructs a new TCPConnection.
@@ -50,7 +50,7 @@ public class TCPConnection implements Runnable {
      * @param receivable The connection's receivable instance.
      * @throws IOException Thrown when the socket's input reader cannot be fetched.
      */
-    public TCPConnection(Socket socket, TCPReceivable receivable) throws IOException {
+    public TextTCPConnection(Socket socket, TextTCPReceivable receivable) throws IOException {
         this.socket = socket;
         this.writer = new PrintWriter(socket.getOutputStream(), true);
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));

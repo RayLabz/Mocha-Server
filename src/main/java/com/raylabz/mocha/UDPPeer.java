@@ -1,4 +1,4 @@
-package com.raylabz.mocha.server;
+package com.raylabz.mocha;
 
 import java.net.InetAddress;
 import java.util.Objects;

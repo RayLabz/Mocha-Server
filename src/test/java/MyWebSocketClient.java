@@ -1,7 +1,7 @@
 //import com.neovisionaries.ws.client.WebSocketException;
 //import com.raylabz.mocha.client.TCPClient;
 //import com.raylabz.mocha.client.WebSocketClient;
-//import com.raylabz.mocha.server.Mocha;
+//import Mocha;
 //
 //import java.io.IOException;
 //

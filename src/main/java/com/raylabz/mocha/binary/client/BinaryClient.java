@@ -1,6 +1,7 @@
-package com.raylabz.mocha.client;
+package com.raylabz.mocha.binary.client;
 
-import com.raylabz.mocha.server.Receivable;
+import com.raylabz.mocha.BackgroundProcessor;
+import com.raylabz.mocha.text.client.TextMessageBroker;
 
 import java.net.InetAddress;
 import java.net.PortUnreachableException;
@@ -12,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class Client implements Runnable, MessageBroker, BackgroundProcessor {
+public abstract class BinaryClient implements Runnable, BinaryMessageBroker, BackgroundProcessor {
 
     /**
      * The name of this client.
@@ -57,7 +58,7 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
      * @throws UnknownHostException Thrown when an invalid IP address was provided.
      * @throws PortUnreachableException Thrown when an invalid port was provided.
      */
-    public Client(String name, String ipAddress, int port) throws UnknownHostException, PortUnreachableException {
+    public BinaryClient(String name, String ipAddress, int port) throws UnknownHostException, PortUnreachableException {
         this.name = name;
         this.address = InetAddress.getByName(ipAddress);
         if (port > 65535 || port < 0) {
@@ -75,7 +76,7 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
      * @param port The port of this client.
      * @throws PortUnreachableException Thrown when an invalid port was provided.
      */
-    public Client(String name, InetAddress inetAddress, int port) throws PortUnreachableException {
+    public BinaryClient(String name, InetAddress inetAddress, int port) throws PortUnreachableException {
         this.name = name;
         this.address = inetAddress;
         if (port > 65535 || port < 0) {
@@ -161,7 +162,7 @@ public abstract class Client implements Runnable, MessageBroker, BackgroundProce
     /**
      * Executes code handling the case where the client may not be able to connect to the server.
      */
-    public abstract void onConnectionRefused();
+    public abstract void onConnectionRefused(Throwable error);
 
 //    /**
 //     * Sends data and blocks execution until a response is received.

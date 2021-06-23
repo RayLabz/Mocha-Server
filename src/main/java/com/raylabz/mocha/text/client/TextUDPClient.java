@@ -1,11 +1,6 @@
-package com.raylabz.mocha.client;
+package com.raylabz.mocha.text.client;
 
-import com.raylabz.mocha.server.Receivable;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.*;
 
 /**
@@ -13,7 +8,7 @@ import java.net.*;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public abstract class UDPClient extends Client {
+public abstract class TextUDPClient extends TextClient {
 
     /**
      * The client's socket.
@@ -74,7 +69,7 @@ public abstract class UDPClient extends Client {
      * @throws UnknownHostException Thrown when the IP address is invalid.
      * @throws SocketException Thrown when the client's socket cannot be instantiated.
      */
-    public UDPClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
+    public TextUDPClient(String name, String ipAddress, int port) throws UnknownHostException, SocketException {
         super(name, ipAddress, port);
         try {
             this.socket = new DatagramSocket();
