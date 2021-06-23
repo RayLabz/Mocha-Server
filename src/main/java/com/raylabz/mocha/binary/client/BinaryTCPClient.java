@@ -45,14 +45,10 @@ public abstract class BinaryTCPClient extends BinaryClient {
             while (isConnected()) {
                 try {
                     if (isListening()) {
-                        ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
                         byte[] buffer = new byte[2048];
                         for (int nChunk = reader.read(buffer); nChunk != -1; nChunk = reader.read(buffer)) {
-                            dataStream.write(buffer, 0, nChunk);
+                            onReceive(buffer);
                         }
-                        dataStream.close();
-                        byte[] inputData = dataStream.toByteArray();
-                        onReceive(inputData);
                     }
                 } catch (SocketException se) {
 //                    if (!unblock) {

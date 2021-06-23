@@ -18,24 +18,27 @@ public class MyBinaryServer extends BinaryServer {
 
     @Override
     protected void initialize() {
-        addTCPHandler(new BinaryTCPHandler(7080, (tcpConnection, data) -> {
-            final ByteArrayInputStream bis = new ByteArrayInputStream(data);
-            final DataInputStream dis = new DataInputStream(bis);
-            final int i = dis.readInt();
-            int square = i * i;
-            System.out.println("received: " + i);
+        addTCPHandler(new BinaryTCPHandler(2565, new BinaryTCPReceivable() {
+            @Override
+            public void onReceive(BinaryTCPConnection tcpConnection, byte[] data) {
+                try {
+                    final ByteArrayInputStream bis = new ByteArrayInputStream(data);
+                    final DataInputStream dis = new DataInputStream(bis);
+                    final int i = dis.readInt();
+                    int square = i * i;
+                    System.out.println("received: " + i);
 
-            try {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                DataOutputStream dos = new DataOutputStream(out);
-                dos.writeInt(square);
-                dos.flush();
-                sendTCP("localhost", 7080, out.toByteArray());
-                System.out.println("Sent: " + square);
-            } catch (IOException e) {
-                e.printStackTrace();
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(out);
+                    dos.writeInt(square);
+                    tcpConnection.send(out.toByteArray());
+                    dos.close();
+                    out.close();
+                    System.out.println("Sent: " + square);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-
         }));
     }
 

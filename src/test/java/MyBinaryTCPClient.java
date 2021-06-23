@@ -29,6 +29,9 @@ public class MyBinaryTCPClient extends BinaryTCPClient {
                 DataOutputStream dos = new DataOutputStream(byteArrayOutputStream);
                 dos.writeInt(i);
                 send(byteArrayOutputStream.toByteArray());
+
+                dos.close();
+                byteArrayOutputStream.close();
                 System.out.println("Sent " + i);
                 Thread.sleep(1000);
             }
@@ -55,7 +58,7 @@ public class MyBinaryTCPClient extends BinaryTCPClient {
     }
 
     public static void main(String[] args) throws IOException {
-        Mocha.start(new MyBinaryTCPClient("cl", "localhost", 7080));
+        Mocha.start(new MyBinaryTCPClient("cl", "localhost", 2565));
     }
 
 }

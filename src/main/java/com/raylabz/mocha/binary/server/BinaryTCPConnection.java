@@ -7,10 +7,12 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Manages a TCP connection to a client.
+ *
  * @author Nicos Kasenides
  * @version 1.0.0
  */
@@ -29,7 +31,7 @@ public class BinaryTCPConnection implements Runnable {
     /**
      * The connections input reader.
      */
-    private final InputStream reader;
+    private final DataInputStream reader;
 
     /**
      * Determines if this TCP connection is enabled.
@@ -44,19 +46,21 @@ public class BinaryTCPConnection implements Runnable {
 
     /**
      * Constructs a new TCPConnection.
-     * @param socket The connection's socket.
+     *
+     * @param socket     The connection's socket.
      * @param receivable The connection's receivable instance.
      * @throws IOException Thrown when the socket's input reader cannot be fetched.
      */
     public BinaryTCPConnection(Socket socket, BinaryTCPReceivable receivable) throws IOException {
         this.socket = socket;
         this.writer = socket.getOutputStream();
-        this.reader = socket.getInputStream();
+        this.reader = new DataInputStream(socket.getInputStream());
         this.receivable = receivable;
     }
 
     /**
      * Retrieves if this TCP connection is running or not.
+     *
      * @return Returns true if the connection is running, false otherwise.
      */
     public boolean isEnabled() {
@@ -65,6 +69,7 @@ public class BinaryTCPConnection implements Runnable {
 
     /**
      * Starts or stops the connection.
+     *
      * @param enabled Provide true to start the connection, false to stop.
      */
     public void setEnabled(boolean enabled) {
@@ -73,6 +78,7 @@ public class BinaryTCPConnection implements Runnable {
 
     /**
      * Sends data to the client on the other end of the TCP connection.
+     *
      * @param data The data to send.
      */
     public final void send(final byte[] data) {
@@ -87,6 +93,7 @@ public class BinaryTCPConnection implements Runnable {
 
     /**
      * Retrieves the connection's port.
+     *
      * @return Returns an integer (port number).
      */
     public final int getPort() {
@@ -95,6 +102,7 @@ public class BinaryTCPConnection implements Runnable {
 
     /**
      * Retrieves the internet address of this connection.
+     *
      * @return Returns an internet address.
      */
     public final InetAddress getInetAddress() {
@@ -103,6 +111,7 @@ public class BinaryTCPConnection implements Runnable {
 
     /**
      * Retrieves the connection's socket.
+     *
      * @return Returns a Socket.
      */
     public final Socket getSocket() {
@@ -117,15 +126,10 @@ public class BinaryTCPConnection implements Runnable {
     public final void run() {
         while (isEnabled()) {
             try {
-                ByteArrayOutputStream dataStream = new ByteArrayOutputStream();
                 byte[] buffer = new byte[2048];
                 for (int nChunk = reader.read(buffer); nChunk != -1; nChunk = reader.read(buffer)) {
-                    dataStream.write(buffer, 0, nChunk);
+                    receivable.onReceive(this, buffer);
                 }
-                dataStream.close();
-                byte[] inputData = dataStream.toByteArray();
-
-                receivable.onReceive(this, inputData);
             } catch (SocketException se) {
                 if (!isEnabled()) {
                     System.out.println("Lost connection to TCP client: " + getInetAddress() + ".");
