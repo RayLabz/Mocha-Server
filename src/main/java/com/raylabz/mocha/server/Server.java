@@ -1,25 +1,19 @@
 package com.raylabz.mocha.server;
 
-import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.Parser;
 import com.raylabz.mocha.logger.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Provides functionality for a server.
- * @author Nicos Kasenides
- * @version 0.1.2?
- */
-public abstract class Server<TMessage extends GeneratedMessageV3> implements Runnable {
+public abstract class Server implements Runnable {
 
     public static final String WHITELIST_FILENAME_POSTFIX =  "-whitelist";
     public static final String BLACKLIST_FILENAME_POSTFIX =  "-blacklist";
@@ -38,6 +32,11 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
      * The server's blacklist - a list of IP addresses for which to <b>reject</b> communication when running in SecurityMode.BLACKLIST.
      */
     protected final HashSet<InetAddress> blacklist = new HashSet<>();
+
+    /**
+     * The name of the server.
+     */
+    protected final String name;
 
     /**
      * Whether the server is running or not.
@@ -60,29 +59,13 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
     protected final Vector<Thread> tcpHandlerThreads = new Vector<>();
 
     /**
-     * The class of TMessage.
+     * Constructs a new server.
+     * @param name The name of the server.
+     * @param securityMode The security mode of the server.
      */
-    protected final Parser<TMessage> messageParser;
+    public Server(final String name, final SecurityMode securityMode) {
+        this.name = name;
 
-    /**
-     * A list of UDP listeners for this server.
-     */
-    protected final Vector<UDPConnection<TMessage>> udpHandlers = new Vector<>();
-
-    /**
-     * A list of TCP handlers for this server.
-     */
-    protected final Vector<TCPHandler<TMessage>> tcpHandlers = new Vector<>();
-
-    /**
-     * Constructs a TCP server.
-     * @param securityMode The security mode.
-     * @param messageClass The class of the message type sent by this server.
-     */
-    public Server(SecurityMode securityMode, Class<TMessage> messageClass) {
-        
-        final String name = getClass().getSimpleName();
-        
         switch (securityMode) {
             case WHITELIST:
 
@@ -140,453 +123,6 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
                 System.out.println("Warning: '" + name + "' started without a security mode - consider using SecurityMode.BLACKLIST or SecurityMode.WHITELIST.");
                 Logger.logWarning("Warning: '" + name + "' started without a security mode - consider using SecurityMode.BLACKLIST or SecurityMode.WHITELIST.");
         }
-        try {
-            final Field field = messageClass.getField("PARSER");
-            this.messageParser = (Parser<TMessage>) field.get(null);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Adds a UDP handler to the server.
-     * @param udpConnection The UDP handler to add.
-     * @return Returns true if the UDP handler was added, false otherwise.
-     */
-    public final boolean addUDPHandler(UDPConnection<TMessage> udpConnection) {
-        udpConnection.setServer(this);
-        for (UDPConnection<TMessage> p : udpHandlers) {
-            if (p.getPort() == udpConnection.getPort()) {
-                return false;
-            }
-        }
-        udpHandlers.add(udpConnection);
-        return true;
-    }
-
-    /**
-     * Adds a TCP handler to the server.
-     * @param tcpHandler The TCP handler to add.
-     * @return Returns true if the TCP handler was added, false otherwise.
-     */
-    public final boolean addTCPHandler(TCPHandler<TMessage> tcpHandler) {
-        tcpHandler.setServer(this);
-        for (TCPHandler<TMessage> h : tcpHandlers) {
-            if (h.getPort() == tcpHandler.getPort()) {
-                return false;
-            }
-        }
-        tcpHandlers.add(tcpHandler);
-        return true;
-    }
-
-    /**
-     * Removes a TCP handler.
-     * @param tcpHandler The TCP handler to remove.
-     * @return Returns true if the handler was successfully removed, false otherwise.
-     */
-    public final boolean removeTCPHandler(TCPHandler<TMessage> tcpHandler) {
-        tcpHandler.setEnabled(false);
-        tcpHandler.removeTCPConnectionsAndThreads();
-        return tcpHandlers.remove(tcpHandler);
-    }
-
-    /**
-     * Removes a TCP handler.
-     * @param port The handler's port.
-     * @return Returns true if the handler was successfully removed, false otherwise.
-     */
-    public final boolean removeTCPHandler(int port) {
-        TCPHandler<TMessage> handlerToRemove = null;
-        for (TCPHandler<TMessage> tcpHandler : tcpHandlers) {
-            if (tcpHandler.getPort() == port) {
-                handlerToRemove = tcpHandler;
-                break;
-            }
-        }
-        if (handlerToRemove != null) {
-            handlerToRemove.setEnabled(false);
-            handlerToRemove.removeTCPConnectionsAndThreads();
-        }
-        return tcpHandlers.remove(handlerToRemove);
-    }
-
-    /**
-     * Removes all TCP handlers.
-     */
-    final void removeAllTCPHandlers() {
-        for (TCPHandler<TMessage> tcpHandler : tcpHandlers) {
-            tcpHandler.setEnabled(false);
-            tcpHandler.removeTCPConnectionsAndThreads();
-        }
-        tcpHandlers.clear();
-    }
-
-    /**
-     * Removes a UDP handler.
-     * @param udpConnection The UDP handler to remove.
-     * @return Returns true if the handler was successfully removed, false otherwise.
-     */
-    public final boolean removeUDPHandler(UDPConnection<TMessage> udpConnection) {
-        udpConnection.setEnabled(false);
-        return udpHandlers.remove(udpConnection);
-    }
-
-    /**
-     * Removes a UDP handler.
-     * @param port The handler's port.
-     * @return Returns true if the handler was successfully removed, false otherwise.
-     */
-    public final boolean removeUDPHandler(int port) {
-        UDPConnection<TMessage> handlerToRemove = null;
-        for (UDPConnection<TMessage> h : udpHandlers) {
-            if (h.getPort() == port) {
-                handlerToRemove = h;
-                break;
-            }
-        }
-        if (handlerToRemove != null) {
-            handlerToRemove.setEnabled(false);
-        }
-        return udpHandlers.remove(handlerToRemove);
-    }
-
-    /**
-     * Removes all UDP handlers.
-     */
-    final void removeAllUDPHandlers() {
-        for (UDPConnection<TMessage> udpConnection : udpHandlers) {
-            udpConnection.setEnabled(false);
-        }
-        udpHandlers.clear();
-    }
-
-    /**
-     * Retrieves the list of UDP listeners for this server.
-     * @return Returns a Vector of UDPConnection.
-     */
-    public final Vector<UDPConnection<TMessage>> getUdpHandlers() {
-        return udpHandlers;
-    }
-
-    /**
-     * Retrieves the list of TCP handlers for this server.
-     * @return Returns a Vector of TCPHandler.
-     */
-    public final Vector<TCPHandler<TMessage>> getTcpHandlers() {
-        return tcpHandlers;
-    }
-
-    /**
-     * Retrieves the message class.
-     * @return Returns a class of TMessage.
-     */
-    public Parser<TMessage> getMessageParser() {
-        return messageParser;
-    }
-
-    /**
-     * Sends a message through TCP.
-     * @param tcpConnection The TCPConnection to send the message through.
-     * @param message The message.
-     */
-    public final void sendTCP(TCPConnection<TMessage> tcpConnection, final TMessage message) {
-        if (tcpConnection.isEnabled()) {
-            tcpConnection.send(message);
-        }
-        else {
-            System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-            Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-        }
-    }
-
-    /**
-     * Sends a message through TCP.
-     * @param ipAddress The IP address to send the message to.
-     * @param port The port to send the message through.
-     * @param message The message.
-     */
-    public final void sendTCP(final String ipAddress, final int port, final TMessage message) {
-        try {
-            InetAddress inetAddress = InetAddress.getByName(ipAddress);
-            if (port >= 0 && port <= 65535) {
-                for (TCPHandler<TMessage> h : tcpHandlers) {
-                    if (h.getPort() == port) {
-                        for (TCPConnection<TMessage> tcpConnection : h.getTcpConnections()) {
-                            if (tcpConnection.getInetAddress().equals(inetAddress)) {
-                                if (tcpConnection.isEnabled()) {
-                                    tcpConnection.send(message);
-                                }
-                                else {
-                                    System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-                                    Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    /**
-     * Send a message through TCP.
-     * @param inetAddress The internet address to send the message to.
-     * @param port The port to send the message through.
-     * @param message The message.
-     */
-    public final void sendTCP(final InetAddress inetAddress, final int port, final TMessage message) {
-        if (port >= 0 && port <= 65535) {
-            for (TCPHandler<TMessage> h : tcpHandlers) {
-                if (h.getPort() == port) {
-                    for (TCPConnection<TMessage> tcpConnection : h.getTcpConnections()) {
-                        if (tcpConnection.getInetAddress().equals(inetAddress)) {
-                            if (tcpConnection.isEnabled()) {
-                                tcpConnection.send(message);
-                            }
-                            else {
-                                System.err.println("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-                                Logger.logError("Error - Cannot send message. TCPConnection [" + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort() + "] disabled");
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Multicasts a message to a set of IP addresses on a specific port.
-     * @param message The message to send.
-     * @param port The port to set the message through.
-     * @param ipAddresses A list of IP addresses to send the message to.
-     */
-    public final void multicastTCP(TMessage message, int port, InetAddress... ipAddresses) {
-        for (TCPHandler<TMessage> handler : tcpHandlers) {
-            if (handler.getPort() == port) {
-                handler.multicast(message, new ArrayList<>(Arrays.asList(ipAddresses)));
-                break;
-            }
-        }
-    }
-
-    /**
-     * Multicasts a message to a set of IP addresses on a specific port.
-     * @param message The message to send.
-     * @param port The port to set the message through.
-     * @param ipAddresses A list of IP addresses to send the message to.
-     */
-    public final void multicastTCP(TMessage message, int port, List<InetAddress> ipAddresses) {
-        for (TCPHandler<TMessage> handler : tcpHandlers) {
-            if (handler.getPort() == port) {
-                handler.multicast(message, new ArrayList<>(ipAddresses));
-                break;
-            }
-        }
-    }
-
-    /**
-     * Multicasts a message to a set of IP addresses on a specific port.
-     * @param message The message to send.
-     * @param port The port to set the message through.
-     * @param ipAddresses A list of IP addresses to send the message to.
-     */
-    public final void multicastTCP(TMessage message, int port, String... ipAddresses) {
-        ArrayList<InetAddress> inetAddresses = new ArrayList<>();
-        for (String ipString : ipAddresses) {
-            try {
-                InetAddress inetAddress = InetAddress.getByName(ipString);
-                inetAddresses.add(inetAddress);
-            } catch (UnknownHostException e) {
-                System.err.println("Invalid multicast target [TCP]: " + ipString);
-                Logger.logError("Invalid multicast target [TCP]: " + ipString);
-            }
-        }
-
-        for (TCPHandler<TMessage> handler : tcpHandlers) {
-            if (handler.getPort() == port) {
-                handler.multicast(message, inetAddresses);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Broadcasts a given message to all of the peer of a particular TCP connection.
-     * @param port The connection to broadcast the message to.
-     * @param message The message to broadcast.
-     */
-    public final void broadcastTCP(final int port, final TMessage message) {
-        for (TCPHandler<TMessage> handler : tcpHandlers) {
-            if (handler.getPort() == port) {
-                handler.broadcast(message);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Sends a message through UDP.
-     * @param udpConnection The UDPConnection to send the message to.
-     * @param outPort The port of the client.
-     * @param message The message.
-     */
-    public final void sendUDP(final UDPConnection<TMessage> udpConnection, int outPort, final TMessage message) {
-        if (udpConnection.isEnabled()) {
-            udpConnection.send(udpConnection.getInetAddress(), outPort, message);
-        }
-        else {
-            System.err.println("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
-            Logger.logError("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
-        }
-    }
-
-    /**
-     * Sends a message through UDP.
-     * @param ipAddress The IP address to send the message to.
-     * @param outPort The outPort to send the message through.
-     * @param message The message.
-     */
-    public final void sendUDP(final String ipAddress, final int outPort, final TMessage message) {
-        try {
-            InetAddress inetAddress = InetAddress.getByName(ipAddress);
-            if (outPort >= 0 && outPort <= 65535) {
-                for (UDPConnection<TMessage> udpConnection : udpHandlers) {
-                    if (udpConnection.getPort() == outPort && udpConnection.getInetAddress().equals(inetAddress)) {
-                        if (udpConnection.isEnabled()) {
-                            udpConnection.send(inetAddress, outPort, message);
-                        }
-                        else {
-                            System.err.println("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
-                            Logger.logError("Error - Cannot send message. UDPConnection [" + udpConnection.getInetAddress() + ":" + udpConnection.getPort() + "] disabled");
-                        }
-                    }
-                }
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    /**
-     * Sends a message through UDP.
-     * @param udpPeer The UDPPeer instance to send the message to.
-     * @param message The message to send.
-     */
-    public final void sendUDP(UDPPeer udpPeer, final TMessage message) {
-        sendUDP(udpPeer.getAddress().toString(), udpPeer.getPort(), message);
-    }
-
-    /**
-     * Multicasts a message to a set of IP addresses on a specific port.
-     * @param message The message to send.
-     * @param port The port to set the message through.
-     * @param ipAddresses A list of IP addresses to send the message to.
-     */
-    public final void multicastUDP(TMessage message, int port, InetAddress... ipAddresses) {
-        for (UDPConnection<TMessage> udpConnection : udpHandlers) {
-            if (udpConnection.getPort() == port) {
-                udpConnection.multicast(message, new ArrayList<>(Arrays.asList(ipAddresses)));
-                break;
-            }
-        }
-    }
-
-    /**
-     * Multicasts a message to a set of IP addresses on a specific port.
-     * @param message The message to send.
-     * @param port The port to set the message through.
-     * @param ipAddresses A list of IP addresses to send the message to.
-     */
-    public final void multicastUDP(TMessage message, int port, List<InetAddress> ipAddresses) {
-        for (UDPConnection<TMessage> udpConnection : udpHandlers) {
-            if (udpConnection.getPort() == port) {
-                udpConnection.multicast(message, new ArrayList<>(ipAddresses));
-                break;
-            }
-        }
-    }
-
-    /**
-     * Multicasts a message to a set of IP addresses on a specific port.
-     * @param message The message to send.
-     * @param port The port to set the message through.
-     * @param ipAddresses A list of IP addresses to send the message to.
-     */
-    public final void multicastUDP(TMessage message, int port, String... ipAddresses) {
-        ArrayList<InetAddress> inetAddresses = new ArrayList<>();
-        for (String ipString : ipAddresses) {
-            try {
-                InetAddress inetAddress = InetAddress.getByName(ipString);
-                inetAddresses.add(inetAddress);
-            } catch (UnknownHostException e) {
-                System.err.println("Invalid multicast target [UDP]: " + ipString);
-                Logger.logError("Invalid multicast target [UDP]: " + ipString);
-            }
-        }
-
-        for (UDPConnection<TMessage> connection : udpHandlers) {
-            if (connection.getPort() == port) {
-                connection.multicast(message, inetAddresses);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Broadcasts a given message to all of the peers of a particular UDP connection.
-     * @param port The connection to broadcast the message to.
-     * @param message The message to broadcast.
-     */
-    public final void broadcastUDP(final int port, final TMessage message) {
-        Vector<UDPConnection<TMessage>> udpListeners = getUdpHandlers();
-        for (UDPConnection<TMessage> connection : udpListeners) {
-            if (connection.getPort() == port) {
-                connection.broadcast(message);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Defines the runtime functionality of this server.
-     * This method:
-     * 1) Initializes the server using initialize().
-     * 2) Creates and starts threads for each UDPConnection and TCPHandler.
-     * 3) Continuously executes the process() method while the server is running.
-     *
-     */
-    @Override
-    public final void run() {
-        System.out.println("Server '" + getClass().getSimpleName() + "' started.");
-        Logger.logInfo("Server '" + getClass().getSimpleName() + "' started.");
-        initialize();
-
-        for (UDPConnection<TMessage> udpConnection : udpHandlers) {
-            Thread t = new Thread(udpConnection, "UDP-Handler-Thread-Port-" + udpConnection.getPort());
-            udpHandlerThreads.add(t);
-            t.start();
-        }
-        for (TCPHandler<TMessage> tcpHandler : tcpHandlers) {
-            Thread t = new Thread(tcpHandler, "TCP-Handler-Thread-Port-" + tcpHandler.getPort());
-            tcpHandlerThreads.add(t);
-            t.start();
-        }
-
-        while (isRunning()) {
-            runIndefinitely();
-            if (executionDelay > 0) {
-                try {
-                    Thread.sleep(executionDelay);
-                } catch (InterruptedException e) {
-                    System.err.println("Error: " + e.getMessage());
-                    e.printStackTrace();
-                    Logger.logError(e.getMessage());
-                }
-            }
-        }
-        System.out.println("Server '" + getClass().getSimpleName() + "' stopped.");
-        Logger.logInfo("Server '" + getClass().getSimpleName() + "' stopped.");
     }
 
     /**
@@ -636,6 +172,14 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
      */
     public final Vector<Thread> getTcpHandlerThreads() {
         return tcpHandlerThreads;
+    }
+
+    /**
+     * Retrieves the server's name.
+     * @return Returns a string.
+     */
+    public final String getName() {
+        return name;
     }
 
     /**
@@ -695,7 +239,7 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
      * @throws FileNotFoundException thrown when a malformed IP address is found.
      */
     private void loadBlacklist() throws FileNotFoundException {
-        final Scanner fileScanner = new Scanner(new File(getClass().getSimpleName() + BLACKLIST_FILENAME_POSTFIX));
+        final Scanner fileScanner = new Scanner(new File(name + BLACKLIST_FILENAME_POSTFIX));
         while (fileScanner.hasNextLine()) {
             final String ipAddressStr = fileScanner.nextLine();
             try {
@@ -708,8 +252,8 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
                 return;
             }
         }
-        System.out.println("Blacklist loaded: '" + getClass().getSimpleName() + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + " entries");
-        Logger.logInfo("Blacklist loaded: '" + getClass().getSimpleName() + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + " entries");
+        System.out.println("Blacklist loaded: '" + name + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + " entries");
+        Logger.logInfo("Blacklist loaded: '" + name + BLACKLIST_FILENAME_POSTFIX + "' - " + blacklist.size() + " entries");
         fileScanner.close();
     }
 
@@ -718,7 +262,7 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
      * @throws FileNotFoundException thrown when a malformed IP address is found.
      */
     private void loadWhitelist() throws FileNotFoundException {
-        final Scanner fileScanner = new Scanner(new File(getClass().getSimpleName() + WHITELIST_FILENAME_POSTFIX));
+        final Scanner fileScanner = new Scanner(new File(name + WHITELIST_FILENAME_POSTFIX));
         while (fileScanner.hasNextLine()) {
             final String ipAddressStr = fileScanner.nextLine();
             try {
@@ -731,8 +275,8 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
                 return;
             }
         }
-        System.out.println("Whitelist loaded: '" + getClass().getSimpleName() + WHITELIST_FILENAME_POSTFIX + "' - " + whitelist.size() + " entries");
-        Logger.logInfo("Whitelist loaded: '" + getClass().getSimpleName() + WHITELIST_FILENAME_POSTFIX + "' - " + whitelist.size() + " entries");
+        System.out.println("Whitelist loaded: '" + name + WHITELIST_FILENAME_POSTFIX + "' - " + whitelist.size() + " entries");
+        Logger.logInfo("Whitelist loaded: '" + name + WHITELIST_FILENAME_POSTFIX + "' - " + whitelist.size() + " entries");
         fileScanner.close();
     }
 
@@ -741,7 +285,7 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
      */
     private void saveBlacklistToFile() {
         try {
-            FileWriter fileWriter = new FileWriter(new File(getClass().getSimpleName() + BLACKLIST_FILENAME_POSTFIX));
+            FileWriter fileWriter = new FileWriter(new File(name + BLACKLIST_FILENAME_POSTFIX));
             final StringBuilder stringBuilder = new StringBuilder();
             for (final InetAddress ip : blacklist) {
                 stringBuilder.append(ip.toString().split(":")[0].replace("/", "")).append(System.lineSeparator());
@@ -750,8 +294,8 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
             fileWriter.flush();
             fileWriter.close();
         } catch (IOException e) {
-            System.err.println("Blacklist save error: could not write list to file '" + getClass().getSimpleName() + BLACKLIST_FILENAME_POSTFIX);
-            Logger.logError("Blacklist save error: could not write list to file '" + getClass().getSimpleName() + BLACKLIST_FILENAME_POSTFIX);
+            System.err.println("Blacklist save error: could not write list to file '" + name + BLACKLIST_FILENAME_POSTFIX);
+            Logger.logError("Blacklist save error: could not write list to file '" + name + BLACKLIST_FILENAME_POSTFIX);
         }
     }
 
@@ -760,7 +304,7 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
      */
     private void saveWhitelistToFile() {
         try {
-            FileWriter fileWriter = new FileWriter(new File(getClass().getSimpleName() + WHITELIST_FILENAME_POSTFIX));
+            FileWriter fileWriter = new FileWriter(new File(name + WHITELIST_FILENAME_POSTFIX));
             final StringBuilder stringBuilder = new StringBuilder();
             for (final InetAddress ip : whitelist) {
                 stringBuilder.append(ip.toString().split(":")[0].replace("/", "")).append(System.lineSeparator());
@@ -769,8 +313,8 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
             fileWriter.flush();
             fileWriter.close();
         } catch (IOException e) {
-            System.err.println("Whitelist save error: could not write list to file '" + getClass().getSimpleName() + WHITELIST_FILENAME_POSTFIX);
-            Logger.logError("Whitelist save error: could not write list to file '" + getClass().getSimpleName() + WHITELIST_FILENAME_POSTFIX);
+            System.err.println("Whitelist save error: could not write list to file '" + name + WHITELIST_FILENAME_POSTFIX);
+            Logger.logError("Whitelist save error: could not write list to file '" + name + WHITELIST_FILENAME_POSTFIX);
         }
     }
 
@@ -782,8 +326,8 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
         if (securityMode == SecurityMode.BLACKLIST) {
             blacklist.add(inetAddress);
             saveBlacklistToFile();
-            System.out.println("'" + getClass().getSimpleName() + "' Banned IP: " + inetAddress.toString());
-            Logger.logInfo("'" + getClass().getSimpleName() + "' Banned IP: " + inetAddress.toString());
+            System.out.println("'" + name + "' Banned IP: " + inetAddress.toString());
+            Logger.logInfo("'" + name + "' Banned IP: " + inetAddress.toString());
         }
         else {
             System.err.println("Cannot ban IP '" + inetAddress.toString() + "' while not on blacklist mode.");
@@ -813,8 +357,8 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
         if (securityMode == SecurityMode.BLACKLIST) {
             blacklist.remove(inetAddress);
             saveBlacklistToFile();
-            System.out.println("'" + getClass().getSimpleName() + "' Un-banned IP: " + inetAddress.toString());
-            Logger.logInfo("'" + getClass().getSimpleName() + "' Un-banned IP: " + inetAddress.toString());
+            System.out.println("'" + name + "' Un-banned IP: " + inetAddress.toString());
+            Logger.logInfo("'" + name + "' Un-banned IP: " + inetAddress.toString());
         }
         else {
             System.err.println("Cannot unban IP '" + inetAddress.toString() + "' while not on blacklist mode.");
@@ -844,8 +388,8 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
         if (securityMode == SecurityMode.WHITELIST) {
             whitelist.add(address);
             saveWhitelistToFile();
-            System.out.println("'" + getClass().getSimpleName() + "' Whitelisted IP: " + address.toString());
-            Logger.logInfo("'" + getClass().getSimpleName() + "' Whitelisted IP: " + address.toString());
+            System.out.println("'" + name + "' Whitelisted IP: " + address.toString());
+            Logger.logInfo("'" + name + "' Whitelisted IP: " + address.toString());
         }
         else {
             System.err.println("Cannot whitelist IP '" + address.toString() + "' while not on whitelist mode.");
@@ -871,8 +415,8 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
         if (securityMode == SecurityMode.WHITELIST) {
             whitelist.remove(address);
             saveWhitelistToFile();
-            System.out.println("'" + getClass().getSimpleName() + "' IP: " + address.toString() + " removed from whitelist.");
-            Logger.logInfo("'" + getClass().getSimpleName() + "' IP: " + address.toString() + " removed from whitelist.");
+            System.out.println("'" + name + "' IP: " + address.toString() + " removed from whitelist.");
+            Logger.logInfo("'" + name + "' IP: " + address.toString() + " removed from whitelist.");
         }
         else {
             System.err.println("Cannot un-whitelist IP '" + address.toString() + "' while not on whitelist mode.");
@@ -901,19 +445,9 @@ public abstract class Server<TMessage extends GeneratedMessageV3> implements Run
      * @return Returns the thread running this client.
      */
     public final Thread start() {
-        Thread thread = new Thread(this, getClass().getSimpleName());
+        Thread thread = new Thread(this, name);
         thread.start();
         return thread;
-    }
-
-    /**
-     * Stops the server.
-     */
-    public final void stop() {
-        onStop();
-        removeAllTCPHandlers();
-        removeAllUDPHandlers();
-        setRunning(false);
     }
 
 }

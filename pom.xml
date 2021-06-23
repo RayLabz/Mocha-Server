@@ -141,15 +141,10 @@
             <artifactId>nv-websocket-client</artifactId>
             <version>2.9</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.raylabz</groupId>-->
-<!--            <artifactId>bytesurge</artifactId>-->
-<!--            <version>0.0.7</version>-->
-<!--        </dependency>-->
         <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>3.14.0</version>
+            <groupId>com.raylabz</groupId>
+            <artifactId>bytesurge</artifactId>
+            <version>0.0.7</version>
         </dependency>
         <dependency>
             <groupId>com.raylabz</groupId>

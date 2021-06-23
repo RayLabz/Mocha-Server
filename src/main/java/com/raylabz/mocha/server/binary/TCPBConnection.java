@@ -1,7 +1,10 @@
-package com.raylabz.mocha.server;
+package com.raylabz.mocha.server.binary;
 
-import com.google.protobuf.GeneratedMessageV3;
+import com.raylabz.bytesurge.container.ArrayContainer;
+import com.raylabz.bytesurge.stream.StreamReader;
+import com.raylabz.bytesurge.stream.StreamWriter;
 import com.raylabz.mocha.logger.Logger;
+import com.raylabz.mocha.message.Message;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -14,12 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Nicos Kasenides
  * @version 1.0.0
  */
-public class TCPConnection<TMessage extends GeneratedMessageV3> implements Runnable {
-
-    /**
-     * Reference to the server running the TCPConnection.
-     */
-    private final Server<TMessage> server;
+public class TCPBConnection implements Runnable {
 
     /**
      * The connection's socket.
@@ -45,18 +43,15 @@ public class TCPConnection<TMessage extends GeneratedMessageV3> implements Runna
      * The TCPReceivable of this connection, which defines what happens once data is received.
      * Important note: TCPReceivables are the same object for all TCPConnections of the same TCPHandler.
      */
-    private final TCPReceivable<TMessage> receivable;
+    private final TCPBReceivable receivable;
 
     /**
      * Constructs a new TCPConnection.
-     *
-     * @param server The server of this connection.
      * @param socket The connection's socket.
      * @param receivable The connection's receivable instance.
      * @throws IOException Thrown when the socket's input reader cannot be fetched.
      */
-    public TCPConnection(Server<TMessage> server, Socket socket, TCPReceivable<TMessage> receivable) throws IOException {
-        this.server = server;
+    public TCPBConnection(Socket socket, TCPBReceivable receivable) throws IOException {
         this.socket = socket;
         this.writer = new DataOutputStream(socket.getOutputStream());
         this.reader = new DataInputStream(socket.getInputStream());
@@ -83,11 +78,14 @@ public class TCPConnection<TMessage extends GeneratedMessageV3> implements Runna
      * Sends a message to the client on the other end of the TCP connection.
      * @param message The message to send.
      */
-    public final void send(final TMessage message) throws RuntimeException {
+    public final void send(final Message message) throws RuntimeException {
         try {
-            byte[] messageBytes = message.toByteArray();
-            writer.writeInt(messageBytes.length);
-            writer.write(messageBytes);
+            StreamWriter streamWriter = new StreamWriter(message.toSchema());
+            streamWriter.writeArray((ArrayContainer) message.toContainer());
+            streamWriter.close();
+            final byte[] bytes = streamWriter.getBytes();
+            writer.writeInt(bytes.length); //Forward total message size declaration
+            writer.write(bytes);
             writer.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -126,10 +124,23 @@ public class TCPConnection<TMessage extends GeneratedMessageV3> implements Runna
     public final void run() {
         try {
             while (isEnabled()) {
-                final int numOfBytes = reader.readInt();
-                byte[] data = new byte[numOfBytes];
-                reader.read(data, 0, numOfBytes);
-                final TMessage message = server.getMessageParser().parseFrom(data);
+
+                //Read the header:
+                final int size = reader.readInt();
+                System.out.println("size = " + size);
+
+                //Get the rest of the data:
+                final byte[] data = new byte[size];
+                for (int i = 0; i < size; i++) {
+                    data[i] = reader.readByte();
+                }
+
+                StreamReader reader = new StreamReader(Message.getSchema(size), data);
+                final byte[] bytes = reader.readByteArray();
+
+                Message message = new Message(bytes);
+
+                //Handle the message:
                 receivable.onReceive(this, message);
             }
         } catch (SocketException se) {

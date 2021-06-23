@@ -1,28 +1,20 @@
 package com.raylabz.mocha.client;
 
-import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.Parser;
 import com.neovisionaries.ws.client.*;
 
-import java.io.*;
-import java.lang.reflect.Field;
+import java.io.IOException;
 import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Manages a WebSocket client.
  */
-public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> implements Runnable, MessageBroker<TMessage>, BackgroundRunner {
+public abstract class WebSocketClient implements Runnable, MessageBroker<String>, BackgroundProcessor {
 
     /**
      * The client's name.
      */
     private final String name;
-
-    /**
-     * A parser for this client's message type.
-     */
-    private final Parser<TMessage> messageParser;
 
     /**
      * The web socket endpoint URI.
@@ -51,13 +43,12 @@ public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> imple
 
     /**
      * Creates a new WebSocketClient
-     * @param messageClass The message class.
      * @param name The client's name.
      * @param endpointURI The client's socket URI.
      * @throws IOException Throws an exception when the socket cannot be created.
      * @throws WebSocketException Throws an exception when the socket cannot be created.
      */
-    public WebSocketClient(String name, Class<TMessage> messageClass, String endpointURI) throws IOException, WebSocketException {
+    public WebSocketClient(String name, String endpointURI) throws IOException, WebSocketException {
         this.name = name;
         if (!endpointURI.startsWith("ws://") && !endpointURI.startsWith("wss://")) {
             throw new SocketException("WebSocket address must start with either 'ws://' or 'wss://'.");
@@ -67,16 +58,9 @@ public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> imple
             socket = new WebSocketFactory().createSocket(endpointURI);
             socket.addListener(new WebSocketAdapter() {
                 @Override
-                public void onBinaryMessage(WebSocket websocket, byte[] binary) throws Exception {
+                public void onTextMessage(WebSocket websocket, String text) throws Exception {
                     if (isListening()) {
-                        DataInputStream reader = new DataInputStream(new ByteArrayInputStream(binary));
-
-                        final int size = reader.readInt();
-                        final byte[] actualData = new byte[size];
-                        reader.read(actualData, 0, size);
-
-                        final TMessage message = messageParser.parseFrom(actualData);
-                        onReceive(message);
+                        onReceive(text);
                     }
                 }
             });
@@ -85,12 +69,6 @@ public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> imple
                 while (isEnabled()) { }
             });
             receptionThread.start();
-        }
-        try {
-            final Field field = messageClass.getField("PARSER");
-            this.messageParser = (Parser<TMessage>) field.get(null);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -170,7 +148,7 @@ public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> imple
     public final void run() {
         initialize();
         while (isEnabled()) {
-            doContinuously();
+            process();
             if (executionDelay > 0) {
                 try {
                     Thread.sleep(executionDelay);
@@ -182,25 +160,13 @@ public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> imple
     }
 
     /**
-     * Sends a message to the web socket.
-     * @param message The message to send to the server.
+     * Sends data to the web socket.
+     * @param data The data to send to the server.
      */
     @Override
-    public final void send(TMessage message) {
+    public final void send(String data) {
         if (isEnabled()) {
-            try {
-                byte[] messageBytes = message.toByteArray();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                DataOutputStream dos = new DataOutputStream(baos);
-                dos.writeInt(messageBytes.length);
-                dos.write(messageBytes);
-                dos.flush();
-                dos.close();
-                baos.close();
-                socket.sendBinary(baos.toByteArray());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            socket.sendText(data);
         }
     }
 
@@ -213,6 +179,12 @@ public abstract class WebSocketClient<TMessage extends GeneratedMessageV3> imple
         thread.start();
         return thread;
     }
+
+    @Override
+    public void initialize() { }
+
+    @Override
+    public void process() { }
 
     /**
      * Stops the client.
