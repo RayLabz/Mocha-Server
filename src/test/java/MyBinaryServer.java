@@ -1,10 +1,8 @@
 import com.raylabz.mocha.Mocha;
-import com.raylabz.mocha.binary.server.BinaryServer;
-import com.raylabz.mocha.binary.server.BinaryTCPConnection;
-import com.raylabz.mocha.binary.server.BinaryTCPHandler;
-import com.raylabz.mocha.binary.server.BinaryTCPReceivable;
+import com.raylabz.mocha.binary.server.*;
 
 import java.io.*;
+import java.net.InetAddress;
 
 public class MyBinaryServer extends BinaryServer {
     /**
@@ -40,6 +38,28 @@ public class MyBinaryServer extends BinaryServer {
                 }
             }
         }));
+        addUDPHandler(new BinaryUDPConnection(7080) {
+            @Override
+            public void onReceive(BinaryUDPConnection udpConnection, InetAddress address, int outPort, byte[] data) {
+                try {
+                    final ByteArrayInputStream bis = new ByteArrayInputStream(data);
+                    final DataInputStream dis = new DataInputStream(bis);
+                    final int i = dis.readInt();
+                    int square = i * i;
+                    System.out.println("received: " + i);
+
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    DataOutputStream dos = new DataOutputStream(out);
+                    dos.writeInt(square);
+                    udpConnection.send(address, outPort, out.toByteArray());
+                    dos.close();
+                    out.close();
+                    System.out.println("Sent: " + square);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
