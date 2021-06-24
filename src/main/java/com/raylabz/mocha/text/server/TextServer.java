@@ -56,11 +56,18 @@ public abstract class TextServer implements Runnable {
     private final HashSet<InetAddress> bannedAddresses = new HashSet<>();
 
     /**
-     * Constructs a new server.
+     * Constructs a new server, by providing a custom server name.
      * @param name The name of the server.
      */
     public TextServer(String name) {
         this.name = name;
+    }
+
+    /**
+     * Constructs a new server with the default server name.
+     */
+    public TextServer() {
+        this.name = TextServer.class.getSimpleName();
     }
 
     /**
@@ -625,7 +632,7 @@ public abstract class TextServer implements Runnable {
      * Retrieves the set of banned addresses for this server.
      * @return Returns a HashSet of InetAddress.
      */
-    public HashSet<InetAddress> getBannedAddresses() {
+    public final HashSet<InetAddress> getBannedAddresses() {
         return bannedAddresses;
     }
 

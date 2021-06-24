@@ -2,6 +2,7 @@ package com.raylabz.mocha.binary.server;
 
 import com.raylabz.mocha.UDPPeer;
 import com.raylabz.mocha.logger.Logger;
+import com.raylabz.mocha.text.server.TextServer;
 import com.raylabz.mocha.text.server.TextTCPConnection;
 import com.raylabz.mocha.text.server.TextTCPHandler;
 import com.raylabz.mocha.text.server.TextUDPConnection;
@@ -64,6 +65,13 @@ public abstract class BinaryServer implements Runnable {
      */
     public BinaryServer(String name) {
         this.name = name;
+    }
+
+    /**
+     * Constructs a new server with the default server name.
+     */
+    public BinaryServer() {
+        this.name = BinaryServer.class.getSimpleName();
     }
 
     /**
@@ -628,7 +636,7 @@ public abstract class BinaryServer implements Runnable {
      * Retrieves the set of banned addresses for this server.
      * @return Returns a HashSet of InetAddress.
      */
-    public HashSet<InetAddress> getBannedAddresses() {
+    public final HashSet<InetAddress> getBannedAddresses() {
         return bannedAddresses;
     }
 

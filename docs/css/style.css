@@ -71,6 +71,10 @@ pre.prettyprint {
     border-radius: 5px;
 }
 
+.preferred {
+    border: 2px solid black !important;
+}
+
 h6 {
     text-decoration: underline;
 }
@@ -87,4 +91,11 @@ p {
 
 h5 {
     padding-top: 20px;
+}
+
+.output {
+    border: 1px solid lightgray;
+    border-radius: 2px;
+    padding: 10px 10px;
+    background-color: white;
 }
