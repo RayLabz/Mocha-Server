@@ -88,6 +88,24 @@ public abstract class BinaryClient implements Runnable, BinaryMessageBroker, Bac
     }
 
     /**
+     * Constructs a new client.
+     * @param address Text-based internet address to which this client will connect.
+     * @param port The port of this client.
+     * @throws UnknownHostException Thrown when an invalid IP address was provided.
+     * @throws PortUnreachableException Thrown when an invalid port was provided.
+     */
+    public BinaryClient(String address, int port) throws UnknownHostException, PortUnreachableException {
+        this.name = this.getClass().getSimpleName();
+        this.address = InetAddress.getByName(address);
+        if (port > 65535 || port < 0) {
+            throw new PortUnreachableException("Invalid port number (" + port + "). The port must be in the range 0-65535.");
+        }
+        else {
+            this.port = port;
+        }
+    }
+
+    /**
      * Checks if this client is listening for incoming messages.
      * @return Returns true if the client is listening for incoming messages, false otherwise.
      */
@@ -165,6 +183,16 @@ public abstract class BinaryClient implements Runnable, BinaryMessageBroker, Bac
      */
     public void onConnectionRefused(Throwable error) {
         error.printStackTrace();
+    }
+
+    @Override
+    public void process() {
+        //Do nothing, implemented by derived class.
+    }
+
+    @Override
+    public void initialize() {
+        //Do nothing, implemented by derived class.
     }
 
 //    /**

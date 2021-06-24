@@ -71,7 +71,7 @@ public abstract class BinaryServer implements Runnable {
      * Constructs a new server with the default server name.
      */
     public BinaryServer() {
-        this.name = BinaryServer.class.getSimpleName();
+        this.name = this.getClass().getSimpleName();
     }
 
     /**

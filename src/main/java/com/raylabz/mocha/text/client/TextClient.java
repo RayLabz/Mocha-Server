@@ -69,6 +69,24 @@ public abstract class TextClient implements Runnable, TextMessageBroker, Backgro
     }
 
     /**
+     * Constructs a new client.
+     * @param address Text-based internet address to which this client will connect.
+     * @param port The port of this client.
+     * @throws UnknownHostException Thrown when an invalid IP address was provided.
+     * @throws PortUnreachableException Thrown when an invalid port was provided.
+     */
+    public TextClient(String address, int port) throws UnknownHostException, PortUnreachableException {
+        this.name = this.getClass().getSimpleName();
+        this.address = InetAddress.getByName(address);
+        if (port > 65535 || port < 0) {
+            throw new PortUnreachableException("Invalid port number (" + port + "). The port must be in the range 0-65535.");
+        }
+        else {
+            this.port = port;
+        }
+    }
+
+    /**
      * Constructs a new Client.
      * @param name The client's name.
      * @param inetAddress The IP address to which this client will connect.
@@ -166,7 +184,17 @@ public abstract class TextClient implements Runnable, TextMessageBroker, Backgro
         error.printStackTrace();
     }
 
-//    /**
+    @Override
+    public void process() {
+        //Do nothing, implemented by derived class.
+    }
+
+    @Override
+    public void initialize() {
+        //Do nothing, implemented by derived class.
+    }
+
+    //    /**
 //     * Sends data and blocks execution until a response is received.
 //     * @param data The data to send.
 //     */

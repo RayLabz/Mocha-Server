@@ -85,6 +85,28 @@ public abstract class TextUDPClient extends TextClient {
     }
 
     /**
+     * Constructs a new UDPClient.
+     * @param ipAddress The IP address that this client will connect to.
+     * @param port The port that this client will connect through.
+     * @throws UnknownHostException Thrown when the IP address is invalid.
+     * @throws SocketException Thrown when the client's socket cannot be instantiated.
+     */
+    public TextUDPClient(String ipAddress, int port) throws UnknownHostException, SocketException {
+        super(ipAddress, port);
+        try {
+            this.socket = new DatagramSocket();
+            setConnected(true);
+        } catch (ConnectException ce) {
+            setListening(false);
+            setConnected(false);
+            onConnectionRefused(ce);
+        }
+
+        receptionThread = new Thread(receptionThreadRunnable, getName()  + "-Listener");
+        receptionThread.start();
+    }
+
+    /**
      * Retrieves the client's socket.
      * @return Returns a DatagramSocket.
      */

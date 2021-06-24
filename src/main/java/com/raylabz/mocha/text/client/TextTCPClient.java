@@ -88,6 +88,30 @@ public abstract class TextTCPClient extends TextClient {
     }
 
     /**
+     * Constructs a TCP Client.
+     *
+     * @param ipAddress The IP address of that this TCP client will connect to.
+     * @param port      The port that this TCP client will connect to.
+     * @throws IOException Thrown when the socket of this client cannot be instantiated.
+     */
+    public TextTCPClient(String ipAddress, int port) throws IOException {
+        super(ipAddress, port);
+        try {
+            this.socket = new Socket(getAddress(), getPort());
+            writer = new PrintWriter(socket.getOutputStream(), true);
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            setConnected(true);
+        } catch (ConnectException ce) {
+            setListening(false);
+            setConnected(false);
+            onConnectionRefused(ce);
+        }
+
+        receptionThread = new Thread(receptionThreadRunnable, getName() + "-Listener");
+        receptionThread.start();
+    }
+
+    /**
      * Retrieves the client's socket.
      *
      * @return Returns a Socket.

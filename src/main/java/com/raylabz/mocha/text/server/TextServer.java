@@ -67,7 +67,7 @@ public abstract class TextServer implements Runnable {
      * Constructs a new server with the default server name.
      */
     public TextServer() {
-        this.name = TextServer.class.getSimpleName();
+        this.name = this.getClass().getSimpleName();
     }
 
     /**

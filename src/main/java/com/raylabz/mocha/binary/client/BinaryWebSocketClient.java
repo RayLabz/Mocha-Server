@@ -78,6 +78,36 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
     }
 
     /**
+     * Creates a new WebSocketClient
+     * @param endpointURI The client's socket URI.
+     * @throws IOException Throws an exception when the socket cannot be created.
+     * @throws WebSocketException Throws an exception when the socket cannot be created.
+     */
+    public BinaryWebSocketClient(String endpointURI) throws IOException, WebSocketException {
+        this.name = this.getClass().getName();
+        if (!endpointURI.startsWith("ws://") && !endpointURI.startsWith("wss://")) {
+            throw new SocketException("WebSocket address must start with either 'ws://' or 'wss://'.");
+        }
+        else {
+            this.endpointURI = endpointURI;
+            socket = new WebSocketFactory().createSocket(endpointURI);
+            socket.addListener(new WebSocketAdapter() {
+                @Override
+                public void onBinaryMessage(WebSocket websocket, byte[] binary) {
+                    if (isListening()) {
+                        onReceive(binary);
+                    }
+                }
+            });
+            socket.connect();
+            Thread receptionThread = new Thread(() -> {
+                while (isEnabled()) { }
+            });
+            receptionThread.start();
+        }
+    }
+
+    /**
      * Retrieves the name of the client.
      * @return Returns a String.
      */
@@ -147,6 +177,16 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
      */
     public final void setExecutionDelay(int executionDelay) {
         this.executionDelay = executionDelay;
+    }
+
+    @Override
+    public void process() {
+        //Do nothing, implemented by derived class.
+    }
+
+    @Override
+    public void initialize() {
+        //Do nothing, implemented by derived class.
     }
 
     @Override

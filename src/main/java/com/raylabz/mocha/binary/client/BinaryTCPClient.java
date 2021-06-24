@@ -4,9 +4,7 @@ import com.raylabz.mocha.logger.Logger;
 import com.raylabz.mocha.text.client.TextClient;
 
 import java.io.*;
-import java.net.ConnectException;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 
 /**
  * Defines functionality for a TCP Client.
@@ -86,6 +84,29 @@ public abstract class BinaryTCPClient extends BinaryClient {
         }
 
         receptionThread = new Thread(receptionThreadRunnable, name + "-Listener");
+        receptionThread.start();
+    }
+
+    /**
+     * Constructs a BinaryTCPClient
+     * @param address The address to connect to.
+     * @param port The port.
+     * @throws IOException Thrown when the socket cannot be used.
+     */
+    public BinaryTCPClient(String address, int port) throws IOException {
+        super(address, port);
+        try {
+            this.socket = new Socket(getAddress(), getPort());
+            writer = socket.getOutputStream();
+            reader = socket.getInputStream();
+            setConnected(true);
+        } catch (ConnectException ce) {
+            setListening(false);
+            setConnected(false);
+            onConnectionRefused(ce);
+        }
+
+        receptionThread = new Thread(receptionThreadRunnable, this.getName() + "-Listener");
         receptionThread.start();
     }
 
