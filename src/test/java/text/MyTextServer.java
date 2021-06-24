@@ -1,3 +1,5 @@
+package text;
+
 import com.raylabz.mocha.Mocha;
 import com.raylabz.mocha.text.server.TextServer;
 import com.raylabz.mocha.text.server.TextTCPHandler;
@@ -11,24 +13,25 @@ public class MyTextServer extends TextServer {
         super(name);
         addTCPHandler(new TextTCPHandler(1234, (tcpConnection, data) -> {
             System.out.println("Received message: " + data + " from " + tcpConnection.getInetAddress() + ":" + tcpConnection.getPort());
+            tcpConnection.send(data + " FTW");
         }));
         addUDPHandler(new TextUDPConnection(4321) {
             @Override
             public void onReceive(TextUDPConnection udpConnection, InetAddress address, int outPort, String data) {
-                System.out.println("Received message: " + data + " from " + udpConnection.getInetAddress() + ":" + udpConnection.getPort());
+                System.out.println("Received message: " + data + " from " + address + ":" + udpConnection.getPort());
+                udpConnection.send(address, outPort, data + " FTW");
             }
         });
-        setExecutionDelay(1000);
     }
 
     @Override
     protected void initialize() {
-        //This method runs code once, BEFORE the server is started.
+
     }
 
     @Override
     protected void process() {
-        //This method runs continuously every interval
+
     }
 
     @Override

@@ -15,6 +15,7 @@ public interface BinaryTCPReceivable {
      * Executes code when data is received.
      * @param tcpConnection The TCPConnection receiving the data.
      * @param data The data received.
+     * @throws IOException When the data cannot be accessed.
      */
     void onReceive(BinaryTCPConnection tcpConnection, byte[] data) throws IOException;
 
