@@ -160,8 +160,11 @@ public abstract class TextClient implements Runnable, TextMessageBroker, Backgro
 
     /**
      * Executes code handling the case where the client may not be able to connect to the server.
+     * @param error The error caused.
      */
-    public abstract void onConnectionRefused();
+    public void onConnectionRefused(Throwable error) {
+        error.printStackTrace();
+    }
 
 //    /**
 //     * Sends data and blocks execution until a response is received.

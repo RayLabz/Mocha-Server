@@ -161,8 +161,11 @@ public abstract class BinaryClient implements Runnable, BinaryMessageBroker, Bac
 
     /**
      * Executes code handling the case where the client may not be able to connect to the server.
+     * @param error The error thrown.
      */
-    public abstract void onConnectionRefused(Throwable error);
+    public void onConnectionRefused(Throwable error) {
+        error.printStackTrace();
+    }
 
 //    /**
 //     * Sends data and blocks execution until a response is received.

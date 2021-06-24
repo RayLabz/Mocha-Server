@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-    <link rel="shortcut icon" type="image/png" href="images/mocha.png"/>
+    <link rel="shortcut icon" type="image/png" href="images/logo_small_icon_only.png"/>
     <meta name="theme-color" content="#795548"/>
     <title>Mocha - RayLabz</title>
 
@@ -31,19 +31,19 @@
             <h1 class="header center brown-text">Mocha</h1>
             <br>
             <div class="row center">
-                <img class="responsive-img" src="images/mocha.png" width="200"/>
+                <img class="responsive-img" src="images/logo_small.png" width="200"/>
             </div>
             <div class="row center">
-                <h4 class="header col s12 light">A lightweight, multi-threaded TCP/UDP  library for Java</h4>
+                <h4 class="header col s12 light">A lightweight, multi-threaded, client-server library for Java</h4>
             </div>
 
             <div class="row center">
                 <p class="justify col s12 m6 offset-m3">
-                    Mocha is a lightweight, multi-threaded client and server library written in Java. It enables the quick creation
+                    Mocha is a lightweight, multi-threaded client-server library for Java. It enables the quick creation
                     of multi-client, multi-port TCP and UDP clients and servers with minimal overhead. Mocha allows you to quickly
-                    set up and run TCP and UDP servers as well as TCP, UDP and WebSocket clients. By using
-                    Mocha, you can avoid dealing with low-level networking technologies and concentrate
-                    on the logic and protocols that are important for your server.
+                    set up and run TCP and UDP servers as well as TCP, UDP, and WebSocket clients. By using
+                    Mocha, you can avoid dealing with low-level networking technologies and protocols, instead concentrating
+                    on business logic of your server.
                 </p>
             </div>
 
@@ -63,7 +63,7 @@
 
             <h3 id="downloadAndImport">Download and import</h3>
 
-            <p>You can easily import Firestorm in your project using Maven or Gradle:</p>
+            <p>You can easily import Mocha in your project using Maven or Gradle:</p>
 
             <p><b><u>Maven:</u></b></p>
 
@@ -71,41 +71,44 @@
 &lt;dependency&gt;
   &lt;groupId&gt;com.raylabz&lt;/groupId&gt;
   &lt;artifactId&gt;mocha&lt;/artifactId&gt;
-  &lt;version&gt;0.1.0&lt;/version&gt;
+  &lt;version&gt;0.2.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 
             <p><b><u>Gradle:</u></b></p>
 
-            <pre class="prettyprint">implementation 'com.raylabz:mocha:0.1.0'</pre>
+            <pre class="prettyprint">implementation 'com.raylabz:mocha:0.2.0'</pre>
 
             <p>
                 Alternatively, you can download Mocha as a .jar:
             </p>
 
             <p>
-                <a class="btn orange darken-4" href="https://oss.sonatype.org/service/local/repositories/releases/content/com/raylabz/mocha/0.1.0/mocha-0.1.0.jar">Download .jar</a>
+                <a class="btn brown" href="https://oss.sonatype.org/service/local/repositories/releases/content/com/raylabz/mocha/0.2.0/mocha-0.2.0.jar">Download .jar</a>
             </p>
 
             <br/>
 
             <div class="card-panel amber lighten-3">
-                This library is still in beta - please report any issues <a class="black-text" href="mailto:raylabzg@gmail.com"><u>here</u></a>.
+                This library is still in beta - please report any issues <a class="black-text" href="https://docs.google.com/forms/d/e/1FAIpQLSdl-ya4kCURzUiEzWtReTzv78K_WZ5i84112iH43KFPcsEUvQ/viewform?usp=sf_link"><u>here</u></a>.
             </div>
 
             <hr/>
 
             <h3 id="serverGuide">Server guide</h3>
 
-            <p><a href="serverGuide.html">Click here to view the server guide</a></p>
-
-            <br/>
+            <p>
+                The server guide will guide you through the process of creating a server
+                and assigning TCP and UDP port handlers to handle traffic.
+            </p>
+            <a class="btn-flat brown-text" href="serverGuide.html">Click here to view the server guide</a>
             <hr/>
 
             <h3 id="clientGuide">Client guide</h3>
 
-            <p><a href="clientGuide.html">Click here to view the client guide</a></p>
-
-            <br/>
+            <p>
+                The client guide will guide you through the process of creating TCP, UDP, and WebSocket clients.
+            </p>
+            <a class="btn-flat brown-text" href="clientGuide.html">Click here to view the client guide</a>
             <hr/>
 
 

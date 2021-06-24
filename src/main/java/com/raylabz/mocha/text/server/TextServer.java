@@ -252,14 +252,18 @@ public abstract class TextServer implements Runnable {
     /**
      * Initializes the server.
      */
-    protected abstract void initialize();
+    protected void initialize() {
+        //Do nothing, overriden by implemented servers.
+    }
 
     /**
      * Defines functionality that is executed by the server during its runtime.
      * Important note: This method is executed CONTINUOUSLY during the server's runtime. Make sure that this method
      * only contains necessary code that should continuously be executed.
      */
-    protected abstract void process();
+    protected void process() {
+        //Do nothing, overriden by implemented servers.
+    }
 
     /**
      * Sends data through TCP.

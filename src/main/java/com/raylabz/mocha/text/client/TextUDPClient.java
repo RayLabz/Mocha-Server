@@ -43,7 +43,7 @@ public abstract class TextUDPClient extends TextClient {
 //                            if (!unblock) {
                                 setListening(false);
                                 setConnected(false);
-                                onConnectionRefused();
+                                onConnectionRefused(ce);
 //                            }
                         } catch (IOException e) {
 //                            if (!unblock) {
@@ -55,7 +55,7 @@ public abstract class TextUDPClient extends TextClient {
                 }
             }
             else {
-                onConnectionRefused();
+                onConnectionRefused(new IOException("Socket closed."));
             }
         }
     };
@@ -77,7 +77,7 @@ public abstract class TextUDPClient extends TextClient {
         } catch (ConnectException ce) {
             setListening(false);
             setConnected(false);
-            onConnectionRefused();
+            onConnectionRefused(ce);
         }
 
         receptionThread = new Thread(receptionThreadRunnable, name  + "-Listener");

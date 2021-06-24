@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-    <link rel="shortcut icon" type="image/png" href="images/mocha.png"/>
+    <link rel="shortcut icon" type="image/png" href="images/logo_small_icon_only.png"/>
     <meta name="theme-color" content="#795548"/>
     <title>Mocha - RayLabz</title>
 
@@ -31,10 +31,10 @@
             <h1 class="header center brown-text">Mocha</h1>
             <br>
             <div class="row center">
-                <img class="responsive-img" src="images/mocha.png" width="200"/>
+                <img class="responsive-img" src="images/logo_small.png" width="200"/>
             </div>
             <div class="row center">
-                <h4 class="header col s12 light">A lightweight, multi-threaded TCP/UDP  library for Java</h4>
+                <h4 class="header col s12 light">A lightweight, multi-threaded, client-server library for Java</h4>
             </div>
 
             <hr/>
@@ -48,7 +48,8 @@
             <h4>Contents</h4>
 
             <ul class="browser-default">
-                <li><a href="#creatingABasicServer">Creating a basic server</a></li>
+                <li><a href="#serverTypes">Server types</a></li>
+                <li><a href="#creatingAServer">Creating a server</a></li>
                 <li><a href="#runningAServer">Running a server</a></li>
                 <li><a href="#customServers">Creating a custom server</a></li>
                 <li><a href="#stoppingAServer">Stopping a server</a></li>
@@ -72,7 +73,17 @@
                 <li><a href="#unbanningIPs">Unbanning IPs</a></li>
             </ul>
 
-            <h4 id="creatingABasicServer">Creating a basic server</h4>
+            <h4 id="serverTypes">Server types</h4>
+
+            <p>
+                Mocha allows you to create servers that can utilize the TCP and UDP protocols. Each server can utilize
+                both protocols at the same time and with multiple ports. Servers can communicate using text
+                (<span class="code">MyTextServer</span>) or binary messages (<span class="code">BinaryServer</span>).
+            </p>
+
+            <h4 id="creatingAServer">Creating a server</h4>
+
+            TODO - CLASS IMPL OF SERVER...
 
             <p>A basic server is a server that does not have a custom runtime. Basic servers allow you to handle
                 messages/requests coming from clients, <u>but do not execute any code in the background</u>. Due to their

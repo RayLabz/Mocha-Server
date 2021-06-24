@@ -52,7 +52,7 @@ public abstract class TextTCPClient extends TextClient {
 //                    if (!unblock) {
                         setListening(false);
                         setConnected(false);
-                        onConnectionRefused();
+                        onConnectionRefused(se);
 //                    }
                 } catch (IOException e) {
                     System.err.println("Error receiving: " + e.getMessage());
@@ -80,7 +80,7 @@ public abstract class TextTCPClient extends TextClient {
         } catch (ConnectException ce) {
             setListening(false);
             setConnected(false);
-            onConnectionRefused();
+            onConnectionRefused(ce);
         }
 
         receptionThread = new Thread(receptionThreadRunnable, name + "-Listener");
