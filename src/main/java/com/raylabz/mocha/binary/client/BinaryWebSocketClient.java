@@ -205,6 +205,15 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
     }
 
     /**
+     * Stops the client.
+     */
+    public final void stop() {
+        setEnabled(false);
+        setListening(false);
+        socket.disconnect();
+    }
+
+    /**
      * Sends data to the web socket.
      * @param data The data to send to the server.
      */

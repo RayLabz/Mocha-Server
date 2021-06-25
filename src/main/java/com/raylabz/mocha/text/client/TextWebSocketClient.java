@@ -201,6 +201,15 @@ public abstract class TextWebSocketClient implements Runnable, TextMessageBroker
     }
 
     /**
+     * Stops the client.
+     */
+    public final void stop() {
+        setEnabled(false);
+        setListening(false);
+        socket.disconnect();
+    }
+
+    /**
      * Sends data to the web socket.
      * @param data The data to send to the server.
      */
