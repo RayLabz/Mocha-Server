@@ -176,18 +176,14 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
                 }
             });
             socket.connect();
-        } catch (WebSocketException e) {
-            throw new RuntimeException(e);
-        }
-        while (isEnabled()) {
-            process();
-            if (executionDelay > 0) {
-                try {
+            while (isEnabled()) {
+                process();
+                if (executionDelay > 0) {
                     Thread.sleep(executionDelay);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
+        } catch (WebSocketException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
