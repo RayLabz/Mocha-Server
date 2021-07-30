@@ -17,7 +17,7 @@ public class MPTest extends BinaryWebSocketClient {
     }
 
     public static void main(String[] args) throws WebSocketException, IOException {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1; i++) {
             MPTest test = new MPTest("client", "ws://localhost:8080/api/test/websocket");
             Mocha.start(test);
         }

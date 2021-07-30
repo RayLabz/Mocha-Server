@@ -61,6 +61,7 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
         else {
             this.endpointURI = endpointURI;
             socket = new WebSocketFactory().createSocket(endpointURI);
+            connect();
         }
     }
 
@@ -78,7 +79,24 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
         else {
             this.endpointURI = endpointURI;
             socket = new WebSocketFactory().createSocket(endpointURI);
+            connect();
         }
+    }
+
+    /**
+     * Connects the socket to the server.
+     * @throws WebSocketException when the connection cannot be made.
+     */
+    private void connect() throws WebSocketException {
+        socket.addListener(new WebSocketAdapter() {
+            @Override
+            public void onBinaryMessage(WebSocket websocket, byte[] binary) {
+                if (isListening()) {
+                    onReceive(binary);
+                }
+            }
+        });
+        socket.connect();
     }
 
     /**
@@ -167,22 +185,13 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
     public final void run() throws RuntimeException {
         initialize();
         try {
-            socket.addListener(new WebSocketAdapter() {
-                @Override
-                public void onBinaryMessage(WebSocket websocket, byte[] binary) {
-                    if (isListening()) {
-                        onReceive(binary);
-                    }
-                }
-            });
-            socket.connect();
             while (isEnabled()) {
                 process();
                 if (executionDelay > 0) {
                     Thread.sleep(executionDelay);
                 }
             }
-        } catch (WebSocketException | InterruptedException e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
