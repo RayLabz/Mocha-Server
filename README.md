@@ -24,18 +24,18 @@ Maven:
 <dependency>
   <groupId>com.raylabz</groupId>
   <artifactId>mocha</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
 </dependency>
 ```
 
 Gradle:
 ```xml
-implementation 'com.raylabz:mocha:1.0.2'
+implementation 'com.raylabz:mocha:1.0.3'
 ```
 
 Download as .jar file:
 
-[Download](https://oss.sonatype.org/service/local/repositories/releases/content/com/raylabz/mocha/1.0.2/mocha-1.0.2.jar) - (~25MB)
+[Download](https://oss.sonatype.org/service/local/repositories/releases/content/com/raylabz/mocha/1.0.3/mocha-1.0.3.jar) - (~25MB)
 
 ## Documentation
 

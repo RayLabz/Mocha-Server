@@ -10,7 +10,12 @@ public class MyTextWebSocketClient extends TextWebSocketClient {
 
     public MyTextWebSocketClient(String endpointURI) throws IOException, WebSocketException {
         super(endpointURI);
-        setExecutionDelay(1000);
+        setExecutionDelay(5000);
+    }
+
+    @Override
+    public void process() {
+        send("Hey");
     }
 
     @Override
@@ -18,13 +23,8 @@ public class MyTextWebSocketClient extends TextWebSocketClient {
         System.out.println(data);
     }
 
-    @Override
-    public void process() {
-        send("{\"type\": \"HANDSHAKE\", \"worldSessionID\": \"abcd\"}");
-    }
-
     public static void main(String[] args) throws WebSocketException, IOException {
-        Mocha.start(new MyTextWebSocketClient("ws://localhost:8080/api/play"));
+        Mocha.start(new MyTextWebSocketClient("wss://echo.websocket.org"));
     }
 
 }

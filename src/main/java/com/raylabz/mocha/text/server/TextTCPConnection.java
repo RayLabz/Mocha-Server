@@ -124,6 +124,7 @@ public class TextTCPConnection implements Runnable {
             }
             else {
                 System.err.println("[TCP " + getInetAddress().toString() + ":" + getPort() + "]" + "Error: " + se.getMessage());
+                setEnabled(false);
                 Logger.logError(se.getMessage());
             }
         }

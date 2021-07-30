@@ -42,7 +42,7 @@ public abstract class TextClient implements Runnable, TextMessageBroker, Backgro
     /**
      * The execution delay between calls to the process() method.
      */
-    private int executionDelay = 0;
+    private int executionDelay = 60000 * 5; //5 minutes
 
     /**
      * Unblocks the input stream for the socket to enable sendAndReceive() functionality.

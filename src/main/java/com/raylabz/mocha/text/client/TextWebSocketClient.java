@@ -40,7 +40,7 @@ public abstract class TextWebSocketClient implements Runnable, TextMessageBroker
     /**
      * The execution delay between calls to the process() method.
      */
-    private int executionDelay = 0;
+    private int executionDelay = 60000 * 5; //5 minutes
 
     /**
      * Creates a new WebSocketClient
@@ -57,19 +57,6 @@ public abstract class TextWebSocketClient implements Runnable, TextMessageBroker
         else {
             this.endpointURI = endpointURI;
             socket = new WebSocketFactory().createSocket(endpointURI);
-            socket.addListener(new WebSocketAdapter() {
-                @Override
-                public void onTextMessage(WebSocket websocket, String text) throws Exception {
-                    if (isListening()) {
-                        onReceive(text);
-                    }
-                }
-            });
-            socket.connect();
-            Thread receptionThread = new Thread(() -> {
-                while (isEnabled()) { }
-            });
-            receptionThread.start();
         }
     }
 
@@ -87,19 +74,6 @@ public abstract class TextWebSocketClient implements Runnable, TextMessageBroker
         else {
             this.endpointURI = endpointURI;
             socket = new WebSocketFactory().createSocket(endpointURI);
-            socket.addListener(new WebSocketAdapter() {
-                @Override
-                public void onTextMessage(WebSocket websocket, String text) throws Exception {
-                    if (isListening()) {
-                        onReceive(text);
-                    }
-                }
-            });
-            socket.connect();
-            Thread receptionThread = new Thread(() -> {
-                while (isEnabled()) { }
-            });
-            receptionThread.start();
         }
     }
 
@@ -186,8 +160,21 @@ public abstract class TextWebSocketClient implements Runnable, TextMessageBroker
     }
 
     @Override
-    public final void run() {
+    public final void run() throws RuntimeException {
         initialize();
+        try {
+            socket.addListener(new WebSocketAdapter() {
+                @Override
+                public void onTextMessage(WebSocket websocket, String text) {
+                    if (isListening()) {
+                        onReceive(text);
+                    }
+                }
+            });
+            socket.connect();
+        } catch (WebSocketException e) {
+            throw new RuntimeException(e);
+        }
         while (isEnabled()) {
             process();
             if (executionDelay > 0) {

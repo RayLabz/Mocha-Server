@@ -136,6 +136,7 @@ public class BinaryTCPConnection implements Runnable {
                     Logger.logInfo("Lost connection to TCP client: " + getInetAddress() + ".");
                 } else {
                     System.err.println("[TCP " + getInetAddress().toString() + ":" + getPort() + "]" + "Error: " + se.getMessage());
+                    setEnabled(false);
                     Logger.logError(se.getMessage());
                 }
             } catch (IOException e) {

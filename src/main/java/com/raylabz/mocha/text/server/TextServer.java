@@ -28,7 +28,7 @@ public abstract class TextServer implements Runnable {
     /**
      * Execution delay between calls to the process() method - In <b>MILLISECONDS</b>.
      */
-    private int executionDelay = 0;
+    private int executionDelay = 60000 * 5; //5 minutes
 
     /**
      * A list of UDP listeners for this server.

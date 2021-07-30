@@ -44,7 +44,7 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
     /**
      * The execution delay between calls to the process() method.
      */
-    private int executionDelay = 0;
+    private int executionDelay = 60000 * 5; //5 minutes
 
     /**
      * Creates a new WebSocketClient
@@ -61,19 +61,6 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
         else {
             this.endpointURI = endpointURI;
             socket = new WebSocketFactory().createSocket(endpointURI);
-            socket.addListener(new WebSocketAdapter() {
-                @Override
-                public void onBinaryMessage(WebSocket websocket, byte[] binary) {
-                    if (isListening()) {
-                        onReceive(binary);
-                    }
-                }
-            });
-            socket.connect();
-            Thread receptionThread = new Thread(() -> {
-                while (isEnabled()) { }
-            });
-            receptionThread.start();
         }
     }
 
@@ -91,19 +78,6 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
         else {
             this.endpointURI = endpointURI;
             socket = new WebSocketFactory().createSocket(endpointURI);
-            socket.addListener(new WebSocketAdapter() {
-                @Override
-                public void onBinaryMessage(WebSocket websocket, byte[] binary) {
-                    if (isListening()) {
-                        onReceive(binary);
-                    }
-                }
-            });
-            socket.connect();
-            Thread receptionThread = new Thread(() -> {
-                while (isEnabled()) { }
-            });
-            receptionThread.start();
         }
     }
 
@@ -190,8 +164,21 @@ public abstract class BinaryWebSocketClient implements Runnable, BinaryMessageBr
     }
 
     @Override
-    public final void run() {
+    public final void run() throws RuntimeException {
         initialize();
+        try {
+            socket.addListener(new WebSocketAdapter() {
+                @Override
+                public void onBinaryMessage(WebSocket websocket, byte[] binary) {
+                    if (isListening()) {
+                        onReceive(binary);
+                    }
+                }
+            });
+            socket.connect();
+        } catch (WebSocketException e) {
+            throw new RuntimeException(e);
+        }
         while (isEnabled()) {
             process();
             if (executionDelay > 0) {
